@@ -8,12 +8,14 @@ const {
   extractTextFromImageMock,
   lookupIndicatorMock,
   startLocalSpeechRecognitionMock,
+  isLocalSpeechSupportedMock,
 } = vi.hoisted(() => ({
   analyzeMessageMock: vi.fn(),
   deepAnalyzeMessageMock: vi.fn(),
   extractTextFromImageMock: vi.fn(),
   lookupIndicatorMock: vi.fn(),
   startLocalSpeechRecognitionMock: vi.fn(),
+  isLocalSpeechSupportedMock: vi.fn(),
 }));
 
 vi.mock("./engine", () => ({
@@ -34,6 +36,7 @@ vi.mock("./speech", async (importOriginal) => {
   return {
     ...original,
     startLocalSpeechRecognition: startLocalSpeechRecognitionMock,
+    isLocalSpeechSupported: isLocalSpeechSupportedMock,
   };
 });
 
@@ -95,8 +98,12 @@ describe("CHAN web flow", () => {
       provider: "tesseract",
       next_step: "POST /v1/analyze",
     });
+    isLocalSpeechSupportedMock.mockReset();
+    isLocalSpeechSupportedMock.mockReturnValue(true);
     startLocalSpeechRecognitionMock.mockImplementation(
-      async ({ onTranscript }) => {
+      async ({ onTranscript, onStart, onSound }) => {
+        onStart?.();
+        onSound?.(true);
         onTranscript("Không nói với ai và chuyển tiền ngay.", true);
         return { stop: vi.fn(), abort: vi.fn() };
       },
@@ -205,6 +212,119 @@ describe("CHAN web flow", () => {
       ),
     );
     expect(startLocalSpeechRecognitionMock).toHaveBeenCalledOnce();
+  });
+
+  it("shows a recording panel driven by the recogniser's own sound events", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    await user.click(
+      screen.getByRole("button", { name: "Đọc nội dung bằng giọng nói" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Đang thu âm — bác cứ nói")).toBeInTheDocument(),
+    );
+    expect(screen.getByRole("img", { name: "Đang nghe thấy tiếng" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Dừng thu âm/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("keeps saying it hears nothing until the recogniser reports sound", async () => {
+    const user = userEvent.setup();
+    startLocalSpeechRecognitionMock.mockImplementation(async ({ onStart }) => {
+      onStart?.();
+      return { stop: vi.fn(), abort: vi.fn() };
+    });
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    await user.click(
+      screen.getByRole("button", { name: "Đọc nội dung bằng giọng nói" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("img", { name: "Chưa nghe thấy tiếng" })).toBeInTheDocument(),
+    );
+    expect(screen.getByText(/Bác nói to hơn hoặc lại gần micro/)).toBeInTheDocument();
+  });
+
+  it("adds to the box on a second recording instead of replacing it", async () => {
+    const user = userEvent.setup();
+    const say = vi.fn();
+    startLocalSpeechRecognitionMock.mockImplementation(
+      async ({ onTranscript, onStart }) => {
+        onStart?.();
+        say.mockImplementation(onTranscript);
+        return { stop: vi.fn(), abort: vi.fn() };
+      },
+    );
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    const record = () =>
+      user.click(
+        screen.getByRole("button", {
+          name: /Đọc nội dung bằng giọng nói|Dừng thu âm/,
+        }),
+      );
+
+    await record();
+    say("Câu thứ nhất.", true);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Nội dung tin nhắn")).toHaveValue(
+        "Câu thứ nhất.",
+      ),
+    );
+
+    await record(); // stop
+    await record(); // start again
+    say("Câu thứ hai.", true);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Nội dung tin nhắn")).toHaveValue(
+        "Câu thứ nhất. Câu thứ hai.",
+      ),
+    );
+  });
+
+  it("stops recording when the user says stop", async () => {
+    const user = userEvent.setup();
+    const stop = vi.fn();
+    startLocalSpeechRecognitionMock.mockImplementation(async ({ onStart }) => {
+      onStart?.();
+      return { stop, abort: vi.fn() };
+    });
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    await user.click(
+      screen.getByRole("button", { name: "Đọc nội dung bằng giọng nói" }),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Dừng thu âm/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole("button", { name: /Dừng thu âm/ }));
+
+    expect(stop).toHaveBeenCalled();
+    expect(screen.queryByText("Đang thu âm — bác cứ nói")).not.toBeInTheDocument();
+  });
+
+  it("disables the mic button when the browser cannot transcribe on the device", async () => {
+    const user = userEvent.setup();
+    isLocalSpeechSupportedMock.mockReturnValue(false);
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+
+    expect(
+      screen.getByRole("button", { name: "Đọc nội dung bằng giọng nói" }),
+    ).toBeDisabled();
+    expect(screen.getByText(/tạm khoá nút nói/i)).toBeInTheDocument();
+    expect(startLocalSpeechRecognitionMock).not.toHaveBeenCalled();
   });
 
   it("explains the privacy-preserving lookup before searching", async () => {

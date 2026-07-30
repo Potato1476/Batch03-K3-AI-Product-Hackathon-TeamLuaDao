@@ -124,9 +124,34 @@ textarea:focus, input:focus { outline: 3px solid var(--ink-200); border-color: v
 .upload-zone.busy { cursor: progress; opacity: 0.72; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .voice-button { width: 100%; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 10px; border: 2px solid var(--brand); border-radius: 14px; color: var(--brand); background: var(--white); font-size: 17px; font-weight: 750; }
-.voice-button.listening { color: var(--on-color); border-color: var(--danger); background: var(--danger); animation: chanPulse 1.4s ease-in-out infinite; }
-.voice-button:disabled { cursor: progress; opacity: 0.65; }
+.voice-button.listening { color: var(--on-color); border-color: var(--danger); background: var(--danger); }
+.voice-button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.recording-panel { margin-top: 14px; padding: 14px 16px; border: 2px solid var(--ink-400); border-radius: 16px; background: var(--ink-50); }
+.recording-panel.live { border-color: var(--danger); background: var(--danger-bg); }
+.recording-head { display: flex; align-items: center; gap: 10px; }
+.recording-head strong { flex: 1; color: var(--ink-700); font-size: 18px; font-weight: 800; }
+.recording-panel.live .recording-head strong { color: var(--danger); }
+.recording-dot { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--ink-500); }
+.recording-panel.live .recording-dot { background: var(--danger); animation: chanPulse 1.2s ease-in-out infinite; }
+.recording-time { flex: none; color: var(--ink-600); font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.sound-bars { display: flex; align-items: flex-end; justify-content: center; gap: 6px; height: 34px; margin-top: 12px; }
+.sound-bars span { width: 8px; height: 8px; border-radius: 4px; background: var(--ink-400); transition: height 140ms ease; }
+.sound-bars.active span { background: var(--danger); animation: chanBars 0.9s ease-in-out infinite; }
+.sound-bars.active span:nth-child(2) { animation-delay: 0.12s; }
+.sound-bars.active span:nth-child(3) { animation-delay: 0.24s; }
+.sound-bars.active span:nth-child(4) { animation-delay: 0.36s; }
+.sound-bars.active span:nth-child(5) { animation-delay: 0.48s; }
+@keyframes chanBars { 0%, 100% { height: 8px; } 50% { height: 34px; } }
+.recording-panel p { margin: 10px 0 0; color: var(--ink-600); font-size: 16px; line-height: 1.5; }
+
 .input-status { margin: 10px 2px 0; color: var(--brand); font-size: 15px; font-weight: 700; line-height: 1.45; }
+.input-status.muted { color: var(--ink-600); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  .recording-panel.live .recording-dot { animation: none; }
+  .sound-bars.active span { animation: none; height: 22px; }
+}
 .cta { width: 100%; min-height: 64px; border: 0; border-radius: 16px; color: var(--on-color); background: var(--brand); font-size: 21px; font-weight: 800; margin-top: 16px; }
 .cta.danger { background: var(--danger); }
 .cta:disabled { cursor: not-allowed; background: var(--ink-400); }
