@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" width="960" height="320" role="img" aria-labelledby="title desc">
+  <title id="title">CHAN horizontal logo</title>
+  <desc id="desc">Umbrella and check mark symbol followed by the uppercase word CHAN, without diacritics.</desc>
+
+  <g transform="translate(15 -12) scale(.68)">
+    <path fill="#3F46B5" d="M72 252C96 174 164 122 256 112c-38 31-66 78-86 136-31-22-66-20-98 4Z"/>
+    <path fill="#2F9CE5" d="M170 248c20-58 48-105 86-136 38 31 66 78 86 136-26-18-54-25-86-25s-60 7-86 25Z"/>
+    <path fill="#9FC3EC" d="M256 112c92 10 160 62 184 140-32-24-67-26-98-4-20-58-48-105-86-136Z"/>
+    <path fill="#3F46B5" d="M249 112 253 91c1-7 5-11 10-11s9 4 10 11l4 21Z"/>
+    <path fill="#2563EB" d="m145 331 31-29 50 54 146-172 24 20-167 207Z"/>
+  </g>
+
+  <g fill="#3F46B5" aria-label="CHAN">
+    <!-- C -->
+    <path d="M515 150c-5-25-25-40-53-40-38 0-63 23-63 59s25 59 63 59c28 0 48-15 53-40h-28c-3 11-11 17-25 17-21 0-34-13-34-36s13-36 34-36c14 0 22 6 25 17Z"/>
+
+    <!-- H -->
+    <path d="M535 112h28v44h44v-44h28v114h-28v-47h-44v47h-28Z"/>
+
+    <!-- A -->
+    <path fill-rule="evenodd" d="M685 112h35l41 114h-30l-8-24h-42l-8 24h-29Zm17 29-14 39h28Z"/>
+
+    <!-- N -->
+    <path d="M775 112h31l44 72v-72h28v114h-31l-44-71v71h-28Z"/>
+  </g>
+</svg>
