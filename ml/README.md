@@ -84,3 +84,16 @@ scenarios.
 Generated data and artifacts stay outside Git by default. Commit metrics and a
 small reviewed golden set under the repository's `eval/` directory when the
 team is ready; do not commit private messages.
+
+## Continuous updates
+
+The synthetic corpus is a seed and regression fixture, not the live database.
+The product's private ingestion API, PostgreSQL migration, quarantine/review
+flow, daily trainer, and guarded model registry are documented in
+[`repo/codebase/api/README.md`](../repo/codebase/api/README.md).
+
+Daily training combines the stable base corpus with approved, L2-redacted
+scenarios from PostgreSQL. A candidate is evaluated against a separate frozen
+golden set and becomes active only if absolute safety gates and regression
+gates pass. Web and Android clients continue calling `/v1/analyze`; they never
+download the training database or call the internal training API.

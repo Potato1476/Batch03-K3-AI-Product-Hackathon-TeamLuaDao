@@ -237,7 +237,7 @@ class PhishingSignalModel:
         selected.sort(
             key=lambda item: (
                 _SIGNAL_PRIORITY[str(item["code"])],
-                float(item["confidence"]),
+                float(str(item["confidence"])),
             ),
             reverse=True,
         )

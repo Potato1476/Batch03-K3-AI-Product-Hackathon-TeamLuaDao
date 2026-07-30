@@ -16,6 +16,7 @@ def test_records_follow_schema_and_privacy_contract():
         assert set(record.signals) <= set(SIGNAL_CODES)
         assert record.synthetic is True
         assert record.consented is False
+        assert record.rights_basis == "synthetic"
         assert "@" not in record.text
     assert any(record.is_phishing for record in records)
     assert any(not record.is_phishing for record in records)

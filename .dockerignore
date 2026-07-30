@@ -1,0 +1,12 @@
+.git
+.DS_Store
+.local
+**/.venv
+**/.pytest_cache
+**/__pycache__
+**/*.egg-info
+**/*.pyc
+data
+tham-khao
+ml/artifacts
+ml/data/generated

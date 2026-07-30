@@ -23,6 +23,7 @@ class DatasetRecord:
     split: str
     synthetic: bool = True
     consented: bool = False
+    rights_basis: str = "synthetic"
     generator_version: str = GENERATOR_VERSION
 
     def validate(self) -> None:
@@ -47,8 +48,18 @@ class DatasetRecord:
         for code, confidence in self.signals.items():
             if not 0.0 <= float(confidence) <= 1.0:
                 raise ValueError(f"{code} confidence must be between 0 and 1")
-        if not self.synthetic and not self.consented:
-            raise ValueError("non-synthetic training text requires explicit consent")
+        if self.rights_basis not in {
+            "synthetic",
+            "explicit_consent",
+            "licensed_threat_intel",
+        }:
+            raise ValueError(f"invalid rights_basis: {self.rights_basis}")
+        if self.synthetic and self.rights_basis != "synthetic":
+            raise ValueError("synthetic records must use rights_basis=synthetic")
+        if not self.synthetic and self.rights_basis == "synthetic":
+            raise ValueError("non-synthetic records require a non-synthetic rights basis")
+        if self.rights_basis == "explicit_consent" and not self.consented:
+            raise ValueError("explicit_consent records require consented=true")
 
     def to_dict(self) -> dict[str, Any]:
         self.validate()

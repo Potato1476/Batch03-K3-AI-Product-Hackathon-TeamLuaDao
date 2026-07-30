@@ -19,6 +19,10 @@ FastAPI integration is shown in the
 [`ml/README.md` API section](../../ml/README.md#api-integration). Generated
 datasets and model artifacts are intentionally ignored by Git.
 
+New phishing scenarios are not limited to the committed synthetic generator.
+The database-backed ingestion, review, daily retraining, and guarded model
+promotion service is in [`api/`](api/README.md).
+
 **Mức prototype khai báo:** [ ] Sketch [ ] Mock [ ] Working
 *(Phải khớp thực tế và khớp `spec.md` §4 — rubric R5 chấm 2 điểm riêng cho việc khai đúng.)*
 

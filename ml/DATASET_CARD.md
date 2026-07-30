@@ -50,12 +50,14 @@ uncompressed canonical JSONL.
 - The generator uses no real person data.
 - URLs use the reserved `.invalid` top-level domain.
 - Accounts, phone numbers, amounts, names, and OTP values use L2 placeholders.
-- A non-synthetic record fails schema validation unless `consented=true`.
+- Non-synthetic rows declare either `explicit_consent` or
+  `licensed_threat_intel`; explicit-consent rows require `consented=true`.
 - Generated datasets and model artifacts are ignored by Git.
 
 Do not convert production messages into a training corpus automatically. A
-message may enter the long-lived scenario store only after L2 redaction and
-explicit user consent, as required by the architecture.
+user-derived message may enter the long-lived scenario store only after L2
+redaction and explicit user consent. Licensed threat-intelligence rows must
+come from a source whose data rights were verified.
 
 ## Known limitations
 
