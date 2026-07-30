@@ -71,8 +71,8 @@ services:
       CHAN_DETECTION_API_KEY: local-dev-detection-secret
       CHAN_MODEL_POLL_SECONDS: "60"
       CHAN_BOOTSTRAP_MODEL_PATH: /app/ml/artifacts/chan-signal-model.joblib
-      CHAN_BOOTSTRAP_MODEL_SHA256: 44a885db58d96d3b9dcd378504f9b329643fbfbd05518c8b146542fbd07e8445
-      CHAN_BOOTSTRAP_MODEL_VERSION: chan-signal-20260730
+      CHAN_BOOTSTRAP_MODEL_SHA256: 7b9e79e9535b27daf1d7fa56c97e5edc982d2bd4b2ff7c1629ecea669c0c66a5
+      CHAN_BOOTSTRAP_MODEL_VERSION: chan-signal-20260730.1
     expose: ["8003"]
     volumes:
       - model-registry:/var/lib/chan/model-registry:ro

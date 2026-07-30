@@ -1,10 +1,10 @@
 {
-  "records": 24840,
-  "phishing_records": 13602,
-  "legitimate_records": 11238,
-  "phishing_recall": 0.997206,
-  "legitimate_false_positive_rate": 0.005695,
-  "risk_accuracy": 0.692069,
+  "records": 24819,
+  "phishing_records": 13554,
+  "legitimate_records": 11265,
+  "phishing_recall": 0.997344,
+  "legitimate_false_positive_rate": 0.005593,
+  "risk_accuracy": 0.678271,
   "acceptance": {
     "recall_at_least_0_90": true,
     "false_positive_below_0_15": true,
@@ -14,172 +14,172 @@
   },
   "by_signal": {
     "mao_danh_tham_quyen": {
-      "precision": 0.833098,
-      "recall": 0.640855,
-      "f1": 0.72444,
-      "support": 6457
+      "precision": 0.818281,
+      "recall": 0.582866,
+      "f1": 0.680797,
+      "support": 6420
     },
     "yeu_cau_bi_mat": {
-      "precision": 0.881926,
-      "recall": 0.686826,
-      "f1": 0.772244,
-      "support": 5655
+      "precision": 0.881978,
+      "recall": 0.688913,
+      "f1": 0.773581,
+      "support": 5619
     },
     "ap_luc_thoi_gian": {
-      "precision": 0.966151,
-      "recall": 0.971935,
-      "f1": 0.969035,
-      "support": 12863
+      "precision": 0.965818,
+      "recall": 0.960694,
+      "f1": 0.96325,
+      "support": 12441
     },
     "tk_ca_nhan": {
-      "precision": 0.999163,
-      "recall": 0.761371,
-      "f1": 0.864208,
-      "support": 10971
+      "precision": 0.998887,
+      "recall": 0.819859,
+      "f1": 0.900562,
+      "support": 10947
     },
     "cai_app_ngoai": {
       "precision": 1.0,
-      "recall": 0.436771,
-      "f1": 0.60799,
-      "support": 2230
+      "recall": 0.437838,
+      "f1": 0.609023,
+      "support": 2220
     },
     "loi_ich_bat_thuong": {
-      "precision": 0.803581,
-      "recall": 0.589715,
-      "f1": 0.680234,
-      "support": 5328
+      "precision": 0.785606,
+      "recall": 0.588091,
+      "f1": 0.672649,
+      "support": 5290
     },
     "chuyen_kenh": {
-      "precision": 0.81765,
-      "recall": 0.554059,
-      "f1": 0.660529,
-      "support": 7575
+      "precision": 0.824964,
+      "recall": 0.565733,
+      "f1": 0.671188,
+      "support": 7173
     },
     "yeu_cau_otp": {
-      "precision": 0.752005,
-      "recall": 0.43054,
-      "f1": 0.547578,
-      "support": 2613
+      "precision": 0.753691,
+      "recall": 0.432755,
+      "f1": 0.549816,
+      "support": 2595
     }
   },
   "by_scenario": {
     "account_recovery": {
-      "records": 381,
-      "phishing_records": 381,
+      "records": 389,
+      "phishing_records": 389,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "business_invoice_change": {
-      "records": 336,
-      "phishing_records": 336,
+      "records": 349,
+      "phishing_records": 349,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "deepfake_relative": {
-      "records": 405,
-      "phishing_records": 405,
+      "records": 406,
+      "phishing_records": 406,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "deepfake_sextortion": {
-      "records": 382,
-      "phishing_records": 382,
+      "records": 379,
+      "phishing_records": 379,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "ecommerce_refund": {
-      "records": 355,
-      "phishing_records": 355,
+      "records": 356,
+      "phishing_records": 356,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_bank_otp": {
-      "records": 387,
-      "phishing_records": 387,
+      "records": 376,
+      "phishing_records": 376,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_charity_hospital": {
-      "records": 419,
-      "phishing_records": 419,
+      "records": 406,
+      "phishing_records": 406,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_child_model": {
+      "records": 376,
+      "phishing_records": 376,
+      "legitimate_records": 0,
+      "phishing_recall": 1.0
+    },
+    "fake_customs_parcel": {
+      "records": 400,
+      "phishing_records": 400,
+      "legitimate_records": 0,
+      "phishing_recall": 1.0
+    },
+    "fake_event_ticket": {
       "records": 385,
       "phishing_records": 385,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
-    "fake_customs_parcel": {
-      "records": 413,
-      "phishing_records": 413,
-      "legitimate_records": 0,
-      "phishing_recall": 1.0
-    },
-    "fake_event_ticket": {
-      "records": 394,
-      "phishing_records": 394,
-      "legitimate_records": 0,
-      "phishing_recall": 1.0
-    },
     "fake_health_insurance": {
-      "records": 378,
-      "phishing_records": 378,
+      "records": 375,
+      "phishing_records": 375,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_investigation": {
-      "records": 402,
-      "phishing_records": 402,
+      "records": 389,
+      "phishing_records": 389,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_job": {
-      "records": 378,
-      "phishing_records": 378,
+      "records": 381,
+      "phishing_records": 381,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_loan_finance": {
-      "records": 373,
-      "phishing_records": 373,
+      "records": 374,
+      "phishing_records": 374,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_marketplace_deposit": {
-      "records": 369,
-      "phishing_records": 369,
+      "records": 382,
+      "phishing_records": 382,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_prize": {
-      "records": 337,
-      "phishing_records": 337,
+      "records": 328,
+      "phishing_records": 328,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_public_service_app": {
-      "records": 380,
-      "phishing_records": 380,
+      "records": 381,
+      "phishing_records": 381,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_rental_deposit": {
-      "records": 409,
-      "phishing_records": 409,
+      "records": 399,
+      "phishing_records": 399,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_school": {
-      "records": 369,
-      "phishing_records": 369,
+      "records": 365,
+      "phishing_records": 365,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_shipper": {
-      "records": 377,
-      "phishing_records": 377,
+      "records": 394,
+      "phishing_records": 394,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
@@ -190,14 +190,14 @@
       "phishing_recall": 1.0
     },
     "fake_traffic_fine": {
-      "records": 342,
-      "phishing_records": 342,
+      "records": 345,
+      "phishing_records": 345,
       "legitimate_records": 0,
-      "phishing_recall": 0.912281
+      "phishing_recall": 0.918841
     },
     "fake_transfer_receipt": {
-      "records": 372,
-      "phishing_records": 372,
+      "records": 376,
+      "phishing_records": 376,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
@@ -208,245 +208,245 @@
       "phishing_recall": 0.979112
     },
     "fake_utility": {
-      "records": 350,
-      "phishing_records": 350,
+      "records": 354,
+      "phishing_records": 354,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "fake_vneid_biometric": {
-      "records": 386,
-      "phishing_records": 386,
+      "records": 378,
+      "phishing_records": 378,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "family_emergency": {
-      "records": 362,
-      "phishing_records": 362,
+      "records": 366,
+      "phishing_records": 366,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "gambling_tip": {
-      "records": 382,
-      "phishing_records": 382,
-      "legitimate_records": 0,
-      "phishing_recall": 1.0
-    },
-    "investment_crypto": {
-      "records": 393,
-      "phishing_records": 393,
-      "legitimate_records": 0,
-      "phishing_recall": 1.0
-    },
-    "legitimate_account_recovery": {
-      "records": 501,
-      "phishing_records": 0,
-      "legitimate_records": 501,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_app_notice": {
-      "records": 478,
-      "phishing_records": 0,
-      "legitimate_records": 478,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_bank_notice": {
-      "records": 442,
-      "phishing_records": 0,
-      "legitimate_records": 442,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_business_invoice": {
-      "records": 462,
-      "phishing_records": 0,
-      "legitimate_records": 462,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_channel_change": {
-      "records": 466,
-      "phishing_records": 0,
-      "legitimate_records": 466,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_charity_notice": {
-      "records": 482,
-      "phishing_records": 0,
-      "legitimate_records": 482,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_customs_notice": {
-      "records": 469,
-      "phishing_records": 0,
-      "legitimate_records": 469,
-      "false_positive_rate": 0.004264
-    },
-    "legitimate_delivery_notice": {
-      "records": 477,
-      "phishing_records": 0,
-      "legitimate_records": 477,
-      "false_positive_rate": 0.002096
-    },
-    "legitimate_ecommerce_refund": {
-      "records": 504,
-      "phishing_records": 0,
-      "legitimate_records": 504,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_event_ticket": {
-      "records": 448,
-      "phishing_records": 0,
-      "legitimate_records": 448,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_family_chat": {
-      "records": 464,
-      "phishing_records": 0,
-      "legitimate_records": 464,
-      "false_positive_rate": 0.006466
-    },
-    "legitimate_investment_warning": {
-      "records": 467,
-      "phishing_records": 0,
-      "legitimate_records": 467,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_job": {
-      "records": 438,
-      "phishing_records": 0,
-      "legitimate_records": 438,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_marketplace": {
-      "records": 482,
-      "phishing_records": 0,
-      "legitimate_records": 482,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_otp_warning": {
-      "records": 461,
-      "phishing_records": 0,
-      "legitimate_records": 461,
-      "false_positive_rate": 0.002169
-    },
-    "legitimate_qr_payment": {
-      "records": 445,
-      "phishing_records": 0,
-      "legitimate_records": 445,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_rental": {
-      "records": 467,
-      "phishing_records": 0,
-      "legitimate_records": 467,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_school_notice": {
-      "records": 474,
-      "phishing_records": 0,
-      "legitimate_records": 474,
-      "false_positive_rate": 0.109705
-    },
-    "legitimate_sim_notice": {
-      "records": 458,
-      "phishing_records": 0,
-      "legitimate_records": 458,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_tech_support": {
-      "records": 482,
-      "phishing_records": 0,
-      "legitimate_records": 482,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_traffic_notice": {
-      "records": 442,
-      "phishing_records": 0,
-      "legitimate_records": 442,
-      "false_positive_rate": 0.0
-    },
-    "legitimate_utility_notice": {
-      "records": 477,
-      "phishing_records": 0,
-      "legitimate_records": 477,
-      "false_positive_rate": 0.002096
-    },
-    "legitimate_vneid_notice": {
-      "records": 458,
-      "phishing_records": 0,
-      "legitimate_records": 458,
-      "false_positive_rate": 0.008734
-    },
-    "malicious_qr_payment": {
-      "records": 389,
-      "phishing_records": 389,
-      "legitimate_records": 0,
-      "phishing_recall": 1.0
-    },
-    "online_kidnapping": {
       "records": 370,
       "phishing_records": 370,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
-    "ordinary_message": {
-      "records": 494,
+    "investment_crypto": {
+      "records": 398,
+      "phishing_records": 398,
+      "legitimate_records": 0,
+      "phishing_recall": 1.0
+    },
+    "legitimate_account_recovery": {
+      "records": 507,
       "phishing_records": 0,
-      "legitimate_records": 494,
+      "legitimate_records": 507,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_app_notice": {
+      "records": 472,
+      "phishing_records": 0,
+      "legitimate_records": 472,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_bank_notice": {
+      "records": 452,
+      "phishing_records": 0,
+      "legitimate_records": 452,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_business_invoice": {
+      "records": 465,
+      "phishing_records": 0,
+      "legitimate_records": 465,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_channel_change": {
+      "records": 448,
+      "phishing_records": 0,
+      "legitimate_records": 448,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_charity_notice": {
+      "records": 485,
+      "phishing_records": 0,
+      "legitimate_records": 485,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_customs_notice": {
+      "records": 463,
+      "phishing_records": 0,
+      "legitimate_records": 463,
+      "false_positive_rate": 0.00432
+    },
+    "legitimate_delivery_notice": {
+      "records": 481,
+      "phishing_records": 0,
+      "legitimate_records": 481,
+      "false_positive_rate": 0.002079
+    },
+    "legitimate_ecommerce_refund": {
+      "records": 489,
+      "phishing_records": 0,
+      "legitimate_records": 489,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_event_ticket": {
+      "records": 449,
+      "phishing_records": 0,
+      "legitimate_records": 449,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_family_chat": {
+      "records": 470,
+      "phishing_records": 0,
+      "legitimate_records": 470,
+      "false_positive_rate": 0.006383
+    },
+    "legitimate_investment_warning": {
+      "records": 478,
+      "phishing_records": 0,
+      "legitimate_records": 478,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_job": {
+      "records": 458,
+      "phishing_records": 0,
+      "legitimate_records": 458,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_marketplace": {
+      "records": 480,
+      "phishing_records": 0,
+      "legitimate_records": 480,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_otp_warning": {
+      "records": 450,
+      "phishing_records": 0,
+      "legitimate_records": 450,
+      "false_positive_rate": 0.002222
+    },
+    "legitimate_qr_payment": {
+      "records": 451,
+      "phishing_records": 0,
+      "legitimate_records": 451,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_rental": {
+      "records": 475,
+      "phishing_records": 0,
+      "legitimate_records": 475,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_school_notice": {
+      "records": 483,
+      "phishing_records": 0,
+      "legitimate_records": 483,
+      "false_positive_rate": 0.10766
+    },
+    "legitimate_sim_notice": {
+      "records": 457,
+      "phishing_records": 0,
+      "legitimate_records": 457,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_tech_support": {
+      "records": 485,
+      "phishing_records": 0,
+      "legitimate_records": 485,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_traffic_notice": {
+      "records": 443,
+      "phishing_records": 0,
+      "legitimate_records": 443,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_utility_notice": {
+      "records": 475,
+      "phishing_records": 0,
+      "legitimate_records": 475,
+      "false_positive_rate": 0.0
+    },
+    "legitimate_vneid_notice": {
+      "records": 454,
+      "phishing_records": 0,
+      "legitimate_records": 454,
+      "false_positive_rate": 0.008811
+    },
+    "malicious_qr_payment": {
+      "records": 390,
+      "phishing_records": 390,
+      "legitimate_records": 0,
+      "phishing_recall": 1.0
+    },
+    "online_kidnapping": {
+      "records": 377,
+      "phishing_records": 377,
+      "legitimate_records": 0,
+      "phishing_recall": 1.0
+    },
+    "ordinary_message": {
+      "records": 495,
+      "phishing_records": 0,
+      "legitimate_records": 495,
       "false_positive_rate": 0.0
     },
     "overseas_job_trafficking": {
-      "records": 388,
-      "phishing_records": 388,
+      "records": 382,
+      "phishing_records": 382,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "recovery_refund": {
-      "records": 407,
-      "phishing_records": 407,
+      "records": 414,
+      "phishing_records": 414,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "romance_investment": {
-      "records": 352,
-      "phishing_records": 352,
+      "records": 343,
+      "phishing_records": 343,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "social_account_takeover": {
-      "records": 352,
-      "phishing_records": 352,
+      "records": 347,
+      "phishing_records": 347,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     },
     "tech_support_screen_share": {
-      "records": 371,
-      "phishing_records": 371,
+      "records": 367,
+      "phishing_records": 367,
       "legitimate_records": 0,
       "phishing_recall": 1.0
     }
   },
   "scenario_coverage": {
     "phishing_scenario_count": 36,
-    "minimum_phishing_scenario_recall": 0.912281,
+    "minimum_phishing_scenario_recall": 0.918841,
     "threshold": 0.8,
     "below_threshold": [],
-    "maximum_legitimate_scenario_false_positive_rate": 0.109705,
+    "maximum_legitimate_scenario_false_positive_rate": 0.10766,
     "false_positive_threshold": 0.15,
     "above_false_positive_threshold": [],
     "passed": true
   },
   "risk_confusion": {
-    "high->high": 4153,
-    "high->medium": 758,
-    "medium->high": 6417,
-    "medium->medium": 1864,
-    "medium->unknown": 38,
-    "unknown->high": 363,
-    "unknown->medium": 73,
-    "unknown->unknown": 11174
+    "high->high": 4115,
+    "high->medium": 752,
+    "medium->high": 6364,
+    "medium->medium": 1517,
+    "medium->unknown": 36,
+    "unknown->high": 366,
+    "unknown->medium": 467,
+    "unknown->unknown": 11202
   },
   "truncated": {
-    "records": 1917,
-    "phishing_recall": 0.962999
+    "records": 1935,
+    "phishing_recall": 0.964809
   },
   "split": "test",
   "synthetic_only": true

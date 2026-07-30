@@ -1,0 +1,73 @@
+{
+  "run_name": "chan-ml-synthetic-v1.1",
+  "engine_version": "ml-0.3.1",
+  "generator_version": "synthetic-1.1.0",
+  "scenario_catalog_version": "vn-scam-catalog-2026.07",
+  "seed": 20260730,
+  "dataset": {
+    "records": 250000,
+    "train": 200012,
+    "validation": 25169,
+    "test": 24819,
+    "phishing": 137848,
+    "non_phishing": 112152,
+    "fake_shipper": 3712,
+    "legitimate_delivery_notice": 4705,
+    "phishing_scenario_families": 36,
+    "contains_real_person_data": false,
+    "redaction_state": "L2 placeholders only",
+    "content_sha256_uncompressed_jsonl": "45f093fa3d9426c05094dc9a8d04b09552a234943e3d0a92695101b62113d50d"
+  },
+  "model": {
+    "algorithm": "word+character TF-IDF eight-signal one-vs-rest logistic regression plus whole-message word TF-IDF scam-intent logistic regression, protective-context suppression, bounded QR and delivery-payment context boosts, deterministic L4 policy",
+    "signal_word_feature_budget": 40000,
+    "signal_character_feature_budget": 80000,
+    "scam_word_feature_budget": 60000,
+    "actual_signal_features": 14019,
+    "actual_scam_features": 11607,
+    "regularization_c": 4.0,
+    "scam_regularization_c": 1.0,
+    "probability_temperature": 0.35,
+    "scam_prior_weight": 0.405,
+    "artifact_sha256": "7b9e79e9535b27daf1d7fa56c97e5edc982d2bd4b2ff7c1629ecea669c0c66a5",
+    "artifact_size_bytes": 948981
+  },
+  "validation": {
+    "phishing_recall": 0.99581,
+    "legitimate_false_positive_rate": 0.003002,
+    "risk_accuracy": 0.711868,
+    "fake_shipper_recall": 0.920765,
+    "legitimate_delivery_false_positive_rate": 0.0,
+    "minimum_phishing_scenario_recall": 0.920765,
+    "maximum_legitimate_scenario_false_positive_rate": 0.039735,
+    "truncated_phishing_recall": 0.971223,
+    "acceptance_passed": true
+  },
+  "test_regression": {
+    "phishing_recall": 0.997344,
+    "legitimate_false_positive_rate": 0.005593,
+    "risk_accuracy": 0.678271,
+    "fake_shipper_passed": 394,
+    "fake_shipper_total": 394,
+    "fake_shipper_recall": 1.0,
+    "legitimate_delivery_false_positives": 1,
+    "legitimate_delivery_total": 481,
+    "legitimate_delivery_false_positive_rate": 0.002079,
+    "minimum_phishing_scenario_recall": 0.918841,
+    "maximum_legitimate_scenario_false_positive_rate": 0.10766,
+    "truncated_phishing_recall": 0.964809,
+    "acceptance_passed": true
+  },
+  "targeted_regression": {
+    "passed": 6,
+    "total": 6,
+    "details": "shipper-regression-20260730.json"
+  },
+  "limitations": [
+    "Synthetic performance is not production performance.",
+    "The targeted context boost requires a delivery marker, money request, and unusual handoff context together.",
+    "Scenario coverage does not guarantee coverage of future wording or attack mechanics.",
+    "The model has not passed a frozen, permitted, human-labelled real-message golden set.",
+    "The probability prior must be recalibrated on real Vietnamese traffic before production."
+  ]
+}

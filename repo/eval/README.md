@@ -13,6 +13,11 @@ explicitly a regression set: the first opening exposed negation failures and
 was used for error analysis. It must not be presented as an untouched external
 benchmark.
 
+The fake-shipper wording expansion and retrained release are recorded in
+[`chan-ml-synthetic-v1.1.json`](chan-ml-synthetic-v1.1.json). The complete
+targeted pass/fail rows, including legitimate hard negatives, are in
+[`shipper-regression-20260730.json`](shipper-regression-20260730.json).
+
 The full local outputs are generated under:
 
 - `../codebase/ml/data/generated/chan-synthetic.jsonl.gz`
