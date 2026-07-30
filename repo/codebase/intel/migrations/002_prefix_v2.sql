@@ -28,6 +28,8 @@ ALTER TABLE threat_indicators
 UPDATE threat_indicators
 SET prefix = substring(encode(hash, 'hex') FROM 1 FOR 5);
 ALTER TABLE threat_indicators
+    DROP CONSTRAINT IF EXISTS threat_indicators_prefix_v2_check;
+ALTER TABLE threat_indicators
     ADD CONSTRAINT threat_indicators_prefix_v2_check
     CHECK (prefix = substring(encode(hash, 'hex') FROM 1 FOR 5));
 
@@ -35,6 +37,8 @@ ALTER TABLE indicator_reports
     ALTER COLUMN prefix TYPE char(5);
 UPDATE indicator_reports
 SET prefix = substring(encode(hash, 'hex') FROM 1 FOR 5);
+ALTER TABLE indicator_reports
+    DROP CONSTRAINT IF EXISTS indicator_reports_prefix_v2_check;
 ALTER TABLE indicator_reports
     ADD CONSTRAINT indicator_reports_prefix_v2_check
     CHECK (prefix = substring(encode(hash, 'hex') FROM 1 FOR 5));

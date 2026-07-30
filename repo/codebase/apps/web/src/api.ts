@@ -183,7 +183,9 @@ export async function analyzeOnServer(input: {
   return (await response.json()) as AnalyzeResponse;
 }
 
-const OCR_MAX_BYTES = 6 * 1024 * 1024;
+// Vercel Functions accept request bodies up to 4.5 MB. Keep enough multipart
+// headroom so the browser rejects oversized screenshots before uploading.
+const OCR_MAX_BYTES = 4 * 1024 * 1024;
 const OCR_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 export async function extractTextFromImage(image: File): Promise<OcrResponse> {

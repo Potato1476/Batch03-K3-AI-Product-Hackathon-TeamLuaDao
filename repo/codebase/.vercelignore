@@ -1,0 +1,11 @@
+**/.env
+**/.pytest_cache
+**/__pycache__
+**/*.pyc
+**/node_modules
+**/dist
+**/tests
+ml/artifacts/candidates
+ml/data/generated/*
+!ml/data/generated/chan-synthetic.jsonl.gz
+!ml/data/generated/chan-synthetic.jsonl.gz.manifest.json

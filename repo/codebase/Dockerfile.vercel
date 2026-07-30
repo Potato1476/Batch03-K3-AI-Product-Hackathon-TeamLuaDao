@@ -1,0 +1,61 @@
+FROM node:22-alpine AS web-build
+
+WORKDIR /build/web
+COPY apps/web/package.json apps/web/package-lock.json ./
+RUN npm ci
+COPY apps/web/ ./
+RUN npm run build
+
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DEFAULT_TIMEOUT=300 \
+    PIP_RETRIES=10 \
+    PORT=80 \
+    CHAN_GATEWAY_PORT=8000 \
+    CHAN_RULES_DIR=/app/rules \
+    CHAN_OCR_PROVIDER=tesseract \
+    CHAN_OCR_LANGUAGE=vie+eng \
+    CHAN_OCR_MAX_BYTES=4194304 \
+    CHAN_OCR_TIMEOUT_SECONDS=25 \
+    CHAN_TRAINING_API_URL=http://127.0.0.1:8001 \
+    CHAN_INTEL_API_URL=http://127.0.0.1:8002 \
+    CHAN_DETECTION_API_URL=http://127.0.0.1:8003 \
+    CHAN_MODEL_POLL_SECONDS=300 \
+    CHAN_BOOTSTRAP_MODEL_PATH=/app/ml/artifacts/chan-signal-model.joblib \
+    CHAN_BOOTSTRAP_MODEL_SHA256=14a9c1d13855af3090255c481bc0e5be39f9d835c21ada41b3d7936764c11b8b \
+    CHAN_BOOTSTRAP_MODEL_VERSION=chan-signal-20260730.3 \
+    CHAN_MODEL_ARTIFACT_ROOT=/tmp/chan/model-registry \
+    CHAN_BASE_DATASET_PATH=/app/ml/data/generated/chan-synthetic.jsonl.gz \
+    CHAN_GOLDEN_DATASET_PATH=/app/ml/data/generated/frozen-golden.jsonl.gz \
+    CHAN_INTEL_USER_AGENT=chan-vercel/ops@example.invalid \
+    CHAN_LOOKUP_PREFIX_LENGTH=5
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        gettext-base \
+        nginx \
+        supervisor \
+        tesseract-ocr \
+        tesseract-ocr-eng \
+        tesseract-ocr-vie \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY ml /app/ml
+COPY api /app/api
+COPY intel /app/intel
+COPY detection /app/detection
+COPY gateway /app/gateway
+COPY rules /app/rules
+COPY deploy/vercel /app/deploy/vercel
+COPY --from=web-build /build/web/dist /usr/share/nginx/html
+
+RUN --mount=type=cache,id=chan-vercel-pip,target=/root/.cache/pip \
+    python -m pip install /app/ml /app/api /app/intel /app/detection /app/gateway \
+    && chmod 0755 /app/deploy/vercel/start.sh /app/deploy/vercel/start-web.sh \
+    && mkdir -p /tmp/chan/model-registry /tmp/nginx /var/lib/nginx /var/log/nginx
+
+CMD ["/app/deploy/vercel/start.sh"]
