@@ -1,4 +1,4 @@
-# Nhóm LuaDao · CHẮN — Trợ lý chống lừa đảo
+# Nhóm LuaDao · CHAN — Trợ lý chống lừa đảo
 
 Hướng: [ ] A — VLearn · [ ] B — Trợ lý Học viên · [x] C — Làn mở
 Loại: [ ] Tối ưu tính năng có sẵn · [ ] Tính năng mới
@@ -11,6 +11,8 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
 
 - [`docs/CHAN-ARCHITECTURE.md`](docs/CHAN-ARCHITECTURE.md): nguồn sự thật duy
   nhất về kiến trúc và các bất biến bảo mật.
+- [`design/`](design/README.md): giao kèo thiết kế — màu, chữ, khoảng cách,
+  component và layout. Đọc trước khi viết dòng UI đầu tiên.
 - [`codebase/ml/`](codebase/ml/README.md): generator dữ liệu, model 8 tín hiệu,
   L4 policy và evaluation.
 - [`codebase/api/`](codebase/api/README.md): PostgreSQL ingestion, quarantine,
@@ -50,6 +52,7 @@ repo/
 ├── README.md          ← file này: thành viên + phân công
 ├── spec.md            ← AI Spec (hạn cứng: commit trước 23:59 ngày 1)
 ├── demo-slides.pdf    ← slide 6 trang theo 02-guide.md §5.1
+├── design/            ← giao kèo layout & theme (cả nhóm ký chốt)
 ├── codebase/          ← prototype (ghi rõ phần nào mock)
 ├── eval/              ← golden set + bảng kết quả các lượt chạy
 ├── validation/        ← feedback log từ vòng user test
