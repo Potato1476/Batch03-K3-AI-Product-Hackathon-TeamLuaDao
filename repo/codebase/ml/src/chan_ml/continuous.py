@@ -13,6 +13,10 @@ class PromotionPolicy:
     maximum_recall_regression: float = 0.02
     maximum_false_positive_regression: float = 0.02
     minimum_golden_records: int = 130
+    minimum_scenario_recall: float = 0.75
+    minimum_scenario_records: int = 3
+    minimum_scenario_families: int = 0
+    maximum_scenario_false_positive_rate: float = 0.15
 
 
 @dataclass(frozen=True)
@@ -21,9 +25,7 @@ class PromotionDecision:
     reasons: tuple[str, ...]
 
 
-def _metric_float(
-    metrics: Mapping[str, object], key: str, default: float
-) -> float:
+def _metric_float(metrics: Mapping[str, object], key: str, default: float) -> float:
     value = metrics.get(key, default)
     if isinstance(value, (int, float, str)):
         return float(value)
@@ -53,9 +55,7 @@ def decide_promotion(
     )
 
     if records < rules.minimum_golden_records:
-        reasons.append(
-            f"golden_set_too_small:{records}<{rules.minimum_golden_records}"
-        )
+        reasons.append(f"golden_set_too_small:{records}<{rules.minimum_golden_records}")
     if recall < rules.minimum_phishing_recall:
         reasons.append(
             f"recall_below_gate:{recall:.6f}<{rules.minimum_phishing_recall:.6f}"
@@ -85,4 +85,50 @@ def decide_promotion(
                 f"{false_positive_rate:.6f}>"
                 f"{active_false_positive_rate + rules.maximum_false_positive_regression:.6f}"
             )
+
+    if rules.minimum_scenario_families:
+        raw_by_scenario = candidate.get("by_scenario")
+        by_scenario = raw_by_scenario if isinstance(raw_by_scenario, Mapping) else {}
+        qualifying: dict[str, float] = {}
+        qualifying_legitimate: dict[str, float] = {}
+        for scenario, raw_metrics in by_scenario.items():
+            if not isinstance(raw_metrics, Mapping):
+                continue
+            phishing_records = _metric_int(raw_metrics, "phishing_records", 0)
+            if phishing_records < rules.minimum_scenario_records:
+                legitimate_records = _metric_int(raw_metrics, "legitimate_records", 0)
+                if legitimate_records >= rules.minimum_scenario_records:
+                    qualifying_legitimate[str(scenario)] = _metric_float(
+                        raw_metrics, "false_positive_rate", 1.0
+                    )
+            else:
+                qualifying[str(scenario)] = _metric_float(
+                    raw_metrics, "phishing_recall", 0.0
+                )
+        if len(qualifying) < rules.minimum_scenario_families:
+            reasons.append(
+                "scenario_families_below_gate:"
+                f"{len(qualifying)}<{rules.minimum_scenario_families}"
+            )
+        below_gate = sorted(
+            (scenario, recall)
+            for scenario, recall in qualifying.items()
+            if recall < rules.minimum_scenario_recall
+        )
+        reasons.extend(
+            "scenario_recall_below_gate:"
+            f"{scenario}:{recall:.6f}<{rules.minimum_scenario_recall:.6f}"
+            for scenario, recall in below_gate
+        )
+        false_positive_above_gate = sorted(
+            (scenario, false_positive_rate)
+            for scenario, false_positive_rate in qualifying_legitimate.items()
+            if false_positive_rate >= rules.maximum_scenario_false_positive_rate
+        )
+        reasons.extend(
+            "scenario_false_positive_at_or_above_gate:"
+            f"{scenario}:{false_positive_rate:.6f}>="
+            f"{rules.maximum_scenario_false_positive_rate:.6f}"
+            for scenario, false_positive_rate in false_positive_above_gate
+        )
     return PromotionDecision(promote=not reasons, reasons=tuple(reasons))

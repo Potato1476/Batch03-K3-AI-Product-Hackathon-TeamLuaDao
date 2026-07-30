@@ -39,9 +39,7 @@ class AppConfig:
     def from_environment(cls) -> "AppConfig":
         return cls(
             database_url=os.environ.get("CHAN_DATABASE_URL", ""),
-            api_keys=_parse_api_keys(
-                os.environ.get("CHAN_TRAINING_API_KEYS", "")
-            ),
+            api_keys=_parse_api_keys(os.environ.get("CHAN_TRAINING_API_KEYS", "")),
             artifact_root=Path(
                 os.environ.get(
                     "CHAN_MODEL_ARTIFACT_ROOT", "/var/lib/chan/model-registry"
@@ -67,17 +65,25 @@ class AppConfig:
                     os.environ.get("CHAN_MINIMUM_PHISHING_RECALL", "0.90")
                 ),
                 maximum_false_positive_rate=float(
-                    os.environ.get(
-                        "CHAN_MAXIMUM_FALSE_POSITIVE_RATE", "0.15"
-                    )
+                    os.environ.get("CHAN_MAXIMUM_FALSE_POSITIVE_RATE", "0.15")
                 ),
                 maximum_recall_regression=float(
                     os.environ.get("CHAN_MAXIMUM_RECALL_REGRESSION", "0.02")
                 ),
                 maximum_false_positive_regression=float(
-                    os.environ.get(
-                        "CHAN_MAXIMUM_FALSE_POSITIVE_REGRESSION", "0.02"
-                    )
+                    os.environ.get("CHAN_MAXIMUM_FALSE_POSITIVE_REGRESSION", "0.02")
+                ),
+                minimum_scenario_recall=float(
+                    os.environ.get("CHAN_MINIMUM_SCENARIO_RECALL", "0.75")
+                ),
+                minimum_scenario_records=int(
+                    os.environ.get("CHAN_MINIMUM_SCENARIO_RECORDS", "3")
+                ),
+                minimum_scenario_families=int(
+                    os.environ.get("CHAN_MINIMUM_SCENARIO_FAMILIES", "20")
+                ),
+                maximum_scenario_false_positive_rate=float(
+                    os.environ.get("CHAN_MAXIMUM_SCENARIO_FALSE_POSITIVE_RATE", "0.15")
                 ),
             ),
             live_example_repeat=max(

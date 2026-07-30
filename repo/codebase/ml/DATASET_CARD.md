@@ -7,7 +7,7 @@ eight behavioral signals in `CHAN-ARCHITECTURE.md`. It is not a generic spam
 dataset. Every record is designed for the L2 → L3 boundary, after personal
 information has been replaced with placeholders.
 
-The generator creates 100,000 records by default and can create millions
+The documented v1 run creates 250,000 records and the generator can create millions
 without committing a large generated file to Git.
 
 ## Schema
@@ -34,12 +34,15 @@ uncompressed canonical JSONL.
 
 ## Composition
 
-- Scam scenarios: fake investigations, OTP theft, malicious APK installation,
-  fake prizes, fake jobs, school impersonation, utility impersonation, and
-  family-emergency impersonation.
+- Scam scenarios: 36 versioned Vietnamese families spanning impersonation,
+  OTP, malicious apps, VNeID/SIM/traffic services, online kidnapping,
+  deepfake and sextortion, e-commerce and delivery, investment/romance,
+  recovery, QR/receipt/invoice attacks, fake recruitment, and deposits.
 - Hard negatives: legitimate OTP warnings, bank alerts, school deadlines,
   utility notices, store-delivered app updates, private family surprises,
-  normal recruitment, and legitimate channel changes.
+  normal recruitment, legitimate channel changes, verified e-commerce
+  refunds, QR payments, investment warnings, SIM/traffic notices, charity,
+  invoices, rentals, tickets, and technical support.
 - Perturbations: missing Vietnamese diacritics, teencode, inserted separators,
   casing, whitespace, and notification truncation.
 - Split strategy: templates are assigned to exactly one split. Test and
@@ -69,4 +72,7 @@ consented, redacted sources and evaluated separately.
 
 The generator should be expanded when feedback identifies a missed scenario,
 but test cases that triggered a change must remain in a frozen regression set.
-Never tune on the final test split.
+The v1 synthetic test exposed negation failures and was used for error
+analysis, so it is now a regression set rather than an untouched benchmark.
+Future production decisions must use a separately frozen real-message golden
+set that is never used for tuning.

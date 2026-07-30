@@ -1,4 +1,5 @@
 from chan_ml.constants import SIGNAL_CODES
+from chan_ml.scenario_catalog import ADVISORY_SOURCES, SCENARIO_CATALOG
 from chan_ml.synthetic import ALL_TEMPLATES, generate_records
 
 
@@ -32,17 +33,38 @@ def test_template_text_is_held_out_by_split():
         template_ids_by_split["validation"]
     )
     assert template_ids_by_split["train"].isdisjoint(template_ids_by_split["test"])
-    assert template_ids_by_split["validation"].isdisjoint(
-        template_ids_by_split["test"]
-    )
+    assert template_ids_by_split["validation"].isdisjoint(template_ids_by_split["test"])
+
+
+def test_every_catalogued_scam_has_split_coverage_and_valid_sources():
+    scam_templates = [
+        template
+        for template in ALL_TEMPLATES
+        if template.is_phishing and not template.scenario.startswith("contrast_")
+    ]
+    template_scenarios = {template.scenario for template in scam_templates}
+    assert template_scenarios == set(SCENARIO_CATALOG)
+
+    for scenario, definition in SCENARIO_CATALOG.items():
+        splits = {
+            template.split
+            for template in scam_templates
+            if template.scenario == scenario
+        }
+        assert splits == {"train", "validation", "test"}
+        assert definition.source_refs
+        assert set(definition.source_refs) <= set(ADVISORY_SOURCES)
+
+
+def test_template_ids_are_unique():
+    template_ids = [template.id for template in ALL_TEMPLATES]
+    assert len(template_ids) == len(set(template_ids))
 
 
 def test_hard_negative_otp_warning_has_no_otp_request_label():
     records = list(generate_records(2_000, seed=13))
     hard_negatives = [
-        record
-        for record in records
-        if record.scenario == "legitimate_otp_warning"
+        record for record in records if record.scenario == "legitimate_otp_warning"
     ]
     assert hard_negatives
     assert all("yeu_cau_otp" not in record.signals for record in hard_negatives)

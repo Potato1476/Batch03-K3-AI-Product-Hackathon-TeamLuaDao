@@ -55,9 +55,7 @@ def _content_fingerprint(
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         digest.update(
-            str(manifest.get("content_sha256_uncompressed_jsonl", "")).encode(
-                "utf-8"
-            )
+            str(manifest.get("content_sha256_uncompressed_jsonl", "")).encode("utf-8")
         )
     for item in approved:
         # IDs are enough to version the immutable approved rows without
@@ -80,21 +78,15 @@ def train_claimed_run(
         if not config.golden_dataset_path.exists():
             raise FileNotFoundError("golden_dataset_missing")
 
-        base_records = list(
-            read_records(config.base_dataset_path, split="train")
-        )
+        base_records = list(read_records(config.base_dataset_path, split="train"))
         approved = repository.list_approved_scenarios()
         live_records = [_live_record(item) for item in approved]
         weighted_live_records = [
-            record
-            for record in live_records
-            for _ in range(config.live_example_repeat)
+            record for record in live_records for _ in range(config.live_example_repeat)
         ]
         training_records = base_records + weighted_live_records
 
-        golden_records = list(
-            read_records(config.golden_dataset_path, split="test")
-        )
+        golden_records = list(read_records(config.golden_dataset_path, split="test"))
         if not golden_records:
             golden_records = list(read_records(config.golden_dataset_path))
 
@@ -102,6 +94,7 @@ def train_claimed_run(
         model.fit(
             [record.text for record in training_records],
             [record.signals for record in training_records],
+            is_phishing=[record.is_phishing for record in training_records],
             metadata={
                 "training_run_id": run.id,
                 "base_examples": len(base_records),
@@ -166,9 +159,7 @@ def train_claimed_run(
         # input values, so their messages must never enter logs or the DB.
         error_code = type(error).__name__
         repository.fail_training_run(run.id, error_code)
-        LOGGER.error(
-            "training_run_failed run_id=%s error_code=%s", run.id, error_code
-        )
+        LOGGER.error("training_run_failed run_id=%s error_code=%s", run.id, error_code)
         return run.id
 
 
@@ -197,9 +188,7 @@ def main() -> None:
     expired = repository.expire_quarantine(args.retention_days)
     LOGGER.info("quarantine_cleanup expired_count=%s", expired)
     if args.enqueue:
-        key = args.idempotency_key or (
-            "daily-" + datetime.now(UTC).date().isoformat()
-        )
+        key = args.idempotency_key or ("daily-" + datetime.now(UTC).date().isoformat())
         repository.queue_training(key, "daily-scheduler")
     run_id = train_claimed_run(repository, config)
     print(json.dumps({"processed_run_id": run_id}))

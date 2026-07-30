@@ -149,14 +149,26 @@ LLM phải trả JSON có cấu trúc, chấm 0–1 cho từng dấu hiệu, **k
 
 `yeu_cau_bi_mat` có weight cao nhất cùng `mao_danh_tham_quyen` vì nó gần như không xuất hiện trong giao tiếp hợp pháp → tỷ lệ báo sai thấp nhất.
 
-Song song: embedding text đã ẩn danh → pgvector so với kho kịch bản đã gán nhãn → trả nhãn gần nhất + cosine distance.
+Song song:
+
+- classifier ý đồ toàn câu → `scam_confidence` 0–1; giữ ngữ cảnh phủ định
+  thay vì max-pool theo câu;
+- embedding text đã ẩn danh → pgvector so với kho kịch bản đã gán nhãn →
+  trả nhãn gần nhất + cosine distance.
+
+`scam_confidence` chỉ là prior có trọng số giới hạn, không tự tạo nhãn
+`high`. Câu bảo vệ rõ ràng như “không chia sẻ OTP” được L0/L3 hạ confidence,
+trừ khi phía sau vẫn có yêu cầu chủ động gửi tiền, mã, APK hoặc quyền thiết bị.
 
 ---
 
 ## 6. L4 — Ngưỡng và chính sách
 
 ```
-score = Σ(wᵢ × signalᵢ) + β × similarity_max
+score = Σ(wᵢ × signalᵢ) + α × scam_confidence + β × similarity_max
+
+α = 0.405 cho baseline `ml-0.3.0`, chọn trên validation và phải được
+re-calibrate bằng golden set thật trước production.
 
 score ≥ 0.70          → high     "Nhiều dấu hiệu lừa đảo"
 0.35 ≤ score < 0.70   → medium   "Cần kiểm tra thêm"
