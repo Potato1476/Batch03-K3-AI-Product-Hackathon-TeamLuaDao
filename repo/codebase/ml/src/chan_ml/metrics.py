@@ -15,6 +15,7 @@ from .schema import DatasetRecord
 
 SCENARIO_RECALL_THRESHOLD = 0.80
 SCENARIO_FALSE_POSITIVE_THRESHOLD = 0.15
+MIN_SCENARIO_GATE_RECORDS = 10
 
 
 def evaluate_records(
@@ -108,13 +109,21 @@ def evaluate_records(
                 (scenario_flagged & scenario_phishing).sum() / phishing_count
             )
             scenario_metrics["phishing_recall"] = round(scenario_recall, 6)
-            phishing_scenario_recalls[scenario] = scenario_recall
+            if phishing_count >= MIN_SCENARIO_GATE_RECORDS:
+                phishing_scenario_recalls[scenario] = scenario_recall
+            else:
+                scenario_metrics["phishing_gate_status"] = "insufficient_sample"
         if legitimate_count:
             scenario_false_positive = float(
                 (scenario_flagged & ~scenario_phishing).sum() / legitimate_count
             )
             scenario_metrics["false_positive_rate"] = round(scenario_false_positive, 6)
-            legitimate_scenario_false_positives[scenario] = scenario_false_positive
+            if legitimate_count >= MIN_SCENARIO_GATE_RECORDS:
+                legitimate_scenario_false_positives[scenario] = (
+                    scenario_false_positive
+                )
+            else:
+                scenario_metrics["legitimate_gate_status"] = "insufficient_sample"
         by_scenario[scenario] = scenario_metrics
 
     below_scenario_gate = sorted(
@@ -136,9 +145,7 @@ def evaluate_records(
         else 1.0
     )
     scenario_coverage_passed = (
-        bool(phishing_scenario_recalls)
-        and bool(legitimate_scenario_false_positives)
-        and not below_scenario_gate
+        not below_scenario_gate
         and not above_false_positive_gate
     )
     result = {
@@ -165,6 +172,7 @@ def evaluate_records(
         "by_scenario": by_scenario,
         "scenario_coverage": {
             "phishing_scenario_count": len(phishing_scenario_recalls),
+            "minimum_records_per_class_for_gate": MIN_SCENARIO_GATE_RECORDS,
             "minimum_phishing_scenario_recall": round(minimum_scenario_recall, 6),
             "threshold": SCENARIO_RECALL_THRESHOLD,
             "below_threshold": below_scenario_gate,

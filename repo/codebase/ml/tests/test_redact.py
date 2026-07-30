@@ -44,6 +44,13 @@ def test_every_placeholder_shape_is_the_architecture_shape() -> None:
     assert "<URL>" in result.text
 
 
+def test_apk_url_is_private_but_keeps_executable_file_type() -> None:
+    result = redact_l2("Tải https://example.com/install/app.apk ngay.")
+    assert "example.com" not in result.text
+    assert "<URL> .apk" in result.text
+    assert result.url_hashes
+
+
 def test_redacted_output_always_passes_its_own_verifier() -> None:
     """redact_l2 and verify_redacted must agree, or the training bridge breaks."""
     for text in (

@@ -1,0 +1,42 @@
+{
+  "audited_at": "2026-07-30T11:33:46.950792+00:00",
+  "dataset": "chan-team-clean-v4.jsonl.gz",
+  "records_checked": 1807,
+  "split_counts": {
+    "test": 198,
+    "train": 1464,
+    "validation": 145
+  },
+  "risk_counts": {
+    "high": 923,
+    "medium": 137,
+    "unknown": 747
+  },
+  "signal_counts": {
+    "mao_danh_tham_quyen": 351.0,
+    "yeu_cau_bi_mat": 2.0,
+    "ap_luc_thoi_gian": 179.0,
+    "tk_ca_nhan": 563.0,
+    "cai_app_ngoai": 68.0,
+    "loi_ich_bat_thuong": 52.0,
+    "chuyen_kenh": 3.0,
+    "yeu_cau_otp": 16.0
+  },
+  "exact_text_cross_split": 0,
+  "variable_family_cross_split": 0,
+  "near_duplicate_audit": {
+    "heldout_records": 343,
+    "maximum_similarity": 0.961741,
+    "at_least_0_90": 1,
+    "at_least_0_95": 1,
+    "at_least_0_98": 0
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "id": "*",
+      "reason": "phishing_without_eight_signal_labels:high=173,medium=74"
+    }
+  ],
+  "passed": true
+}

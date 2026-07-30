@@ -11,6 +11,7 @@ from typing import Any
 
 import joblib
 
+from .augmentation import augmented_variants
 from .constants import SIGNAL_CODES
 from .guidance import is_victim_recovery_request
 from .local_rules import evaluate_local_rules, load_rule_bundle
@@ -88,6 +89,7 @@ def _predict(model: PhishingSignalModel, text: str, bundle: dict) -> dict[str, A
     prediction = model.predict(
         redaction.text,
         signal_boosts=local.signal_boosts,
+        verified_local_signals=local.local_signals,
     )
     return {
         **prediction,
@@ -155,6 +157,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--rules", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--sheet", default="Golden Set (20 Cases)")
+    parser.add_argument("--typo-variants", type=int, default=4)
+    parser.add_argument("--typo-seed", type=int, default=20260730)
     return parser
 
 
@@ -178,7 +182,10 @@ def main() -> None:
     if args.sheet not in workbook.sheetnames:
         raise ValueError(f"missing workbook sheet: {args.sheet}")
     bundle = load_rule_bundle(args.rules)
+    if not 0 <= args.typo_variants <= 20:
+        raise ValueError("--typo-variants must be between 0 and 20")
     cases: list[dict[str, Any]] = []
+    robustness_cases: list[dict[str, Any]] = []
     for row in workbook[args.sheet].iter_rows(min_row=2, values_only=True):
         case_id, text, expected = row[0], row[3], row[4]
         if not case_id or not text or not expected:
@@ -192,7 +199,26 @@ def main() -> None:
                 bundle=bundle,
             )
         )
+        for variant_index, variant_text in enumerate(
+            augmented_variants(
+                str(text),
+                count=args.typo_variants,
+                seed=args.typo_seed,
+            ),
+            start=1,
+        ):
+            variant_result = _evaluate_case(
+                model,
+                case_id=f"{case_id}-T{variant_index:02d}",
+                text=variant_text,
+                expected=str(expected),
+                bundle=bundle,
+            )
+            robustness_cases.append(variant_result)
     passed = sum(bool(case["passed"]) for case in cases)
+    robustness_passed = sum(
+        bool(case["passed"]) for case in robustness_cases
+    )
     payload = {
         "evaluated_at": datetime.now(UTC).isoformat(),
         "model": args.model.name,
@@ -201,6 +227,16 @@ def main() -> None:
         "total_count": len(cases),
         "result": f"{passed}/{len(cases)}",
         "cases": cases,
+        "robustness": {
+            "description": (
+                "Deterministic train-unseen variants with missing diacritics, "
+                "one-character edits, whitespace and separator obfuscation."
+            ),
+            "pass_count": robustness_passed,
+            "total_count": len(robustness_cases),
+            "result": f"{robustness_passed}/{len(robustness_cases)}",
+            "cases": robustness_cases,
+        },
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(

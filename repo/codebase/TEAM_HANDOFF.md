@@ -8,10 +8,12 @@
 | Phân tích tin nhắn | `detection/` | Chỉ Gateway gọi `/internal/v1/analyze` |
 | Contract request/response | `detection/src/chan_detection/schemas.py` | Sinh type hoặc map sang TypeScript/Kotlin |
 | Model đã train | `ml/artifacts/chan-signal-model.joblib` | Chỉ Detection API Python nạp |
-| Dataset 250.000 dòng | `ml/data/generated/chan-synthetic.jsonl.gz` | ML/backend dùng để tái lập và đánh giá |
+| Dataset nhóm đã làm sạch | `ml/data/generated/chan-team-clean-v4.jsonl.gz` | ML/backend tự tạo từ raw data để train và đánh giá |
+| Dataset replay 250.000 dòng | `ml/data/generated/chan-synthetic.jsonl.gz` | Bổ sung coverage khi train, không dùng làm test nhóm |
 | Adapter data nhóm | `ml/src/chan_ml/team_dataset.py` | ML chạy để redaction/deduplicate/split `CHAN-Dataset` trước train |
 | Version + checksum | `ml/ARTIFACTS.json` | CI/deployment xác minh trước khi chạy |
-| Metric | `eval/chan-ml-synthetic-v1.0.json` | Hiển thị đúng giới hạn synthetic |
+| Kết quả frozen + typo | `eval/team-robust-final-golden-results.json` | 20/20 gốc và 136/136 biến thể |
+| Kết quả product test | `eval/team-robust-final-product-test.json` | Recall/FPR/signal metrics và toàn bộ mismatch ID |
 
 Web và Android không cần cài Python, không tải dataset, và không nhúng model
 vào ứng dụng. Chỉ backend/deployment cần model artifact. Cách này giữ một kết
@@ -52,6 +54,8 @@ Lệnh chuẩn bị dữ liệu, train có bounded replay, chạy team test và 
 Excel golden set nằm trong `ml/README.md`. Raw `CHAN-Dataset` không được đưa
 vào Web/Android hoặc commit lên Git; hai client chỉ dùng Rule Bundle và API.
 
-Baseline hiện tại chỉ đạt gate trên synthetic regression. Trước production,
-đội phải bổ sung frozen golden set gồm dữ liệu thật đã được phép sử dụng, gán
-nhãn thủ công và L2-redacted.
+Artifact `ml-0.5.0` hiện đạt 20/20 frozen case, 136/136 typo variant, test
+recall 93,60%, false-positive 8,22% và supported-signal macro-F1 86,61%. Đây
+là kết quả trên bộ đã đo; trước production,
+đội vẫn cần mở rộng frozen set bằng dữ liệu thật được phép sử dụng, gán nhãn
+thủ công, L2-redacted và theo dõi drift.

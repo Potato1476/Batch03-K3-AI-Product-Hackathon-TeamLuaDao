@@ -131,8 +131,9 @@ def create_app() -> FastAPI:
                 runtime.predict(
                     redaction.text,
                     signal_boosts=payload.local_boosts,
+                    verified_local_signals=tuple(payload.local_signals),
                 )
-                if payload.local_boosts
+                if payload.local_boosts or payload.local_signals
                 else runtime.predict(redaction.text)
             )
         if blocklist_match:

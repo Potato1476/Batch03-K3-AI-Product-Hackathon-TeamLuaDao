@@ -180,10 +180,24 @@ def test_known_local_signal_is_accepted_and_bounded(
     client, auth, detection
 ) -> None:
     """apk_link raises cai_app_ngoai but cannot by itself decide the outcome."""
-    boosted = _analyze(client, auth, LEGITIMATE_TEXT, local_signals=["apk_link"]).json()
+    text = "Hãy tải file cap-nhat.apk để cập nhật hồ sơ."
+    boosted = _analyze(client, auth, text, local_signals=["apk_link"]).json()
     assert boosted["risk"] in {"high", "medium", "unknown"}
     assert boosted["score"] <= 1.0
     assert detection.last_body["local_boosts"] == {"cai_app_ngoai": 0.30}
+
+
+def test_unverified_client_signal_is_not_forwarded(
+    client, auth, detection
+) -> None:
+    _analyze(
+        client,
+        auth,
+        LEGITIMATE_TEXT,
+        local_signals=["apk_link"],
+    )
+    assert detection.last_body["local_signals"] == []
+    assert detection.last_body["local_boosts"] == {}
 
 
 def test_validation_error_never_echoes_the_submitted_text(client, auth) -> None:

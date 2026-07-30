@@ -64,3 +64,23 @@ def test_protective_qr_warning_wins_after_context_boost():
     )
     assert float(probabilities.max()) < 0.50
     assert scam_probability < 0.10
+
+
+def test_early_job_lure_without_payment_is_capped_below_high():
+    _, scam_probability = apply_context_boosts(
+        "Tuyen cong tac vien xem Youtube <AMOUNT:nghin>/ngay. "
+        "Nhap hop thu Zalo de xem chi tiet.",
+        _low_signals(),
+        0.95,
+    )
+    assert scam_probability == 0.69
+
+
+def test_job_lure_with_payment_request_is_not_capped():
+    _, scam_probability = apply_context_boosts(
+        "Tuyen cong tac vien viec online, chuyen phi vao <ACCOUNT> "
+        "va vao Zalo.",
+        _low_signals(),
+        0.95,
+    )
+    assert scam_probability == 0.95

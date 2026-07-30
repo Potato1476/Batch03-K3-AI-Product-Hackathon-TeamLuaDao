@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 import re
 from typing import Iterable, Mapping, Sequence
+import unicodedata
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -19,9 +20,10 @@ from .constants import (
     SIGNAL_DECISION_THRESHOLD,
 )
 from .guidance import guidance_for_unknown
+from .local_rules import correct_common_typos
 from .normalize import normalize_for_model
 from .policy import aggregate_risk
-from .protective_context import apply_protective_context
+from .protective_context import apply_protective_context, is_protective_message
 
 _EXPLANATIONS = {
     "mao_danh_tham_quyen": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
@@ -55,6 +57,82 @@ _SIGNAL_PRIORITY = {
     "loi_ich_bat_thuong": 2,
     "chuyen_kenh": 1,
 }
+
+_RULE_SIGNAL_FLOORS: dict[str, tuple[str, float]] = {
+    "apk_link": ("cai_app_ngoai", 0.92),
+    "authority_claim": ("mao_danh_tham_quyen", 0.62),
+    "suspicious_account_link": ("mao_danh_tham_quyen", 0.72),
+    "secrecy_request": ("yeu_cau_bi_mat", 0.68),
+    "time_pressure": ("ap_luc_thoi_gian", 0.58),
+    "sim_lock_notice": ("ap_luc_thoi_gian", 0.68),
+    "channel_switch": ("chuyen_kenh", 0.62),
+    "unusual_reward": ("loi_ich_bat_thuong", 0.62),
+    "delivery_payment_request": ("tk_ca_nhan", 0.72),
+    "personal_transfer_request": ("tk_ca_nhan", 0.68),
+}
+_KNOWN_LOCAL_RULES = frozenset(
+    {
+        *_RULE_SIGNAL_FLOORS,
+        "url_shortened",
+        "generic_url",
+        "otp_pattern",
+        "blocklist_hit",
+        "identity_change_request",
+        "victim_recovery_request",
+        "ambiguous_notice",
+        "truncation_marker",
+    }
+)
+_STRICT_SIGNAL_EVIDENCE = {
+    "cai_app_ngoai": re.compile(
+        r"(?:\.apk\b|\b(?:app|ung|phan mem|tro nang|accessibility)\b)"
+    ),
+    "tk_ca_nhan": re.compile(
+        r"(?:\b(?:chuyen|gui|nop|nap|dong|thanh toan|tra)\b.{0,32}"
+        r"(?:tien|khoan|phi|coc|<account>)|"
+        r"(?:<account>|\bstk\b|\bso tai khoan\b).{0,32}"
+        r"\b(?:chuyen|gui|nop|nap|dong|thanh toan|tra)\b)"
+    ),
+    "yeu_cau_otp": re.compile(
+        r"(?:\botp\b|\bma (?:xac thuc|xac nhan|bao mat)\b|"
+        r"\b(?:gui|doc|nhap|cung cap) ma\b)"
+    ),
+}
+_RULES_GROUNDING_STRICT_SIGNALS = {
+    "apk_link": "cai_app_ngoai",
+    "delivery_payment_request": "tk_ca_nhan",
+    "personal_transfer_request": "tk_ca_nhan",
+    "otp_pattern": "yeu_cau_otp",
+}
+
+
+def _normalize_for_grounding(text: str) -> str:
+    normalized = normalize_for_model(text)
+    ascii_text = "".join(
+        character
+        for character in unicodedata.normalize("NFD", normalized)
+        if unicodedata.category(character) != "Mn"
+    ).replace("đ", "d")
+    return correct_common_typos(ascii_text)
+
+
+def _ground_strict_signals(
+    text: str,
+    probabilities: np.ndarray,
+    local_rules: frozenset[str],
+) -> None:
+    """Remove high-impact labels when their required evidence is absent."""
+
+    normalized = _normalize_for_grounding(text)
+    grounded_by_rules = {
+        code
+        for rule, code in _RULES_GROUNDING_STRICT_SIGNALS.items()
+        if rule in local_rules
+    }
+    for code, pattern in _STRICT_SIGNAL_EVIDENCE.items():
+        if code in grounded_by_rules or pattern.search(normalized):
+            continue
+        probabilities[SIGNAL_CODES.index(code)] = 0.0
 
 
 @dataclass(frozen=True)
@@ -214,7 +292,7 @@ class PhishingSignalModel:
         probabilities, scam_probabilities = self.predict_components(texts)
         truth = np.asarray(is_phishing, dtype=bool)
         legitimate = ~truth
-        best: tuple[float, float, float, float, float] | None = None
+        best: tuple[float, float, float, float, float, float] | None = None
         for medium in np.arange(0.30, 0.81, 0.025):
             for high in np.arange(max(0.70, medium + 0.10), 0.981, 0.025):
                 predicted = [
@@ -243,8 +321,9 @@ class PhishingSignalModel:
                 passes = float(recall >= 0.90 and false_positive < 0.15)
                 candidate = (
                     passes,
+                    recall,
+                    -false_positive,
                     accuracy,
-                    recall - false_positive,
                     -float(medium),
                     -float(high),
                 )
@@ -325,6 +404,7 @@ class PhishingSignalModel:
         similarity_beta: float = 0.0,
         blocklist_matches: Sequence[bool] | None = None,
         signal_boosts: Sequence[Mapping[str, float]] | None = None,
+        verified_local_signals: Sequence[Iterable[str]] | None = None,
     ) -> list[dict[str, object]]:
         self._check_fitted()
         probabilities, scam_probabilities = self.predict_components(texts)
@@ -340,7 +420,12 @@ class PhishingSignalModel:
             signal_boosts = [{} for _ in texts]
         if len(signal_boosts) != len(texts):
             raise ValueError("signal_boosts must match texts")
+        if verified_local_signals is None:
+            verified_local_signals = [() for _ in texts]
+        if len(verified_local_signals) != len(texts):
+            raise ValueError("verified_local_signals must match texts")
         adjusted = probabilities.copy()
+        adjusted_scam = scam_probabilities.copy()
         for row, boosts in enumerate(signal_boosts):
             unknown = set(boosts) - set(SIGNAL_CODES)
             if unknown:
@@ -353,11 +438,68 @@ class PhishingSignalModel:
                 adjusted[row, column] = min(
                     1.0, float(adjusted[row, column]) + value
                 )
+        for row, names_value in enumerate(verified_local_signals):
+            names = frozenset(names_value)
+            unknown_rules = names - _KNOWN_LOCAL_RULES
+            if unknown_rules:
+                raise ValueError(
+                    f"unknown verified local signals: {sorted(unknown_rules)}"
+                )
+            if is_protective_message(texts[row]):
+                continue
+            for name in names:
+                mapped = _RULE_SIGNAL_FLOORS.get(name)
+                if mapped is None:
+                    continue
+                code, floor = mapped
+                column = SIGNAL_CODES.index(code)
+                adjusted[row, column] = max(float(adjusted[row, column]), floor)
+            if "apk_link" in names or "delivery_payment_request" in names:
+                adjusted_scam[row] = max(float(adjusted_scam[row]), 0.985)
+            elif (
+                "personal_transfer_request" in names
+                and "secrecy_request" in names
+            ):
+                adjusted_scam[row] = max(float(adjusted_scam[row]), 0.985)
+            elif (
+                "suspicious_account_link" in names
+                or "sim_lock_notice" in names
+                or (
+                    "url_shortened" in names
+                    and "time_pressure" in names
+                )
+                or (
+                    "generic_url" in names
+                    and "unusual_reward" in names
+                )
+                or (
+                    "generic_url" in names
+                    and adjusted[
+                        row, SIGNAL_CODES.index("loi_ich_bat_thuong")
+                    ]
+                    >= SIGNAL_DECISION_THRESHOLD
+                )
+                or (
+                    "authority_claim" in names
+                    and (
+                        "generic_url" in names
+                        or "ambiguous_notice" in names
+                    )
+                )
+            ):
+                adjusted_scam[row] = max(float(adjusted_scam[row]), 0.985)
+            elif (
+                "identity_change_request" in names
+                or "unusual_reward" in names
+                or "channel_switch" in names
+            ):
+                adjusted_scam[row] = max(float(adjusted_scam[row]), 0.65)
+            _ground_strict_signals(texts[row], adjusted[row], names)
         return [
             self._format_prediction(
                 text,
                 adjusted[index],
-                scam_probability=float(scam_probabilities[index]),
+                scam_probability=float(adjusted_scam[index]),
                 similarity_max=float(similarity_scores[index]),
                 similarity_beta=similarity_beta,
                 blocklist_match=bool(blocklist_matches[index]),
@@ -373,6 +515,7 @@ class PhishingSignalModel:
         similarity_beta: float = 0.0,
         blocklist_match: bool = False,
         signal_boosts: Mapping[str, float] | None = None,
+        verified_local_signals: Iterable[str] | None = None,
     ) -> dict[str, object]:
         """Score one text. ``blocklist_match`` is the §6 hard override for a
         recipient account already reported to the Lookup Service."""
@@ -382,6 +525,7 @@ class PhishingSignalModel:
             similarity_beta=similarity_beta,
             blocklist_matches=[blocklist_match],
             signal_boosts=[signal_boosts or {}],
+            verified_local_signals=[verified_local_signals or ()],
         )[0]
 
     def _format_prediction(

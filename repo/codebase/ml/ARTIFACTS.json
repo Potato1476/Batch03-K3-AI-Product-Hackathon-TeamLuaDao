@@ -1,9 +1,9 @@
 {
-  "release": "chan-synthetic-baseline-20260730.1",
-  "engine_version": "ml-0.3.1",
-  "generator_version": "synthetic-1.1.0",
+  "release": "chan-team-typo-robust-20260730.3",
+  "engine_version": "ml-0.5.0",
+  "generator_version": "team-json-adapter-1.4.1",
   "scenario_catalog_version": "vn-scam-catalog-2026.07",
-  "training_source_commit": "615e41f395abfffacceefafa165290e5e788b490",
+  "training_source_base_commit": "40452ec71",
   "production_ready": false,
   "artifact_runtime": {
     "python": "3.12",
@@ -15,8 +15,8 @@
     {
       "path": "codebase/ml/artifacts/chan-signal-model.joblib",
       "purpose": "Python backend inference artifact",
-      "size_bytes": 948981,
-      "sha256": "7b9e79e9535b27daf1d7fa56c97e5edc982d2bd4b2ff7c1629ecea669c0c66a5"
+      "size_bytes": 4857672,
+      "sha256": "14a9c1d13855af3090255c481bc0e5be39f9d835c21ada41b3d7936764c11b8b"
     },
     {
       "path": "codebase/ml/data/generated/chan-synthetic.jsonl.gz",
@@ -32,16 +32,30 @@
     },
     {
       "path": "codebase/ml/artifacts/validation-metrics.json",
-      "purpose": "Synthetic validation metrics",
-      "size_bytes": 11750,
-      "sha256": "4d2215ebda1dce89d026979725db477fc609d1454071fe833b015c9f88f8ef32"
+      "purpose": "Held-out CHAN-Dataset validation metrics",
+      "size_bytes": 12151,
+      "sha256": "786302057fa0aee32e869be7993e2aa3e8096580cc493636c2411d8ecb7c11f4"
     },
     {
       "path": "codebase/ml/artifacts/test-metrics.json",
-      "purpose": "Synthetic test regression metrics",
-      "size_bytes": 11327,
-      "sha256": "c906865a5a2ff64480e44804ea36cb32b80a56edc9d887272f94ab24de13ff16"
+      "purpose": "Held-out CHAN-Dataset test metrics",
+      "size_bytes": 11570,
+      "sha256": "eafa234cfe5366541c339effd30e080505a4b42f811eea6a3b4cbae663f2fdf1"
     }
   ],
-  "warning": "Synthetic metrics validate the pipeline only. Production promotion still requires a frozen, permitted, human-labelled Vietnamese golden set."
+  "golden_evaluation": {
+    "path": "eval/team-robust-final-golden-results.json",
+    "frozen_cases": "20/20",
+    "unseen_typo_variants": "136/136",
+    "sha256": "1f6bc22df8c622a3b76204240dbe4acf10cddc5ccd26cc548166fb2d56bce4cb"
+  },
+  "product_test_evaluation": {
+    "path": "eval/team-robust-final-product-test.json",
+    "records": 198,
+    "phishing_recall": 0.936,
+    "legitimate_false_positive_rate": 0.082192,
+    "supported_signal_macro_f1": 0.866124,
+    "sha256": "17ef3a910346ac51aee7558764fd74e76a7b0654608fb73034fbc4df2e4ae64a"
+  },
+  "warning": "This release passes the current team test and robustness suite, but production still requires larger permitted real-world monitoring data and ongoing drift review."
 }

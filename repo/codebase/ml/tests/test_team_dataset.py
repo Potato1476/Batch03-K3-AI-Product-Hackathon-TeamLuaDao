@@ -1,7 +1,11 @@
 import json
 from pathlib import Path
 
-from chan_ml.team_dataset import derive_signal_codes, prepare_records
+from chan_ml.team_dataset import (
+    _split_family_key,
+    derive_signal_codes,
+    prepare_records,
+)
 
 
 def _write_conversation(
@@ -54,6 +58,15 @@ def test_signal_mapping_requires_textual_evidence():
     )
     assert supported == frozenset({"chuyen_kenh", "yeu_cau_otp"})
 
+    missing_source_labels = derive_signal_codes(
+        "Công an yêu cầu xử lý ngay trong 2 giờ.",
+        [],
+        is_phishing=True,
+    )
+    assert missing_source_labels == frozenset(
+        {"mao_danh_tham_quyen", "ap_luc_thoi_gian"}
+    )
+
 
 def test_preparation_redacts_deduplicates_and_prevents_split_leakage(
     tmp_path: Path,
@@ -101,3 +114,13 @@ def test_preparation_redacts_deduplicates_and_prevents_split_leakage(
     assert "<ACCOUNT>" in scam.text
     assert "123456789" not in scam.text
     assert scam.rights_basis == "project_provided"
+
+
+def test_split_family_ignores_generated_bank_and_number_variants():
+    first = (
+        "Chuyển 5 triệu vào STK <ACCOUNT> tại MB Bank trước 17h."
+    )
+    second = (
+        "Chuyển 20 triệu vào STK <ACCOUNT> tại VPBank trước 9h."
+    )
+    assert _split_family_key(first.lower()) == _split_family_key(second.lower())

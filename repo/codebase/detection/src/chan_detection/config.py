@@ -13,7 +13,7 @@ _REPO_BOOTSTRAP_MODEL = (
     / "chan-signal-model.joblib"
 )
 _BOOTSTRAP_SHA256 = (
-    "7b9e79e9535b27daf1d7fa56c97e5edc982d2bd4b2ff7c1629ecea669c0c66a5"
+    "14a9c1d13855af3090255c481bc0e5be39f9d835c21ada41b3d7936764c11b8b"
 )
 
 
@@ -27,7 +27,7 @@ class DetectionConfig:
     request_timeout_seconds: float = 5.0
     bootstrap_model_path: str = ""
     bootstrap_model_sha256: str = ""
-    bootstrap_model_version: str = "chan-signal-20260730.1"
+    bootstrap_model_version: str = "chan-signal-20260730.3"
 
     @classmethod
     def from_env(cls) -> "DetectionConfig":
@@ -66,6 +66,6 @@ class DetectionConfig:
             bootstrap_model_sha256=bootstrap_sha256,
             bootstrap_model_version=os.getenv(
                 "CHAN_BOOTSTRAP_MODEL_VERSION",
-                "chan-signal-20260730.1",
+                "chan-signal-20260730.3",
             ).strip(),
         )

@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from starlette.concurrency import run_in_threadpool
 
 from chan_ml.normalize import normalize_for_model
+from chan_ml.local_rules import evaluate_local_rules
 
 from ..auth import Caller, require_device
 from ..config import AppConfig, get_config
@@ -76,9 +77,14 @@ async def analyze(
             status.HTTP_422_UNPROCESSABLE_ENTITY, "unknown_local_signal"
         )
 
+    verified_local_signals = evaluate_local_rules(
+        payload.text,
+        bundle.payload,
+    ).local_signals
     body = payload.model_dump()
+    body["local_signals"] = list(verified_local_signals)
     body["rule_bundle_version"] = bundle.version
-    body["local_boosts"] = bundle.boosts_for(tuple(payload.local_signals))
+    body["local_boosts"] = bundle.boosts_for(verified_local_signals)
     try:
         result = await detection.analyze(body)
     except ServiceResponseError as error:

@@ -25,25 +25,8 @@ from .normalize import normalize_for_model
 from .redact import redact_l2, verify_redacted
 from .schema import DatasetRecord
 
-ADAPTER_VERSION = "team-json-adapter-1.1.0"
+ADAPTER_VERSION = "team-json-adapter-1.4.1"
 _POSITIVE_RISKS = {"medium", "high", "critical"}
-
-_AUTHORITY_RAW = {
-    "authority_impersonation",
-    "bank_impersonation",
-    "fake_court_subpoena",
-    "tax_app_installation",
-}
-_BENEFIT_RAW = {
-    "high_profit_guarantee",
-    "fake_job_task",
-    "romance_trap",
-    "sugar_baby_trap",
-    "e_commerce_refund",
-    "prize_claim_fee",
-    "crypto_copy_trade",
-    "pyramid_mlm_recruitment",
-}
 
 _AUTHORITY_TEXT = re.compile(
     r"\b(?:cong an|can bo|canh sat|co quan thue|cuc thue|toa an|hai quan|"
@@ -51,7 +34,8 @@ _AUTHORITY_TEXT = re.compile(
 )
 _SECRECY_TEXT = re.compile(
     r"\b(?:giu bi mat|tuyet doi khong tiet lo|khong (?:duoc )?"
-    r"(?:noi|bao|ke).{0,24}(?:ai|gia dinh|nguoi than)|xoa tin nhan)\b"
+    r"(?:noi|bao|ke).{0,24}(?:\bai\b|\bgia dinh\b|\bnguoi than\b)|"
+    r"xoa tin nhan)\b"
 )
 _PRESSURE_TEXT = re.compile(
     r"\b(?:ngay lap tuc|lam ngay|xu ly ngay|chuyen ngay|gap|khan|"
@@ -59,8 +43,10 @@ _PRESSURE_TEXT = re.compile(
     r"se (?:bi )?(?:khoa|cat|phat|bat)|khong tri hoan)\b"
 )
 _TRANSFER_TEXT = re.compile(
-    r"\b(?:chuyen (?:tien|khoan|phi|toan bo)|nop (?:tien|phi)|"
-    r"dong (?:tien|phi)|thanh toan|stk|so tai khoan)\b"
+    r"(?=.*\b(?:chuyen|gui|nop|nap|dong|thanh toan|tra)\b"
+    r".{0,32}\b(?:tien|khoan|phi|coc|toan bo)\b)"
+    r"(?=.*(?:<account>|\bstk\b|\bso tai khoan\b|"
+    r"(?<!\d)\d(?:[\s.\-]?\d){7,18}(?!\d)))"
 )
 _APP_TEXT = re.compile(
     r"(?:\.apk\b|\b(?:tai|cai) (?:app|ung dung|phan mem)\b|"
@@ -77,6 +63,13 @@ _CHANNEL_TEXT = re.compile(
 )
 _OTP_TEXT = re.compile(
     r"\b(?:otp|ma xac (?:thuc|nhan)|mat khau|ten dang nhap)\b"
+)
+_SPLIT_VARIABLES = re.compile(
+    r"(?:<[^>]+>|"
+    r"\b(?:mb\s*bank|vpbank|vietcombank|vcb|bidv|agribank|"
+    r"vietinbank|techcombank|sacombank|acb|tpbank)\b|"
+    r"\b\d+(?:[.,:/-]\d+)*(?:[a-z]+)?\b)",
+    flags=re.IGNORECASE,
 )
 
 
@@ -105,33 +98,39 @@ def _ascii(text: str) -> str:
 def derive_signal_codes(
     text: str, raw_signals: Iterable[str], *, is_phishing: bool
 ) -> frozenset[str]:
-    """Map the source's 27 noisy labels onto eight evidence-backed signals."""
+    """Map text onto eight evidence-backed product signals.
+
+    The supplied 27-label annotation is incomplete (for example, many explicit
+    authority claims lack ``authority_impersonation``). It is therefore audit
+    context only; a product signal is assigned from explicit text evidence on
+    phishing records and is never assigned on legitimate records.
+    """
 
     if not is_phishing:
         return frozenset()
+    # Consume the iterable so malformed non-iterable inputs still fail during
+    # dataset preparation, while intentionally not trusting its completeness.
+    tuple(raw_signals)
+    return textual_signal_evidence(text)
+
+
+def textual_signal_evidence(text: str) -> frozenset[str]:
+    """Return eight-taxonomy signals with explicit support in the text."""
+
     normalized = _ascii(text)
-    raw = set(raw_signals)
-    codes: set[str] = set()
-    if raw & _AUTHORITY_RAW and _AUTHORITY_TEXT.search(normalized):
-        codes.add("mao_danh_tham_quyen")
-    if _SECRECY_TEXT.search(normalized):
-        codes.add("yeu_cau_bi_mat")
-    if "urgent_threat" in raw and _PRESSURE_TEXT.search(normalized):
-        codes.add("ap_luc_thoi_gian")
-    if "advance_fee_request" in raw and _TRANSFER_TEXT.search(normalized):
-        codes.add("tk_ca_nhan")
-    if (
-        raw & {"malicious_link", "tax_app_installation"}
-        and _APP_TEXT.search(normalized)
-    ):
-        codes.add("cai_app_ngoai")
-    if raw & _BENEFIT_RAW and _BENEFIT_TEXT.search(normalized):
-        codes.add("loi_ich_bat_thuong")
-    if "relocation_to_telegram" in raw and _CHANNEL_TEXT.search(normalized):
-        codes.add("chuyen_kenh")
-    if "otp_phishing" in raw and _OTP_TEXT.search(normalized):
-        codes.add("yeu_cau_otp")
-    return frozenset(codes)
+    checks = {
+        "mao_danh_tham_quyen": _AUTHORITY_TEXT,
+        "yeu_cau_bi_mat": _SECRECY_TEXT,
+        "ap_luc_thoi_gian": _PRESSURE_TEXT,
+        "tk_ca_nhan": _TRANSFER_TEXT,
+        "cai_app_ngoai": _APP_TEXT,
+        "loi_ich_bat_thuong": _BENEFIT_TEXT,
+        "chuyen_kenh": _CHANNEL_TEXT,
+        "yeu_cau_otp": _OTP_TEXT,
+    }
+    return frozenset(
+        code for code, pattern in checks.items() if pattern.search(normalized)
+    )
 
 
 def _channel(platform: str) -> tuple[str, str]:
@@ -232,6 +231,18 @@ def _stable_split(canonical: str, seed: int) -> str:
     return "test"
 
 
+def _split_family_key(canonical: str) -> str:
+    """Collapse common generated variables before assigning a data split.
+
+    Messages that differ only by a bank, amount, placeholder, or number must
+    stay in one split. This is stricter than exact-text splitting and prevents
+    the generated templates from making validation/test scores look better.
+    """
+
+    skeleton = _SPLIT_VARIABLES.sub(" <variable> ", canonical)
+    return " ".join(skeleton.split())
+
+
 def prepare_records(
     root: Path, *, seed: int = 20260730
 ) -> tuple[list[DatasetRecord], dict[str, object]]:
@@ -276,7 +287,7 @@ def prepare_records(
                 source=group[0].source,
                 input_mode=group[0].input_mode,
                 truncated=False,
-                split=_stable_split(canonical, seed),
+                split=_stable_split(_split_family_key(canonical), seed),
                 synthetic=False,
                 consented=False,
                 rights_basis="project_provided",
@@ -317,6 +328,7 @@ def prepare_records(
         "risk_counts": dict(Counter(record.risk for record in records)),
         "scenario_counts": dict(Counter(record.scenario for record in records)),
         "exact_text_leakage_across_splits": leakage,
+        "split_strategy": "stable_hash_of_variable_collapsed_text_family",
         "contains_real_person_data": False,
         "redaction_state": "L2 placeholders only",
         "rights_basis": "project_provided; verify upstream licences before production",

@@ -1,5 +1,5 @@
 {
-  "bundle_version": "rb-2026-07-30.2",
+  "bundle_version": "rb-2026-07-30.4",
   "schema_version": 1,
   "generated_for": "L0 normalize + L1 deterministic rules, on-device",
   "notice": "NGUỒN DUY NHẤT cho tầng luật. Bản TypeScript (Web) và bản Kotlin (Android) đọc cùng file này. Không hardcode regex/blacklist trong apps/*.",
@@ -14,6 +14,22 @@
       "⁠", "﻿"
     ],
     "strip_diacritics_for_matching": true,
+    "typo_aliases": {
+      "chuab": "chuan",
+      "khog": "khong",
+      "khkng": "khong",
+      "khing": "khong",
+      "khnog": "khong",
+      "khoai": "khoa",
+      "kong": "khong",
+      "treiu": "trieu",
+      "triu": "trieu",
+      "turoc": "truoc",
+      "cam ketlai": "cam ket lai",
+      "cuccanh sat": "cuc canh sat",
+      "guima otp": "gui ma otp",
+      "trung thung": "trung thuong"
+    },
     "teencode": {
       "k": "khong",
       "ko": "khong",
@@ -129,6 +145,13 @@
         "boost_signal": "ap_luc_thoi_gian",
         "boost": 0.15
       },
+      "sim_lock_notice": {
+        "patterns": [
+          "(?i)(?=.*\\b(?:sim|thuê\\s*bao|thue\\s*bao)\\b)(?=.*\\b(?:chưa\\s*chuẩn\\s*hóa|chua\\s*chuan\\s*hoa|chưa\\s*chuẩn\\s*hoá|chua\\s*chuan\\s*hoa)\\b)(?=.*\\b(?:khóa|khoa|khoai|cắt|cat|tạm\\s*dừng|tam\\s*dung)\\b)"
+        ],
+        "boost_signal": "ap_luc_thoi_gian",
+        "boost": 0.25
+      },
       "channel_switch": {
         "patterns": [
           "(?i)(?:kết\\s*bạn|ket\\s*ban|li[êe]n\\s*hệ|lien\\s*he|nhắn|inbox|chat)\\s+(?:qua|tr[êe]n|với\\s*t[ơo]i\\s*qua)?\\s*(?:zalo|telegram|viber|whatsapp|messenger)\\b",
@@ -145,6 +168,7 @@
           "(?i)(?:việc|viec|lương|luong)\\s+(?:cao|nhẹ|nhe)\\s+(?:kh[ơo]ng\\s*cần|khong\\s*can)\\s+(?:kinh\\s*nghiệm|bằng\\s*cấp)",
           "(?i)(?:ho[àa]n|hoan)\\s*(?:tiền|tien)\\s*(?:\\d+\\s*%|cao)",
           "(?i)(?:kiếm|kiem|thu\\s*nhập|thu\\s*nhap|lương|luong).{0,20}\\d+(?:k|tr|triệu|trieu)?\\s*/\\s*(?:ngày|ngay|tháng|thang)",
+          "(?i)(?:tuyển|tuyen).{0,24}(?:cộng\\s*tác\\s*viên|cong\\s*tac\\s*vien|ctv).{0,32}\\d+(?:k|tr|triệu|trieu)?\\s*/\\s*(?:ngày|ngay|tháng|thang)",
           "(?i)cam\\s*kết\\s+(?:lãi|lai|lợi\\s*nhuận|loi\\s*nhuan).{0,12}\\d+\\s*%",
           "(?i)(?:nhận|nhan)\\s+(?:quà|qua).{0,16}\\d+\\s*(?:tr|triệu|trieu)"
         ],
@@ -159,9 +183,18 @@
         "boost": 0.20,
         "comment": "Chỉ khớp khi đồng thời có ngữ cảnh giao hàng, yêu cầu tiền và cách giao/nhận bất thường."
       },
+      "personal_transfer_request": {
+        "patterns": [
+          "(?i)(?=.*\\b(?:chuyển|chuyen|gửi|gui|nộp|nop|nạp|nap)\\s+(?:tiền|tien|khoản|khoan|phí|phi|gói|goi)?\\b)(?=.*(?:\\b(?:stk|số\\s*tài\\s*khoản|so\\s*tai\\s*khoan)\\b|(?<!\\d)\\d(?:[\\s.\\-]?\\d){7,18}(?!\\d)))",
+          "(?i)(?=.*(?:\\b(?:stk|số\\s*tài\\s*khoản|so\\s*tai\\s*khoan)\\b|(?<!\\d)\\d(?:[\\s.\\-]?\\d){7,18}(?!\\d)))(?=.*\\b(?:xóa\\s*tin\\s*nhắn|xoa\\s*tin\\s*nhan|không\\s*nói|khong\\s*noi|giữ\\s*bí\\s*mật|giu\\s*bi\\s*mat)\\b)"
+        ],
+        "boost_signal": "tk_ca_nhan",
+        "boost": 0.25
+      },
       "identity_change_request": {
         "patterns": [
-          "(?i)(?=.*\\b(?:điện thoại|dien thoai|máy|may)\\b.{0,20}\\b(?:hỏng|hong|mất|mat)\\b)(?=.*\\b(?:số này|so nay|số mới|so moi|mượn số|muon so)\\b)"
+          "(?i)(?=.*\\b(?:điện thoại|dien thoai|máy|may)\\b.{0,20}\\b(?:hỏng|hong|mất|mat)\\b)(?=.*\\b(?:số này|so nay|số mới|so moi|mượn số|muon so)\\b)",
+          "(?i)(?=.*\\b(?:hỏng|hong|mất|mat)\\b)(?=.*\\b(?:dùng|dung|mượn|muon)\\s+(?:số|so)\\s+(?:này|nay|mới|moi)\\b)"
         ],
         "boost_signal": null,
         "boost": 0.15

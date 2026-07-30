@@ -20,8 +20,10 @@ workbook = ["openpyxl>=3.1,<4"]
 [project.scripts]
 chan-generate = "chan_ml.synthetic:main"
 chan-prepare-team-data = "chan_ml.team_dataset:main"
+chan-audit-dataset = "chan_ml.audit_dataset:main"
 chan-train = "chan_ml.train:main"
 chan-evaluate = "chan_ml.evaluate:main"
+chan-evaluate-product = "chan_ml.evaluate_product:main"
 chan-evaluate-workbook = "chan_ml.evaluate_workbook:main"
 chan-predict = "chan_ml.predict:main"
 

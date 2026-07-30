@@ -18,7 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument(
-        "--split", choices=("validation", "test"), default="test"
+        "--split", choices=("train", "validation", "test"), default="test"
     )
     parser.add_argument("--output", type=Path)
     parser.add_argument("--limit", type=int)

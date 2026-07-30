@@ -67,3 +67,13 @@ def test_balance_notification_with_transfer_request_is_not_suppressed():
     )
     assert float(probabilities.max()) == 0.95
     assert scam_probability == 0.90
+
+
+def test_one_character_typos_in_safety_warning_still_suppress():
+    probabilities, scam_probability = apply_protective_context(
+        "Canh bao mao danh cong an. Tuyet doi KONG chuyen tien.",
+        _all_high(),
+        0.95,
+    )
+    assert float(probabilities.max()) < 0.05
+    assert scam_probability < 0.05

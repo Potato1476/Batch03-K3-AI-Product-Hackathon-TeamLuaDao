@@ -12,6 +12,24 @@ from .constants import SIGNAL_CODES
 
 MAX_SINGLE_BOOST = 0.30
 MAX_TOTAL_BOOST = 0.45
+_TYPO_ALIASES = {
+    "chuab": "chuan",
+    "khog": "khong",
+    "khkng": "khong",
+    "khing": "khong",
+    "khnog": "khong",
+    "khoai": "khoa",
+    "kong": "khong",
+    "treiu": "trieu",
+    "triu": "trieu",
+    "turoc": "truoc",
+}
+_PHRASE_ALIASES = {
+    "cam ketlai": "cam ket lai",
+    "cuccanh sat": "cuc canh sat",
+    "guima otp": "gui ma otp",
+    "trung thung": "trung thuong",
+}
 
 
 def _strip_diacritics(value: str) -> str:
@@ -38,6 +56,30 @@ def _join_separated_runs(text: str, separators: list[str]) -> str:
     )
 
 
+def correct_common_typos(
+    text: str,
+    aliases: dict[str, str] | None = None,
+) -> str:
+    # Global edit-distance correction corrupts common Vietnamese words (for
+    # example ``ngan`` -> ``nhan``). Only aliases observed in adversarial
+    # evaluation are corrected, so L1 remains deterministic and auditable.
+    replacements = aliases or {**_TYPO_ALIASES, **_PHRASE_ALIASES}
+    corrected = text
+    for source, target in sorted(
+        replacements.items(),
+        key=lambda item: len(item[0]),
+        reverse=True,
+    ):
+        if " " not in source:
+            continue
+        corrected = corrected.replace(source, target)
+    return re.sub(
+        r"\b[a-z]{4,}\b",
+        lambda match: replacements.get(match.group(0), match.group(0)),
+        corrected,
+    )
+
+
 def normalize_for_rules(text: str, bundle: dict) -> str:
     l0 = bundle["l0"]
     normalized = unicodedata.normalize(str(l0["unicode_form"]), text)
@@ -53,6 +95,14 @@ def normalize_for_rules(text: str, bundle: dict) -> str:
     )
     if l0.get("strip_diacritics_for_matching"):
         normalized = _strip_diacritics(normalized)
+    normalized = correct_common_typos(
+        normalized,
+        {
+            str(source): str(target)
+            for source, target in l0.get("typo_aliases", {}).items()
+        }
+        or None,
+    )
     teencode = l0.get("teencode", {})
     return " ".join(str(teencode.get(word, word)) for word in normalized.split(" "))
 

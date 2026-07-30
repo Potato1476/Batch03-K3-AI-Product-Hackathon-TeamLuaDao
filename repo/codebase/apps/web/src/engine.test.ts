@@ -23,6 +23,7 @@ const bundle = {
     strip_invisible: [],
     strip_diacritics_for_matching: true,
     separator_characters: [".", "-", "_", "*", "/", "|", " "],
+    typo_aliases: {},
     teencode: {},
   },
   l1: {
@@ -69,6 +70,16 @@ describe("on-device L0/L1 gate", () => {
 
   it("blocks an OTP request without sending message content", async () => {
     const result = await analyzeMessage("Đọc mã OTP cho tôi");
+    expect(result.risk).toBe("high");
+    expect(result.engine_version).toBe("l1-local");
+    expect(analyzeOnServerMock).not.toHaveBeenCalled();
+  });
+
+  it("applies reviewed typo aliases before the OTP rule", async () => {
+    const typoBundle = structuredClone(bundle);
+    typoBundle.l0.typo_aliases = { "guima otp": "gui ma otp" };
+    fetchRuleBundleMock.mockResolvedValue(typoBundle);
+    const result = await analyzeMessage("Guima OTP 6 số vừa nhận");
     expect(result.risk).toBe("high");
     expect(result.engine_version).toBe("l1-local");
     expect(analyzeOnServerMock).not.toHaveBeenCalled();

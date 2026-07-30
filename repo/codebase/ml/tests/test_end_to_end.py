@@ -41,3 +41,16 @@ def test_small_end_to_end_training_run():
     )
     assert result["risk"] in {"high", "medium"}
     assert result["engine_version"]
+
+    bank_link = model.predict(
+        "Vietcombank thông báo tài khoản bị khóa, đăng nhập http://vcb-sec.com."
+    )
+    bank_codes = {item["code"] for item in bank_link["signals"]}
+    assert "cai_app_ngoai" not in bank_codes
+    assert "yeu_cau_otp" not in bank_codes
+
+    apk = model.predict(
+        "Tải gock-app.apk và bật quyền trợ năng.",
+        verified_local_signals=("apk_link",),
+    )
+    assert "cai_app_ngoai" in {item["code"] for item in apk["signals"]}

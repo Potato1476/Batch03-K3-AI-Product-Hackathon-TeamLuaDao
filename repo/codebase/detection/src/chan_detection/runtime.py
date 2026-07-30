@@ -67,11 +67,16 @@ class ModelRuntime:
         redacted_text: str,
         *,
         signal_boosts: Mapping[str, float] | None = None,
+        verified_local_signals: tuple[str, ...] = (),
     ) -> ModelPrediction:
         with self._lock:
             return cast(
                 ModelPrediction,
-                self._model.predict(redacted_text, signal_boosts=signal_boosts),
+                self._model.predict(
+                    redacted_text,
+                    signal_boosts=signal_boosts,
+                    verified_local_signals=verified_local_signals,
+                ),
             )
 
 

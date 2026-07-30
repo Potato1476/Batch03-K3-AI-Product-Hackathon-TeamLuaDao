@@ -198,9 +198,16 @@ def redact_l2(text: str) -> RedactionResult:
     # 2. URLs next: a link can contain digit runs that would otherwise be
     #    mistaken for an account number.
     def _take_url(match: re.Match[str]) -> str:
-        host = normalize_url(match.group(0))
+        raw_url = match.group(0)
+        host = normalize_url(raw_url)
         if host:
             url_hashes.append(hash_identifier(host, kind="url"))
+        # The URL itself remains private, but the executable file type is
+        # essential evidence for the `cai_app_ngoai` signal. Keeping the
+        # non-identifying suffix also prevents the model learning the shortcut
+        # "<URL> means APK".
+        if re.search(r"\.apk(?:[?#][^\s]*)?[)\],.!?]*$", raw_url, re.I):
+            return "<URL> .apk"
         return "<URL>"
 
     working = _URL.sub(_take_url, working)

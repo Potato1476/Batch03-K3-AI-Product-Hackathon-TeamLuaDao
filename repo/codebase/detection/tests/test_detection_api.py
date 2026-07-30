@@ -21,6 +21,7 @@ class FakeRuntime:
         redacted_text: str,
         *,
         signal_boosts: dict[str, float] | None = None,
+        verified_local_signals: tuple[str, ...] = (),
     ) -> dict[str, object]:
         self.last_text = redacted_text
         self.last_boosts = signal_boosts
@@ -99,6 +100,7 @@ def test_bounded_local_boosts_reach_the_model() -> None:
             "text": "Hãy tải ứng dụng này để cập nhật hồ sơ.",
             "source": "web",
             "input_mode": "manual",
+            "local_signals": ["apk_link"],
             "local_boosts": {"cai_app_ngoai": 0.30},
         },
     )

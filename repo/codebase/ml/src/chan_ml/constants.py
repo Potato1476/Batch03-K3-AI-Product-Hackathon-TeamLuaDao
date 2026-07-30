@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-ENGINE_VERSION = "ml-0.4.0"
+ENGINE_VERSION = "ml-0.5.0"
 GENERATOR_VERSION = "synthetic-1.1.0"
 
 SIGNAL_CODES: tuple[str, ...] = (

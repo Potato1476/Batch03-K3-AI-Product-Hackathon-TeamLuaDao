@@ -1,0 +1,103 @@
+{
+  "selected_release": "chan-team-typo-robust-20260730.3",
+  "selection_policy": {
+    "selection_data": "validation only",
+    "locked_test_opened_after_selection": true,
+    "required_phishing_recall": 0.9,
+    "maximum_legitimate_false_positive_rate": 0.15,
+    "preference_order": [
+      "pass safety gates",
+      "lower false-positive rate",
+      "smaller train-validation gap",
+      "higher supported-signal F1",
+      "stronger regularization when tied"
+    ]
+  },
+  "experiments_run": 14,
+  "final_round": [
+    {
+      "id": "i",
+      "primary_weight": 4,
+      "replay_limit": 15000,
+      "typo_augmentations": 1,
+      "regularization_c": 2.0,
+      "scam_c": 0.5,
+      "validation_recall": 0.949367,
+      "validation_false_positive_rate": 0.090909,
+      "train_validation_recall_gap": 0.04596,
+      "selected": true
+    },
+    {
+      "id": "j",
+      "primary_weight": 4,
+      "replay_limit": 15000,
+      "typo_augmentations": 2,
+      "regularization_c": 2.0,
+      "scam_c": 0.5,
+      "validation_recall": 0.949367,
+      "validation_false_positive_rate": 0.121212,
+      "train_validation_recall_gap": 0.047128,
+      "selected": false
+    },
+    {
+      "id": "k",
+      "primary_weight": 6,
+      "replay_limit": 15000,
+      "typo_augmentations": 1,
+      "regularization_c": 2.0,
+      "scam_c": 0.5,
+      "validation_recall": 0.949367,
+      "validation_false_positive_rate": 0.106061,
+      "train_validation_recall_gap": 0.04596,
+      "selected": false
+    },
+    {
+      "id": "l",
+      "primary_weight": 4,
+      "replay_limit": 30000,
+      "typo_augmentations": 1,
+      "regularization_c": 2.0,
+      "scam_c": 0.5,
+      "validation_recall": 0.949367,
+      "validation_false_positive_rate": 0.121212,
+      "train_validation_recall_gap": 0.04596,
+      "selected": false
+    },
+    {
+      "id": "m",
+      "primary_weight": 4,
+      "replay_limit": 15000,
+      "typo_augmentations": 1,
+      "regularization_c": 1.0,
+      "scam_c": 0.5,
+      "validation_recall": 0.949367,
+      "validation_false_positive_rate": 0.090909,
+      "train_validation_recall_gap": 0.04596,
+      "selected": false
+    },
+    {
+      "id": "n",
+      "primary_weight": 4,
+      "replay_limit": 15000,
+      "typo_augmentations": 1,
+      "regularization_c": 4.0,
+      "scam_c": 0.5,
+      "validation_recall": 0.949367,
+      "validation_false_positive_rate": 0.090909,
+      "train_validation_recall_gap": 0.04596,
+      "selected": false
+    }
+  ],
+  "final_locked_test": {
+    "records": 198,
+    "phishing_recall": 0.936,
+    "legitimate_false_positive_rate": 0.082192,
+    "risk_accuracy": 0.828283,
+    "supported_signal_macro_f1": 0.866124,
+    "passed": true
+  },
+  "golden": {
+    "frozen_cases": "20/20",
+    "unseen_typo_variants": "136/136"
+  }
+}

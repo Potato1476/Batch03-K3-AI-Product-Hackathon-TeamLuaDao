@@ -25,6 +25,18 @@ _SUSPICIOUS_DELIVERY_HANDOFF = re.compile(
     r"\b(?:ngoai cua|nha hang xom|nhan sau|lay sau|giu don|"
     r"don chua thanh toan|giao nham|hoi vien|huy don|dang ky)\b"
 )
+_SOFT_JOB_LURE = re.compile(
+    r"\b(?:tuyen|cong tac vien|ctv|viec online|xem youtube|lam nhiem vu)\b"
+)
+_SOFT_REWARD = re.compile(
+    r"(?:<amount(?::[a-z_-]+)?>|\b\d+(?:k|tr|trieu)?/(?:ngay|thang)\b|"
+    r"\b(?:thu nhap|hoa hong|luong)\b)"
+)
+_CHANNEL_MARKER = re.compile(r"\b(?:zalo|telegram|viber|whatsapp)\b")
+_HIGH_IMPACT_REQUEST = re.compile(
+    r"(?:<account>|<otp>|\.apk\b|\b(?:chuyen|nop|dong) (?:tien|phi|coc)\b|"
+    r"\b(?:doc|gui|nhap) ma\b)"
+)
 
 
 def _ascii_normalized(text: str) -> str:
@@ -67,5 +79,15 @@ def apply_context_boosts(
             float(signal_probabilities[transfer_index]), 0.72
         )
         scam_probability = max(float(scam_probability), 0.95)
+
+    # An early-stage job lure deserves a warning, but without a request for
+    # money, credentials or an APK it should remain medium rather than high.
+    if (
+        _SOFT_JOB_LURE.search(normalized)
+        and _SOFT_REWARD.search(normalized)
+        and _CHANNEL_MARKER.search(normalized)
+        and not _HIGH_IMPACT_REQUEST.search(normalized)
+    ):
+        scam_probability = min(float(scam_probability), 0.69)
 
     return signal_probabilities, scam_probability

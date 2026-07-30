@@ -42,6 +42,10 @@ function escapeCharacterClass(value: string): string {
   return value.replace(/[\\\]\-^]/g, "\\$&");
 }
 
+function escapePattern(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function joinSeparatedRuns(text: string, separators: string[]): string {
   const compact = separators.filter((character) => character !== " ");
   if (!compact.length) return text;
@@ -69,6 +73,16 @@ function matchingText(text: string, bundle: RuleBundle): string {
   );
   if (bundle.l0.strip_diacritics_for_matching) {
     normalized = stripDiacritics(normalized);
+  }
+  const typoAliases = Object.entries(bundle.l0.typo_aliases ?? {}).sort(
+    ([left], [right]) => right.length - left.length,
+  );
+  for (const [source, target] of typoAliases) {
+    const phrase = escapePattern(source).replace(/ /g, "\\s+");
+    normalized = normalized.replace(
+      new RegExp(`\\b${phrase}\\b`, "gu"),
+      target,
+    );
   }
   const words = normalized.split(" ");
   normalized = words

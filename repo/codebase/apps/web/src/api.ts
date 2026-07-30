@@ -29,6 +29,7 @@ export type RuleBundle = {
     strip_invisible: string[];
     strip_diacritics_for_matching: boolean;
     separator_characters: string[];
+    typo_aliases?: Record<string, string>;
     teencode: Record<string, string>;
   };
   l1: {

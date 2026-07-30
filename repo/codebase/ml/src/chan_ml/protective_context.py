@@ -8,6 +8,7 @@ import unicodedata
 import numpy as np
 
 from .constants import SIGNAL_CODES
+from .local_rules import correct_common_typos
 from .normalize import normalize_for_model
 from .guidance import is_victim_recovery_request
 
@@ -52,11 +53,12 @@ _LOW_INFORMATION_ALLOWED = {
 
 def _ascii_normalized(text: str) -> str:
     normalized = normalize_for_model(text)
-    return "".join(
+    ascii_text = "".join(
         char
         for char in unicodedata.normalize("NFD", normalized)
         if unicodedata.category(char) != "Mn"
     ).replace("đ", "d")
+    return correct_common_typos(ascii_text)
 
 
 def _has_positive_request(text: str) -> bool:
@@ -76,6 +78,25 @@ def _is_low_information(text: str) -> bool:
     return bool(words) and len(words) <= 6 and set(words) <= _LOW_INFORMATION_ALLOWED
 
 
+def is_protective_message(text: str) -> bool:
+    """Return whether explicit safety context should suppress rule/model hits."""
+
+    normalized = _ascii_normalized(text)
+    if is_victim_recovery_request(text):
+        return True
+    has_safety_instruction = any(
+        pattern.search(normalized) for pattern in _SAFETY_PATTERNS
+    )
+    benign_context = any(
+        pattern.search(normalized) for pattern in _BENIGN_CONTEXT_PATTERNS
+    )
+    return (
+        has_safety_instruction
+        or benign_context
+        or _is_low_information(normalized)
+    ) and not _has_positive_request(normalized)
+
+
 def apply_protective_context(
     text: str,
     signal_probabilities: np.ndarray,
@@ -87,24 +108,18 @@ def apply_protective_context(
     money, an APK, or device permissions is not suppressed.
     """
 
-    normalized = _ascii_normalized(text)
-    has_safety_instruction = any(
-        pattern.search(normalized) for pattern in _SAFETY_PATTERNS
-    )
     if is_victim_recovery_request(text):
         adjusted = np.asarray(signal_probabilities, dtype=float).copy()
         adjusted *= 0.02
         return adjusted, min(float(scam_probability) * 0.05, 0.05)
-    benign_context = any(
-        pattern.search(normalized) for pattern in _BENIGN_CONTEXT_PATTERNS
-    )
-    if (
-        (benign_context or _is_low_information(normalized))
-        and not _has_positive_request(normalized)
-    ):
+    if is_protective_message(text):
         adjusted = np.asarray(signal_probabilities, dtype=float).copy()
         adjusted *= 0.02
         return adjusted, min(float(scam_probability) * 0.05, 0.05)
+    normalized = _ascii_normalized(text)
+    has_safety_instruction = any(
+        pattern.search(normalized) for pattern in _SAFETY_PATTERNS
+    )
     if not has_safety_instruction or _has_positive_request(normalized):
         return signal_probabilities, scam_probability
 

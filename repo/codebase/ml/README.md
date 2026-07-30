@@ -59,14 +59,15 @@ The current audit of the project folder is:
 - 89,837 source messages;
 - 1,807 unique records after L2 redaction;
 - 88,030 duplicate messages merged;
-- 1,470 train, 169 validation, 168 test;
+- 1,464 train, 145 validation, 198 test;
 - zero exact normalized-text overlap between those three splits.
 
 Because the cleaned team train split is small and has very few positive OTP,
 secrecy and channel-switch samples, use bounded replay from the existing
-curated corpus. The primary dataset is repeated eight times and replay is
-capped at 15,000 examples, producing 26,760 effective train rows while the
-validation and test results still come only from the team dataset.
+curated corpus. The primary dataset is repeated four times, replay is capped
+at 15,000 examples, and one deterministic typo variant is generated for every
+effective training row. This produces 41,712 training examples while the
+validation and test results still come only from untouched team data.
 
 Run these commands in the foreground from `repo/`:
 
@@ -76,14 +77,18 @@ cd /Users/nguyenbao/Batch03-K3-AI-Product-Hackathon-TeamLuaDao/repo
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -e 'codebase/ml[dev,workbook]'
 
-TEAM_DATA=codebase/ml/data/generated/chan-team-clean-v1.jsonl.gz
-RUN_ID=team-candidate-20260730
+TEAM_DATA=codebase/ml/data/generated/chan-team-clean-v4.jsonl.gz
+RUN_ID=team-robust-final
 CANDIDATE_DIR=codebase/ml/artifacts/candidates/$RUN_ID
 
 .venv/bin/chan-prepare-team-data \
   --input CHAN-Dataset \
   --output "$TEAM_DATA" \
-  --seed 20260730
+  --seed 20260731
+
+.venv/bin/chan-audit-dataset \
+  --dataset "$TEAM_DATA" \
+  --output eval/team-dataset-v4-audit.json
 
 .venv/bin/python -m json.tool "$TEAM_DATA.manifest.json"
 
@@ -91,7 +96,13 @@ time .venv/bin/chan-train \
   --dataset "$TEAM_DATA" \
   --replay-dataset codebase/ml/data/generated/chan-synthetic.jsonl.gz \
   --replay-limit 15000 \
-  --primary-weight 8 \
+  --primary-weight 4 \
+  --typo-augmentations 1 \
+  --augmentation-seed 20260731 \
+  --c 2.0 \
+  --scam-c 0.5 \
+  --probability-temperature 0.50 \
+  --max-iter 1000 \
   --output "$CANDIDATE_DIR/chan-signal-model.joblib" \
   --metrics-output "$CANDIDATE_DIR/validation-metrics.json"
 
@@ -105,15 +116,34 @@ time .venv/bin/chan-train \
   --model "$CANDIDATE_DIR/chan-signal-model.joblib" \
   --workbook '/Users/nguyenbao/Downloads/CHẮN_System_TestCases_v1.2.xlsx' \
   --rules codebase/rules/bundle.json \
+  --typo-variants 8 \
+  --typo-seed 20260731 \
   --output "eval/$RUN_ID-golden-results.json"
+
+.venv/bin/chan-evaluate-product \
+  --model "$CANDIDATE_DIR/chan-signal-model.joblib" \
+  --dataset "$TEAM_DATA" \
+  --rules codebase/rules/bundle.json \
+  --split test \
+  --output "eval/$RUN_ID-product-test.json"
 ```
 
 `chan-train` now refuses to run when phishing/legitimate coverage is missing
 or any of the eight signals has no positive training example. It calibrates
 the medium/high scam-intent thresholds using only the team validation split.
-The Excel evaluator prints the real result as `x/20` and saves every case,
-including failures. Do not replace the active artifact until both
+Training augmentation covers missing accents, deletion, adjacent swap,
+keyboard-neighbor replacement, separator insertion, and whitespace changes;
+it never changes validation or test data. The Excel evaluator prints the real
+result as `x/20`, evaluates separately generated typo variants, and saves every
+case including failures. Do not replace the active artifact until both
 `test-metrics.json` and the frozen Excel result have been reviewed.
+
+The promoted `ml-0.5.0` artifact reached 20/20 on the frozen workbook and
+136/136 on deterministic unseen typo variants. On the stricter variable-family
+held-out team test split it reached 93.60% phishing recall with an 8.22%
+legitimate false-positive rate. Full-product signal macro-F1 was 86.61% for
+signals represented in that split. These figures describe the checked
+datasets, not all future scams.
 
 ## API integration
 
@@ -149,9 +179,11 @@ scenarios.
 - `SCENARIO_COVERAGE.md`: versioned 36-family coverage and advisory basis.
 - `src/chan_ml/synthetic.py`: scalable deterministic generator.
 - `src/chan_ml/team_dataset.py`: audited adapter for project-provided data.
+- `src/chan_ml/audit_dataset.py`: all-record label/evidence/leakage audit.
 - `src/chan_ml/model.py`: word/character TF-IDF plus multi-label logistic
   regression.
 - `src/chan_ml/evaluate_workbook.py`: full frozen-golden-set result writer.
+- `src/chan_ml/evaluate_product.py`: L0–L4 product-path evaluation.
 - `src/chan_ml/policy.py`: exact L4 risk thresholds and overrides.
 - `src/chan_ml/metrics.py`: architecture acceptance metrics.
 - `tests/`: policy, leakage, privacy, hard-negative, and end-to-end tests.

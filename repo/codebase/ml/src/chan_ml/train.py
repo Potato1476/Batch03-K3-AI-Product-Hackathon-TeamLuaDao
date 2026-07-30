@@ -10,10 +10,11 @@ from pathlib import Path
 
 import joblib
 
+from .augmentation import augment_text
+from .constants import SIGNAL_CODES
 from .data import read_records
 from .metrics import evaluate_records
 from .model import ModelConfig, PhishingSignalModel
-from .constants import SIGNAL_CODES
 
 
 def _positive_signal_counts(records: list) -> dict[str, int]:
@@ -84,6 +85,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=1,
         help="Repeat the primary train split to keep it influential during replay.",
     )
+    parser.add_argument(
+        "--typo-augmentations",
+        type=int,
+        default=1,
+        help=(
+            "Deterministic label-preserving typo variants added per effective "
+            "training record. Validation/test are never augmented."
+        ),
+    )
+    parser.add_argument("--augmentation-seed", type=int, default=20260730)
     parser.add_argument("--limit", type=int)
     return parser
 
@@ -98,6 +109,8 @@ def main() -> None:
         raise ValueError("--primary-weight must be between 1 and 20")
     if args.replay_limit < 0:
         raise ValueError("--replay-limit must not be negative")
+    if not 0 <= args.typo_augmentations <= 3:
+        raise ValueError("--typo-augmentations must be between 0 and 3")
     primary_train_records = list(
         read_records(args.dataset, split="train", limit=args.limit)
     )
@@ -112,6 +125,22 @@ def main() -> None:
         )
     train_records = primary_train_records * args.primary_weight + replay_records
     signal_counts = _validate_training_coverage(train_records)
+    training_texts = [record.text for record in train_records]
+    training_labels = [record.signals for record in train_records]
+    training_is_phishing = [record.is_phishing for record in train_records]
+    for record_index, record in enumerate(train_records):
+        for variant in range(args.typo_augmentations):
+            training_texts.append(
+                augment_text(
+                    record.text,
+                    seed=args.augmentation_seed,
+                    variant=(
+                        record_index * max(1, args.typo_augmentations) + variant
+                    ),
+                )
+            )
+            training_labels.append(record.signals)
+            training_is_phishing.append(record.is_phishing)
     validation_limit = None if args.limit is None else max(100, args.limit // 8)
     validation_records = list(
         read_records(args.dataset, split="validation", limit=validation_limit)
@@ -132,9 +161,9 @@ def main() -> None:
     )
     model = PhishingSignalModel(config)
     model.fit(
-        [record.text for record in train_records],
-        [record.signals for record in train_records],
-        is_phishing=[record.is_phishing for record in train_records],
+        training_texts,
+        training_labels,
+        is_phishing=training_is_phishing,
         metadata={
             "trained_at": datetime.now(UTC).isoformat(),
             "dataset": args.dataset.name,
@@ -145,6 +174,9 @@ def main() -> None:
                 args.replay_dataset.name if args.replay_dataset else None
             ),
             "replay_examples": len(replay_records),
+            "typo_augmentations_per_record": args.typo_augmentations,
+            "augmentation_seed": args.augmentation_seed,
+            "augmented_examples": len(training_texts) - len(train_records),
             "positive_signal_counts": signal_counts,
             "dataset_generator_version": dataset_manifest.get(
                 "generator_version",
@@ -181,7 +213,10 @@ def main() -> None:
         "primary_examples": len(primary_train_records),
         "primary_weight": args.primary_weight,
         "replay_examples": len(replay_records),
-        "effective_examples": len(train_records),
+        "base_effective_examples": len(train_records),
+        "typo_augmentations_per_record": args.typo_augmentations,
+        "augmented_examples": len(training_texts) - len(train_records),
+        "effective_examples": len(training_texts),
         "positive_signal_counts": signal_counts,
     }
     metrics["dataset_generator_version"] = dataset_manifest.get(
@@ -203,7 +238,7 @@ def main() -> None:
             {
                 "model": str(args.output),
                 "metrics": str(args.metrics_output),
-                "training_examples": len(train_records),
+                "training_examples": len(training_texts),
                 "validation": metrics,
             },
             ensure_ascii=False,
