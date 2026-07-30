@@ -1,0 +1,332 @@
+{
+  "evaluated_at": "2026-07-30T10:29:50.033859+00:00",
+  "model": "chan-signal-model.joblib",
+  "rule_bundle_version": "rb-2026-07-30.2",
+  "pass_count": 13,
+  "total_count": 20,
+  "result": "13/20",
+  "cases": [
+    {
+      "id": "G01",
+      "input": "Chao anh, em la can bo thue quan 1. Ho so thue cua anh co loi, cap nhat ngay trong 2h neu khong se bi khoa tai khoan.",
+      "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "ap_luc_thoi_gian",
+        "mao_danh_tham_quyen"
+      ],
+      "local_signals": [
+        "authority_claim",
+        "time_pressure",
+        "ambiguous_notice"
+      ],
+      "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G02",
+      "input": "Vietcombank thong bao: Tai khoan cua quy khach bi khoa. Vui long dang nhap http://vcb-sec.com de mo lai.",
+      "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+      "actual_risk": "medium",
+      "actual_score": 0.464801,
+      "actual_signals": [
+        "cai_app_ngoai"
+      ],
+      "local_signals": [
+        "generic_url",
+        "suspicious_account_link"
+      ],
+      "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức.",
+      "passed": false,
+      "failures": [
+        "risk=medium not in ['high']",
+        "missing_signals=['mao_danh_tham_quyen']"
+      ]
+    },
+    {
+      "id": "G03",
+      "input": "Chuyen ngay 5 trieu vao STK 123456789 VCB ten Nguyen Van A. Chuyen xong xoa tin nhan, khong noi voi gia dinh.",
+      "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+      "actual_risk": "high",
+      "actual_score": 0.916093,
+      "actual_signals": [
+        "ap_luc_thoi_gian",
+        "tk_ca_nhan",
+        "yeu_cau_bi_mat"
+      ],
+      "local_signals": [
+        "secrecy_request"
+      ],
+      "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G04",
+      "input": "Ma OTP xac thuc giao dich VCB cua ban la 839201. Tuyet doi khong chia se ma nay.",
+      "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+      "actual_risk": "high",
+      "actual_score": 1.0,
+      "actual_signals": [
+        "yeu_cau_otp"
+      ],
+      "local_signals": [],
+      "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G05",
+      "input": "Thong bao tu Cuc Canh sat: Ban co giay phat nguoi 5 trieu. Truy cap http://phatnguoi-gov.com de nộp phat.",
+      "expected": "risk: high. Signals: mao_danh_tham_quyen",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "cai_app_ngoai"
+      ],
+      "local_signals": [
+        "generic_url",
+        "authority_claim"
+      ],
+      "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức.",
+      "passed": false,
+      "failures": [
+        "missing_signals=['mao_danh_tham_quyen']"
+      ]
+    },
+    {
+      "id": "G06",
+      "input": "Thong tin thue bao SIM cua quy khach chua chuan hoa. Se khoai SIM sau 24h. Vui long lien he 0912345678.",
+      "expected": "risk: high. Signals: ap_luc_thoi_gian",
+      "actual_risk": "unknown",
+      "actual_score": 0.189782,
+      "actual_signals": [],
+      "local_signals": [
+        "time_pressure"
+      ],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": false,
+      "failures": [
+        "risk=unknown not in ['high']",
+        "missing_signals=['ap_luc_thoi_gian']"
+      ]
+    },
+    {
+      "id": "G07",
+      "input": "Chuc mung quy khach trung thuong xe SH va 100 trieu. Truy cap http://trungthuong2026.com de nhan thuong.",
+      "expected": "risk: high. Signals: loi_ich_bat_thuong",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "cai_app_ngoai",
+        "loi_ich_bat_thuong"
+      ],
+      "local_signals": [
+        "generic_url",
+        "unusual_reward"
+      ],
+      "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn hứa một khoản lợi ích bất thường.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G08",
+      "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat quyen tro nang.",
+      "expected": "risk: high. Signals: cai_app_ngoai",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "cai_app_ngoai"
+      ],
+      "local_signals": [
+        "apk_link"
+      ],
+      "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G09",
+      "input": "Alo / 123456 / ???",
+      "expected": "risk: unknown, score < 0.35, signals: []",
+      "actual_risk": "unknown",
+      "actual_score": 0.0,
+      "actual_signals": [],
+      "local_signals": [],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G10",
+      "input": "Chuc anh mot ngay tot lang, khi nao ranh qua em choi.",
+      "expected": "risk: unknown, score < 0.10, signals: []",
+      "actual_risk": "unknown",
+      "actual_score": 0.0,
+      "actual_signals": [],
+      "local_signals": [],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G11",
+      "input": "Co oi chau la Tuan day, dien thoai chau bi hong nen dung so nay. Co dang ranh khong chau nho chut viec?",
+      "expected": "risk: medium, score in [0.35, 0.69]",
+      "actual_risk": "unknown",
+      "actual_score": 0.19677,
+      "actual_signals": [],
+      "local_signals": [
+        "identity_change_request"
+      ],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": false,
+      "failures": [
+        "risk=unknown not in ['medium']",
+        "score=0.196770 < 0.35"
+      ]
+    },
+    {
+      "id": "G12",
+      "input": "Tuyen cong tac vien xem Youtube 500k/ngay. Nhap hop thu Zalo 0988776655 de xem chi tiet.",
+      "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+      "actual_risk": "medium",
+      "actual_score": 0.35,
+      "actual_signals": [],
+      "local_signals": [
+        "channel_switch"
+      ],
+      "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+      "passed": false,
+      "failures": [
+        "missing_signals=['chuyen_kenh', 'loi_ich_bat_thuong']"
+      ]
+    },
+    {
+      "id": "G13",
+      "input": "Toi vua bi lua mat 20 trieu qua Zalo, bay gio lam sao de doi lai tien tu ngan hang?",
+      "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+      "actual_risk": "unknown",
+      "actual_score": 0.019471,
+      "actual_signals": [],
+      "local_signals": [
+        "victim_recovery_request"
+      ],
+      "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G14",
+      "input": "Co nen dau tu vao san giao dich coin ABC nay khong, cam ket lai 30%/thang?",
+      "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+      "actual_risk": "unknown",
+      "actual_score": 0.152906,
+      "actual_signals": [],
+      "local_signals": [
+        "unusual_reward"
+      ],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": false,
+      "failures": [
+        "investment warning was not raised"
+      ]
+    },
+    {
+      "id": "G15",
+      "input": "Vietcombank: So du TK 0011001234567 +1,000,000 VND. So du 15,200,000 VND. Ref: Luong T7.",
+      "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+      "actual_risk": "unknown",
+      "actual_score": 0.0,
+      "actual_signals": [],
+      "local_signals": [],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G16",
+      "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Ba con tuyet doi KHONG chuyen tien.",
+      "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+      "actual_risk": "unknown",
+      "actual_score": 0.04717,
+      "actual_signals": [],
+      "local_signals": [
+        "authority_claim"
+      ],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G17",
+      "input": "C.h.a.o a.n.h, e.m l.a c.a.n b.o t.h.u.e, c.a.p n.h.a.t h.o s.o n.g.a.y",
+      "expected": "L0 normalized -> risk: high. Signals: mao_danh_tham_quyen",
+      "actual_risk": "unknown",
+      "actual_score": 0.186535,
+      "actual_signals": [],
+      "local_signals": [
+        "authority_claim",
+        "ambiguous_notice"
+      ],
+      "explanation": "Nhiều đơn vị thật cũng có thể yêu cầu việc này. Bác chỉ nên kiểm tra qua ứng dụng, website hoặc số điện thoại chính thức tự tìm được.",
+      "passed": false,
+      "failures": [
+        "risk=unknown not in ['high']",
+        "missing_signals=['mao_danh_tham_quyen']"
+      ]
+    },
+    {
+      "id": "G18",
+      "input": "Chuc mung ban nhan qua 50Tr. Z.a.l.o: O.9.0.9.1.2.3.4.5.6",
+      "expected": "L0 normalized -> risk: medium / high",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "ap_luc_thoi_gian",
+        "chuyen_kenh",
+        "loi_ich_bat_thuong",
+        "tk_ca_nhan"
+      ],
+      "local_signals": [
+        "unusual_reward"
+      ],
+      "explanation": "Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay. Tin nhắn hứa một khoản lợi ích bất thường.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G19",
+      "input": "Nhấp vào bit.ly/3xYz12 để cập nhật tài khoản VCB gấp trước 17h.",
+      "expected": "Extract URL rút gọn -> risk: high",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "ap_luc_thoi_gian"
+      ],
+      "local_signals": [
+        "url_shortened",
+        "time_pressure"
+      ],
+      "explanation": "Người gửi thúc ép phải làm ngay.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G20",
+      "input": "Gửi mã OTP 6 số vừa nhận để hỗ trợ hủy lệnh chuyển tiền nhầm 50 triệu.",
+      "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+      "actual_risk": "high",
+      "actual_score": 1.0,
+      "actual_signals": [
+        "yeu_cau_otp"
+      ],
+      "local_signals": [],
+      "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+      "passed": true,
+      "failures": []
+    }
+  ]
+}
