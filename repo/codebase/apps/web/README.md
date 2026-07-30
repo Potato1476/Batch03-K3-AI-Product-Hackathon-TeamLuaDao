@@ -63,6 +63,11 @@ Luồng nhập text, OCR ảnh, voice input xử lý cục bộ, kết quả ph�
 prototype. OCR dùng Gateway `/v1/ocr`; voice chỉ được bật khi trình duyệt bảo
 đảm `processLocally`, không tự rơi về cloud speech.
 
+Voice cần trình duyệt hỗ trợ on-device Web Speech và secure context. Demo tại
+`http://localhost:3000` được trình duyệt coi là trusted; truy cập bằng IP LAN
+hoặc deploy cho người dùng thật phải dùng HTTPS. Trình duyệt không đáp ứng sẽ
+hiện hướng dẫn dán chữ/gửi ảnh thay vì gửi âm thanh lên cloud.
+
 Icon dự án do nhóm cung cấp nằm tại [`public/image.png`](public/image.png) và
 được dùng cho favicon cùng PWA manifest. Logo ngang
 [`public/chan-logo-horizontal.svg`](public/chan-logo-horizontal.svg) được dùng
