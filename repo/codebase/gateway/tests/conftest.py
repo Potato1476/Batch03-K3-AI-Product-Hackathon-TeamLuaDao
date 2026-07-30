@@ -132,6 +132,41 @@ class FakeDetectionClient:
     async def healthy(self) -> bool:
         return self.available
 
+    async def analyze_thread(self, body):
+        """Mirror the real service: L5 verdict + model on the asking message."""
+        if not self.available:
+            raise ServiceUnavailableError("detection_service_unavailable")
+        self.last_body = body
+        from chan_ml.thread import THREAD_SIGNAL_LABELS, ThreadMessage, analyze_thread
+
+        thread = analyze_thread(
+            [ThreadMessage(sender=m["sender"], text=m["text"]) for m in body["messages"]],
+            contact_name=body.get("contact_name", ""),
+        )
+        return {
+            "analysis_id": "th_test",
+            "risk": thread.risk,
+            "thread_signals": [
+                {
+                    "code": s.code,
+                    "label": THREAD_SIGNAL_LABELS.get(s.code, s.code),
+                    "confidence": s.confidence,
+                    "evidence": s.evidence,
+                }
+                for s in thread.thread_signals
+            ],
+            "explanation": thread.explanation,
+            "questions": list(thread.questions),
+            "actions": ["report", "share_to_guardian"],
+            "baseline_messages": thread.baseline_messages,
+            "style_distance": thread.style_distance,
+            "insufficient_history": thread.insufficient_history,
+            "ask_message_index": thread.ask_message_index,
+            "ask_message_risk": None,
+            "ask_message_signals": [],
+            "engine_version": "ml-test",
+        }
+
     async def analyze(self, body):
         if not self.available:
             raise ServiceUnavailableError("detection_service_unavailable")

@@ -904,3 +904,78 @@ from chan_api.main import create_app
 print(json.dumps(create_app().openapi(), ensure_ascii=False, indent=2))
 " > gateway-openapi.json
 ```
+
+
+## `POST /v1/analyze-thread` — L5
+
+Phân tích **một đoạn hội thoại** thay vì một tin nhắn. Dùng cho kịch bản tài
+khoản mạng xã hội của người quen bị chiếm: tin nhắn đến từ tài khoản thật nên
+chấm từng tin không phát hiện được, quyết định nằm ở độ lệch giữa liên hệ này
+hôm nay và chính họ trước đó.
+
+```jsonc
+// request
+{
+  "messages": [                       // 2..60 tin, theo thứ tự thời gian
+    { "sender": "contact", "text": "Chào cậu, dạo này thế nào?" },
+    { "sender": "user",    "text": "Tớ vẫn ổn" },
+    { "sender": "contact", "text": "ck giup a 15 trieu vao stk ..." }
+  ],
+  "contact_name": "Minh",             // tuỳ chọn; chỉ so với tên chủ TK trong tin
+  "source": "web",                    // web | android | zalo_oa
+  "locale": "vi-VN"
+}
+```
+
+```jsonc
+// response
+{
+  "analysis_id": "th_...",
+  "risk": "high",
+  "thread_signals": [
+    { "code": "doi_giong_van", "label": "Cách nhắn tin đổi khác so với trước",
+      "confidence": 0.83, "evidence": "..." }
+  ],
+  "explanation": "...",
+  "questions": ["Gọi video cho Minh bằng số cũ..."],
+  "baseline_messages": 3,             // số tin cũ dùng để so
+  "style_distance": 0.52,             // 0 = gõ y hệt, 1 = không còn gì giống
+  "insufficient_history": false,      // true = chưa đủ tin cũ để kết luận
+  "ask_message_index": 5,
+  "ask_message_risk": "medium",       // model 8 dấu hiệu chấm riêng tin hỏi tiền
+  "ask_message_signals": [],
+  "engine_version": "ml-0.5.0"
+}
+```
+
+Mã tín hiệu L5 (`doi_giong_van`, `yeu_cau_tien_dot_ngot`, `ne_goi_thoai`,
+`tk_khac_ten`, `gap_va_bi_mat`) **tách hẳn** khỏi 8 signal code của L3 và không
+bao giờ trùng nhau — có test chặn.
+
+Cần tối thiểu 3 tin nhắn cũ của liên hệ trước lời hỏi tiền. Dưới ngưỡng đó API
+trả `insufficient_history: true` và nói rõ là chưa đủ dữ kiện.
+
+Không ghi gì xuống database (I2). OTP trong bất kỳ tin nào được client chặn ngay
+trên máy, đoạn hội thoại không rời thiết bị (I1).
+
+## `POST /v1/ocr/thread`
+
+Ảnh chụp màn hình đoạn chat → danh sách tin nhắn đã gắn người gửi. Người gửi
+được suy ra từ **vị trí bong bóng theo chiều ngang** (trái = người kia, phải =
+người dùng), vì OCR phẳng làm mất chính thông tin mà L5 cần.
+
+`multipart/form-data`, field `image`, PNG/JPEG/WebP, tối đa 4 MB.
+
+```jsonc
+{
+  "messages": [{ "sender": "contact", "text": "..." }],
+  "provider": "tesseract",
+  "inferred_senders": true,           // luôn true: đây là suy đoán
+  "next_step": "POST /v1/analyze-thread"
+}
+```
+
+`inferred_senders` không phải trang trí: client **bắt buộc** cho người dùng sửa
+người gửi từng dòng trước khi gọi `/v1/analyze-thread`. Trả 422
+`ocr_thread_too_short` khi đọc được dưới 2 tin, 501 `ocr_provider_without_layout`
+khi engine OCR đang cấu hình không đọc được toạ độ.

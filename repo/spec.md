@@ -79,6 +79,15 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
   màn kết quả), quyết định AI ở
   [`detection/src/chan_detection/main.py`](codebase/detection/src/chan_detection/main.py).
 
+  > **⚠️ Cần nhóm quyết trước 23:59 N1.** Bản build hiện có **hai** đường quyết
+  > định: chấm một tin nhắn (trên), và chấm **cả một đoạn hội thoại** để phát
+  > hiện tài khoản người quen bị chiếm (L5 — `ml/src/chan_ml/thread.py`,
+  > `/v1/analyze-thread`). Rubric R2 cho 3 điểm mục "lát cắt đúng format MỘT CÂU,
+  > khớp bản build". Hai lựa chọn:
+  > **(a)** giữ lát cắt một tin nhắn như trên và khai L5 là phần mở rộng ngoài
+  > lát cắt; **(b)** đổi lát cắt sang hội thoại. Không chọn thì người chấm sẽ tự
+  > kết luận là lát cắt không khớp bản build.
+
 - **Non-goals (≥3 thứ KHÔNG build):**
   1. **Không chặn giao dịch.** CHẮN không dừng được lệnh chuyển tiền, không gọi
      ngân hàng, không khoá gì cả. Nó chỉ nói ra thứ nó thấy; người dùng vẫn là
@@ -161,6 +170,10 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
 | 10 | ①/I1 | Tin nhắn chứa hoặc đòi mã OTP | Chặn cứng ngay trên máy, mức `high`, **không gửi byte nào lên server**, kèm câu "Đừng đọc mã cho bất kỳ ai". (golden `G04`, `G20`) |
 | 11 | hạ tầng | Máy chủ CHẮN không phản hồi | Không im lặng, không trả kết quả giả. Hiện lỗi riêng "Chưa kết nối được hệ thống" + nút thử lại, giữ nguyên nội dung người dùng đã nhập. (`errorCopy.backend`) |
 | 12 | hạ tầng | Mất mạng | Banner nói rõ phần nào vẫn chạy: "Mất mạng · kiểm tra trên máy vẫn hoạt động"; tra cứu cộng đồng thì báo không dùng được. (`errorCopy.offline`) |
+| 13 | ④ / L5 | Tài khoản Facebook của người quen bị chiếm; kẻ xấu đọc lịch sử chat, bắt chước xưng hô rồi nhắn vay tiền | Không chấm từng tin (tin đến từ tài khoản thật, câu vay tiền là câu bạn thật cũng nhắn). So cách gõ của liên hệ này với chính họ trước đó + phát hiện né gọi video → cảnh báo kèm việc cần làm: gọi video bằng số cũ. (`ml/src/chan_ml/thread.py`) |
+| 14 | ② / L5 | Bạn thật hỏi vay tiền, cách nhắn tin không đổi | **Không** báo `high`. Vay tiền không phải lừa đảo — chỉ sự thay đổi hành vi mới là dấu hiệu. Có test chặn: `test_the_same_request_from_the_real_friend_is_not_flagged_high` |
+| 15 | ① / L5 | Đoạn hội thoại có ít hơn 3 tin cũ trước lúc hỏi tiền | Nói rõ "chưa đủ tin nhắn cũ để so", không đoán bừa và cũng không im lặng. (`insufficient_history`) |
+| 16 | ② / L5 | Ảnh chụp chat OCR ra nhưng đoán sai ai nhắn tin nào | Nói rõ người gửi là máy đoán từ vị trí bong bóng chat, cho người dùng bấm đổi từng dòng trước khi phân tích. (`/v1/ocr/thread` → `inferred_senders`) |
 
 ## §6. Bốn đường đi của trải nghiệm
 
@@ -238,4 +251,5 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
 |---|---|---|
 | 2026-07-30 | Thêm rule escalation `risk_surface` vào `rules/bundle.json`; màn kết quả tách bạch "cửa lọc giữ lại" với "model đã chấm", thêm nút "Kiểm tra kỹ hơn" | Tin nhắn lừa đảo diễn đạt ngoài danh mục regex bị trả `unknown` tại chỗ mà không bao giờ tới model, hiển thị y hệt kết quả đã chấm. Kiểm chứng: "con là nhân viên ngân hàng, tài khoản của bác đang bị khoá…" bị cửa lọc chặn trong khi model chấm `medium` |
 | 2026-07-30 | Sửa luật `time_pressure`: "gấp" và "gặp" trùng nhau sau khi L0 bỏ dấu | Mọi tin nhắn hẹn gặp đều kích hoạt tín hiệu thúc ép thời gian → báo nhầm trên loại tin nhắn đời thường phổ biến nhất. Có test chặn hồi quy trong `ml/tests/test_local_rules.py` |
+| 2026-07-30 | Thêm tầng L5 phân tích hội thoại (`/v1/analyze-thread`) và OCR đọc bố cục bong bóng chat (`/v1/ocr/thread`) | Kịch bản tài khoản mạng xã hội bị chiếm rồi nhắn vay tiền người thân: quyết định không nằm trong một tin nhắn nào cả, mà ở độ lệch giữa liên hệ này hôm nay và chính họ trước đó. API dùng chung Web/Android; Android đọc thẳng luồng tin, Web đi qua ảnh chụp màn hình |
 | | *(chờ vòng validation CP5)* | |

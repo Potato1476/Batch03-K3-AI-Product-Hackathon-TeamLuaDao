@@ -22,3 +22,15 @@ class OcrEngine(Protocol):
     name: str
 
     async def extract_text(self, image: bytes, *, content_type: str) -> str: ...
+
+
+class LayoutOcrEngine(OcrEngine, Protocol):
+    """An engine that also reports where on the page each line was found.
+
+    Chat screenshots keep who-said-what in the layout, so an engine without
+    this capability cannot serve /v1/ocr/thread.
+    """
+
+    async def extract_layout(
+        self, image: bytes, *, content_type: str
+    ) -> tuple[list, int, int]: ...

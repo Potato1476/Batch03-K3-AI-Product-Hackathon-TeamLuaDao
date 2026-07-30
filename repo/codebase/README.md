@@ -102,11 +102,14 @@ Biến môi trường cần thiết: xem
 | PhishTank connector + hash-only lookup | THẬT | cần PostgreSQL; PhishTank key được khuyến nghị |
 | OpenPhish connector | THẬT nhưng khóa mặc định | chỉ bật sau khi có quyền bằng văn bản |
 | LLM L3 / pgvector similarity | MOCK / chưa nối | giữ đúng giới hạn hackathon trong architecture |
+| L5 phân tích hội thoại | THẬT | `ml/src/chan_ml/thread.py` — xác định, không cần dữ liệu huấn luyện |
+| Gateway `/v1/analyze-thread` | THẬT | dùng chung cho Web và Android |
+| Gateway `/v1/ocr/thread` | THẬT | đọc bố cục bong bóng chat để dựng lại ai nhắn gì |
 | Gateway `/v1/analyze` | THẬT | public edge gọi Detection nội bộ |
 | Gateway `/v1/ocr` | THẬT | Tesseract `vie+eng` tự host, ảnh chỉ đi qua bộ nhớ |
 | Detection `/internal/v1/analyze` | THẬT | L2, Intel lookup và model inference |
 | Web PWA | THẬT | L0/L1, OCR ảnh, local-only voice, `/v1/analyze` và hash-only lookup đã nối Gateway |
-| Android client | Chưa có trong nhánh này | sẽ gọi chung `/v1/analyze` |
+| Android client | Chưa có trong nhánh này | sẽ gọi chung `/v1/analyze` và `/v1/analyze-thread` |
 
 ## Lời gọi AI thật ở quyết định trung tâm
 

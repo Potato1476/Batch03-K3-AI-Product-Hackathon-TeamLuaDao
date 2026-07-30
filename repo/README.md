@@ -29,11 +29,13 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
 
 | # | Mã HV | Họ tên | Vai trò chính |
 |---|---|---|---|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
+| 1 | *(điền)* | Nguyễn Gia Bảo | PM · Solution Architect |
+| 2 | *(điền)* | Nguyễn Lê Minh | Web Developer |
+| 3 | *(điền)* | Nguyễn Thị Lý | Web Developer |
+| 4 | *(điền)* | Hùng Anh | Android Developer |
+| 5 | *(điền)* | Tuấn Anh | Data Engineer |
+
+> Mã HV còn trống — mỗi người tự điền mã của mình trước khi nộp.
 
 ## Phân công có tên từng phần
 
@@ -41,13 +43,21 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
 
 | Phần | File / artifact | Người chịu trách nhiệm | Người hỗ trợ |
 |---|---|---|---|
-| Spec (tổng hợp, §3-§4-§6) | `spec.md` | | |
-| Evidence & impact (§1-§2) | `spec.md` + log mining/khảo sát | | |
-| Prompt & quyết định AI | `codebase/prompts/` | | |
-| Code prototype | `codebase/` | | |
-| Golden set & đo (§7) | `eval/` | | |
-| Validation với user | `validation/` | | |
-| Slide & demo | `demo-slides.pdf` | | |
+| Spec (tổng hợp, §3-§4-§6) | `spec.md` | Nguyễn Gia Bảo | Tuấn Anh |
+| Evidence & impact (§1-§2) | `spec.md` + log mining/khảo sát | **TODO — chưa ai làm, xem cảnh báo dưới** | |
+| Kiến trúc & bất biến bảo mật | `docs/CHAN-ARCHITECTURE.md` | Nguyễn Gia Bảo | |
+| Quyết định AI: model 8 dấu hiệu + L4 policy | `codebase/ml/`, `codebase/detection/` | Tuấn Anh | Nguyễn Gia Bảo |
+| Web PWA (luồng kiểm tra tin nhắn) | `codebase/apps/web/` | Nguyễn Lê Minh | Nguyễn Thị Lý |
+| Web PWA (luồng tra cứu, thiết kế) | `codebase/apps/web/`, `design/` | Nguyễn Thị Lý | Nguyễn Lê Minh |
+| Client Android | *(chưa có trong nhánh này)* | Hùng Anh | |
+| Golden set & đo (§7) | `eval/` | Tuấn Anh | Hùng Anh |
+| Validation với user | `validation/` | **TODO — chưa chạy vòng nào** | |
+| Slide & demo | `demo-slides.pdf` | **TODO — file chưa tồn tại** | |
+
+> **Bảng này là phân công, chưa phải xác nhận.** Luật vibe-coding: bị hỏi tại
+> CP5/CP6 mà không giải thích được phần có tên mình thì phần đó 0 điểm. Mỗi người
+> đọc lại dòng có tên mình, sửa nếu không đúng thực tế, và đảm bảo mở được file đó
+> ra giải thích. Ba dòng TODO chưa có người — cần chốt ngay.
 
 Mỗi thành viên nói ≥1 phần ở CP6; ai đứng tên phần nào phải giải thích được phần đó (vibe-coding rule, rubric §Reflection).
 

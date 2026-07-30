@@ -4,30 +4,39 @@ import { App } from "./App";
 
 const {
   analyzeMessageMock,
+  analyzeThreadMock,
   deepAnalyzeMessageMock,
   extractTextFromImageMock,
+  extractThreadFromImageMock,
   lookupIndicatorMock,
   startLocalSpeechRecognitionMock,
   isLocalSpeechSupportedMock,
 } = vi.hoisted(() => ({
   analyzeMessageMock: vi.fn(),
+  analyzeThreadMock: vi.fn(),
   deepAnalyzeMessageMock: vi.fn(),
   extractTextFromImageMock: vi.fn(),
+  extractThreadFromImageMock: vi.fn(),
   lookupIndicatorMock: vi.fn(),
   startLocalSpeechRecognitionMock: vi.fn(),
   isLocalSpeechSupportedMock: vi.fn(),
 }));
 
-vi.mock("./engine", () => ({
-  analyzeMessage: analyzeMessageMock,
-  deepAnalyzeMessage: deepAnalyzeMessageMock,
-  LOCAL_ENGINE_VERSION: "l1-local",
-}));
+vi.mock("./engine", async (importOriginal) => {
+  const original = await importOriginal<typeof import("./engine")>();
+  return {
+    ...original,
+    analyzeMessage: analyzeMessageMock,
+    analyzeThread: analyzeThreadMock,
+    deepAnalyzeMessage: deepAnalyzeMessageMock,
+  };
+});
 vi.mock("./api", async (importOriginal) => {
   const original = await importOriginal<typeof import("./api")>();
   return {
     ...original,
     extractTextFromImage: extractTextFromImageMock,
+    extractThreadFromImage: extractThreadFromImageMock,
     lookupIndicator: lookupIndicatorMock,
   };
 });
@@ -75,7 +84,9 @@ const localOnlyResult = {
 describe("CHAN web flow", () => {
   beforeEach(() => {
     analyzeMessageMock.mockReset();
+    analyzeThreadMock.mockReset();
     deepAnalyzeMessageMock.mockReset();
+    extractThreadFromImageMock.mockReset();
     extractTextFromImageMock.mockReset();
     lookupIndicatorMock.mockReset();
     startLocalSpeechRecognitionMock.mockReset();
@@ -389,5 +400,92 @@ describe("CHAN web flow", () => {
     expect(screen.getByRole("heading", { name: "Đã có người báo cáo" })).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
     expect(lookupIndicatorMock).toHaveBeenCalledWith("phone", "0393066063");
+  });
+});
+
+describe("CHAN conversation flow", () => {
+  const hijacked = {
+    analysis_id: "th_test",
+    risk: "high",
+    thread_signals: [
+      {
+        code: "doi_giong_van",
+        label: "Cách nhắn tin đổi khác so với trước",
+        confidence: 0.8,
+        evidence: "ck giup a 15 trieu",
+      },
+      {
+        code: "ne_goi_thoai",
+        label: "Né gọi điện hoặc gọi video",
+        confidence: 0.9,
+        evidence: "dang hop k goi dc",
+      },
+    ],
+    explanation: "Cách nhắn tin của người này đã đổi khác so với trước.",
+    questions: ["Gọi video cho Minh bằng số cũ để nghe giọng."],
+    actions: ["report"],
+    baseline_messages: 3,
+    style_distance: 0.52,
+    insufficient_history: false,
+    ask_message_index: 5,
+    ask_message_risk: "medium",
+    ask_message_signals: [],
+    engine_version: "ml-test",
+    rule_bundle_version: "rb-test",
+  };
+
+  beforeEach(() => {
+    analyzeThreadMock.mockReset();
+    extractThreadFromImageMock.mockReset();
+    analyzeThreadMock.mockResolvedValue(hijacked);
+    extractThreadFromImageMock.mockResolvedValue({
+      messages: [
+        { sender: "contact", text: "Chào cậu, dạo này thế nào? 😊" },
+        { sender: "user", text: "Tớ vẫn ổn" },
+        { sender: "contact", text: "ck giup a 15 trieu vao stk 0912345678" },
+      ],
+      provider: "tesseract",
+      inferred_senders: true,
+      next_step: "POST /v1/analyze-thread",
+    });
+  });
+
+  it("reads a conversation screenshot and lets the user fix who said what", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Cả đoạn trò chuyện/i }));
+    const image = new File(["png"], "chat.png", { type: "image/png" });
+    await user.upload(screen.getByLabelText("Ảnh chụp đoạn trò chuyện"), image);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Nội dung tin nhắn 1")).toHaveValue(
+        "Chào cậu, dạo này thế nào? 😊",
+      ),
+    );
+    expect(screen.getByText(/Máy đoán ai nhắn dựa vào vị trí bong bóng chat/i)).toBeInTheDocument();
+
+    // The attribution is a guess, so it has to be correctable.
+    const toggles = screen.getAllByRole("button", { name: /bấm để đổi/i });
+    await user.click(toggles[0]);
+    expect(toggles[0]).toHaveTextContent("Bác");
+  });
+
+  it("warns about a hijacked account using thread-level signals", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Cả đoạn trò chuyện/i }));
+    await user.type(screen.getByLabelText("Bác lưu tên người này là gì?"), "Minh");
+    await user.click(screen.getByRole("button", { name: "Dùng đoạn ví dụ" }));
+    await user.click(screen.getByRole("button", { name: "Kiểm tra đoạn trò chuyện" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Có thể tài khoản đã bị chiếm")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("Cách nhắn tin đổi khác so với trước")).toBeInTheDocument();
+    expect(screen.getByText("Né gọi điện hoặc gọi video")).toBeInTheDocument();
+    expect(screen.getByText(/độ lệch cách nhắn tin 52%/)).toBeInTheDocument();
+    expect(analyzeThreadMock).toHaveBeenCalledWith(expect.any(Array), "Minh");
   });
 });

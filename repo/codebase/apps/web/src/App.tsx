@@ -3,15 +3,20 @@ import { Icon } from "./components/Icon";
 import {
   ChanApiError,
   extractTextFromImage,
+  extractThreadFromImage,
   lookupIndicator,
   type AnalyzeResponse,
+  type AnalyzeThreadResponse,
   type LookupKind,
   type LookupResult as LookupApiResult,
+  type ThreadMessage,
 } from "./api";
 import {
   analyzeMessage,
+  analyzeThread,
   deepAnalyzeMessage,
   LOCAL_ENGINE_VERSION,
+  parseThread,
 } from "./engine";
 import {
   isLocalSpeechSupported,
@@ -21,7 +26,18 @@ import {
   type SpeechErrorCode,
 } from "./speech";
 
-type Screen = "home" | "input" | "loading" | "result" | "check" | "checkResult" | "checkClear" | "shield" | "settings";
+type Screen =
+  | "home"
+  | "input"
+  | "loading"
+  | "result"
+  | "thread"
+  | "threadResult"
+  | "check"
+  | "checkResult"
+  | "checkClear"
+  | "shield"
+  | "settings";
 type SimulationKey = "mic" | "micMissing" | "ocr" | "offline";
 type ErrorKey =
   | SimulationKey
@@ -31,7 +47,8 @@ type ErrorKey =
   | "imageType"
   | "ocrUnavailable"
   | "speechLocal"
-  | "speechLanguage";
+  | "speechLanguage"
+  | "threadTooShort";
 type Simulations = Record<SimulationKey, boolean>;
 
 function formatDuration(seconds: number): string {
@@ -54,6 +71,9 @@ export function App() {
   // The result screen quotes what was actually checked, which may differ from
   // the textarea once the user starts editing the next message.
   const [analyzedMessage, setAnalyzedMessage] = useState("");
+  const [threadMessages, setThreadMessages] = useState<ThreadMessage[]>([]);
+  const [contactName, setContactName] = useState("");
+  const [threadAnalysis, setThreadAnalysis] = useState<AnalyzeThreadResponse | null>(null);
   const [lookupResult, setLookupResult] = useState<LookupApiResult | null>(null);
   const [simulations, setSimulations] = useState<Simulations>({
     mic: false,
@@ -94,6 +114,28 @@ export function App() {
   const runAnalysis = () => runCheck(message, analyzeMessage);
   const runDeepAnalysis = () => runCheck(analyzedMessage, deepAnalyzeMessage);
 
+  const runThreadAnalysis = async () => {
+    if (simulations.offline) {
+      setError("offline");
+      return;
+    }
+    const messages = threadMessages.filter((message) => message.text.trim());
+    if (messages.length < 2) {
+      setError("threadTooShort");
+      return;
+    }
+    setError(null);
+    go("loading");
+    try {
+      const result = await analyzeThread(messages, contactName.trim());
+      setThreadAnalysis(result);
+      go("threadResult");
+    } catch {
+      setError("backend");
+      go("thread");
+    }
+  };
+
   const runLookup = async () => {
     if (simulations.offline) {
       setError("offline");
@@ -127,7 +169,13 @@ export function App() {
         {simulations.offline && <div className="offline-banner"><Icon name="alert" size={20} /> Mất mạng · kiểm tra trên máy vẫn hoạt động</div>}
 
         <main className={`screen screen-${screen}`} key={screen}>
-          {screen === "home" && <Home onInput={() => go("input")} onLookup={() => go("check")} />}
+          {screen === "home" && (
+            <Home
+              onInput={() => go("input")}
+              onThread={() => go("thread")}
+              onLookup={() => go("check")}
+            />
+          )}
           {screen === "input" && (
             <InputScreen
               message={message}
@@ -147,6 +195,22 @@ export function App() {
               onBack={() => go("input")}
               onDeepCheck={() => void runDeepAnalysis()}
             />
+          )}
+          {screen === "thread" && (
+            <ThreadScreen
+              messages={threadMessages}
+              onMessages={setThreadMessages}
+              contactName={contactName}
+              onContactName={setContactName}
+              onBack={() => go("home")}
+              onAnalyze={() => void runThreadAnalysis()}
+              error={error}
+              onError={setError}
+              simulations={simulations}
+            />
+          )}
+          {screen === "threadResult" && threadAnalysis && (
+            <ThreadResult analysis={threadAnalysis} onBack={() => go("thread")} />
           )}
           {screen === "check" && (
             <Lookup
@@ -193,7 +257,15 @@ export function App() {
   );
 }
 
-function Home({ onInput, onLookup }: { onInput: () => void; onLookup: () => void }) {
+function Home({
+  onInput,
+  onThread,
+  onLookup,
+}: {
+  onInput: () => void;
+  onThread: () => void;
+  onLookup: () => void;
+}) {
   return (
     <section className="page home-page">
       <header className="brand-header">
@@ -209,6 +281,10 @@ function Home({ onInput, onLookup }: { onInput: () => void; onLookup: () => void
         <button className="action-card primary" onClick={onInput}>
           <span className="action-icon"><Icon name="message" /></span>
           <span><strong>Tin nhắn đáng ngờ</strong><small>Dán tin nhắn hoặc gửi ảnh chụp</small></span>
+        </button>
+        <button className="action-card secondary" onClick={onThread}>
+          <span className="action-icon"><Icon name="message" /></span>
+          <span><strong>Cả đoạn trò chuyện</strong><small>Nghi người quen bị chiếm tài khoản</small></span>
         </button>
         <button className="action-card secondary" onClick={onLookup}>
           <span className="action-icon"><Icon name="account" /></span>
@@ -672,6 +748,303 @@ function Result({
   );
 }
 
+const sampleThread: ThreadMessage[] = [
+  { sender: "contact", text: "Chào cậu, dạo này công việc thế nào rồi? 😊" },
+  { sender: "user", text: "Tớ vẫn ổn, cậu sao rồi" },
+  { sender: "contact", text: "Mình cũng bình thường thôi. Cuối tuần này rảnh không? ☕" },
+  { sender: "user", text: "Chắc rảnh, sao thế" },
+  { sender: "contact", text: "Đi cà phê nhé, lâu lắm không gặp rồi. 🙂" },
+  { sender: "contact", text: "e dang ket tien qua, ck giup a 15 trieu vao stk 0912345678 duoc k" },
+  { sender: "user", text: "Ơ sao gấp thế, gọi video cho tớ cái" },
+  { sender: "contact", text: "dang hop k goi dc, nhan tin thoi, chuyen gap giup a" },
+];
+
+function ThreadScreen({
+  messages,
+  onMessages,
+  contactName,
+  onContactName,
+  onBack,
+  onAnalyze,
+  error,
+  onError,
+  simulations,
+}: {
+  messages: ThreadMessage[];
+  onMessages: (messages: ThreadMessage[]) => void;
+  contactName: string;
+  onContactName: (value: string) => void;
+  onBack: () => void;
+  onAnalyze: () => void;
+  error: ErrorKey | null;
+  onError: (error: ErrorKey | null) => void;
+  simulations: Simulations;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [provider, setProvider] = useState("");
+  const [pasting, setPasting] = useState(false);
+  const [pasted, setPasted] = useState("");
+  const imageInput = useRef<HTMLInputElement>(null);
+
+  const handleImage = async (file: File | undefined) => {
+    if (!file) return;
+    if (simulations.offline) {
+      onError("offline");
+      return;
+    }
+    if (simulations.ocr) {
+      onError("ocr");
+      return;
+    }
+    onError(null);
+    setProvider("");
+    setBusy(true);
+    try {
+      const result = await extractThreadFromImage(file);
+      onMessages(result.messages);
+      setProvider(result.provider);
+    } catch (ocrError) {
+      if (ocrError instanceof ChanApiError) {
+        if (ocrError.code === "image_too_large") onError("imageTooLarge");
+        else if (ocrError.code === "unsupported_image_type") onError("imageType");
+        else if (ocrError.code === "ocr_thread_too_short") onError("threadTooShort");
+        else if (
+          ocrError.code === "ocr_provider_not_configured" ||
+          ocrError.code === "ocr_provider_not_installed" ||
+          ocrError.code === "ocr_provider_without_layout"
+        ) {
+          onError("ocrUnavailable");
+        } else onError("ocr");
+      } else onError("ocr");
+    } finally {
+      setBusy(false);
+      if (imageInput.current) imageInput.current.value = "";
+    }
+  };
+
+  const update = (index: number, next: Partial<ThreadMessage>) => {
+    onMessages(messages.map((m, i) => (i === index ? { ...m, ...next } : m)));
+  };
+
+  return (
+    <section className="page">
+      <BackButton onClick={onBack} />
+      <h1>Kiểm tra cả đoạn trò chuyện</h1>
+      <p className="page-lead">
+        Khi tài khoản của người quen bị chiếm, kẻ xấu nhắn từ đúng tài khoản đó. Một
+        tin nhắn nhìn không ra — nhưng cách nhắn tin của họ thì đổi khác.
+      </p>
+      {error && error !== "offline" && (
+        <ErrorBox error={error} onClose={() => onError(null)} onAction={() => onError(null)} />
+      )}
+      <label className="field-label" htmlFor="contact">Bác lưu tên người này là gì?</label>
+      <input
+        id="contact"
+        value={contactName}
+        onChange={(event) => onContactName(event.target.value)}
+        placeholder="Ví dụ: Minh"
+      />
+      <input
+        ref={imageInput}
+        className="visually-hidden"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        aria-label="Ảnh chụp đoạn trò chuyện"
+        onChange={(event) => void handleImage(event.target.files?.[0])}
+      />
+      <button
+        type="button"
+        className={`upload-zone${busy ? " busy" : ""}`}
+        disabled={busy}
+        onClick={() => imageInput.current?.click()}
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          event.preventDefault();
+          void handleImage(event.dataTransfer.files[0]);
+        }}
+      >
+        <Icon name="camera" size={40} />
+        <strong>{busy ? "Đang đọc đoạn trò chuyện…" : "Chụp màn hình đoạn trò chuyện"}</strong>
+        <span>Chụp cả những tin cũ trước đó thì máy mới so được</span>
+      </button>
+      {!messages.length && (
+        <button type="button" className="link-button" onClick={() => setPasting(!pasting)}>
+          {pasting ? "Ẩn ô gõ tay" : "Hoặc gõ tay đoạn trò chuyện"}
+        </button>
+      )}
+      {pasting && !messages.length && (
+        <>
+          <p className="input-hint">
+            Mỗi dòng một tin nhắn, bắt đầu bằng <strong>Họ:</strong> hoặc <strong>Tôi:</strong>
+          </p>
+          <textarea
+            className="thread-input"
+            aria-label="Gõ đoạn trò chuyện"
+            value={pasted}
+            onChange={(event) => setPasted(event.target.value)}
+            placeholder={"Họ: Chào cậu, dạo này thế nào?\nTôi: Tớ vẫn ổn\nHọ: cho a muon 5 trieu voi"}
+          />
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={parseThread(pasted).length < 2}
+            onClick={() => onMessages(parseThread(pasted))}
+          >
+            Dùng đoạn vừa gõ
+          </button>
+        </>
+      )}
+      {messages.length > 0 && (
+        <>
+          <h2>Đoạn trò chuyện đọc được</h2>
+          {provider && (
+            <p className="input-status" role="status">
+              Đã đọc ảnh bằng {provider}. Máy đoán ai nhắn dựa vào vị trí bong bóng chat —
+              bác bấm để sửa nếu sai.
+            </p>
+          )}
+          <div className="thread-rows">
+            {messages.map((message, index) => (
+              <div className={`thread-row ${message.sender}`} key={index}>
+                <button
+                  type="button"
+                  className="sender-toggle"
+                  aria-label={`Tin này của ${message.sender === "contact" ? "họ" : "bác"} — bấm để đổi`}
+                  onClick={() =>
+                    update(index, {
+                      sender: message.sender === "contact" ? "user" : "contact",
+                    })
+                  }
+                >
+                  {message.sender === "contact" ? "Họ" : "Bác"}
+                </button>
+                <input
+                  aria-label={`Nội dung tin nhắn ${index + 1}`}
+                  value={message.text}
+                  onChange={(event) => update(index, { text: event.target.value })}
+                />
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => {
+              onMessages([]);
+              setProvider("");
+            }}
+          >
+            Xoá và chụp lại
+          </button>
+        </>
+      )}
+      <div className="thread-meta">
+        <span>
+          {messages.length} tin nhắn · {messages.filter((m) => m.sender === "contact").length} tin của họ
+        </span>
+        <button type="button" className="link-button" onClick={() => onMessages(sampleThread)}>
+          Dùng đoạn ví dụ
+        </button>
+      </div>
+      <button className="cta danger" disabled={messages.length < 2} onClick={onAnalyze}>
+        Kiểm tra đoạn trò chuyện
+      </button>
+      <InfoBox>
+        Mã OTP xuất hiện ở bất kỳ tin nào đều được chặn ngay trên máy, không gửi đi đâu.
+        Ảnh chỉ đi qua bộ nhớ rồi xoá. Tên người quen chỉ dùng để so với tên chủ tài khoản
+        trong tin nhắn, không được lưu.
+      </InfoBox>
+    </section>
+  );
+}
+
+const threadRiskCopy = {
+  high: {
+    hero: "danger-hero",
+    pill: "NGUY CƠ CAO",
+    title: "Có thể tài khoản đã bị chiếm",
+    guidance: "Đừng chuyển tiền cho tới khi nghe được giọng họ.",
+  },
+  medium: {
+    hero: "warning-hero",
+    pill: "CẦN KIỂM TRA",
+    title: "Nên xác minh trước khi chuyển",
+    guidance: "Gọi trực tiếp cho người đó bằng số cũ.",
+  },
+  unknown: {
+    hero: "neutral-hero",
+    pill: "CHƯA ĐỦ DẤU HIỆU",
+    title: "Chưa thấy dấu hiệu bất thường",
+    guidance: "Kết quả này không có nghĩa là an toàn.",
+  },
+} as const;
+
+function ThreadResult({
+  analysis,
+  onBack,
+}: {
+  analysis: AnalyzeThreadResponse;
+  onBack: () => void;
+}) {
+  const copy = threadRiskCopy[analysis.risk];
+  return (
+    <section>
+      <div className={`risk-hero ${copy.hero}`}>
+        <BackButton onClick={onBack} label="Quay lại" />
+        <span className="hero-pill">{copy.pill}</span>
+        <h1>{copy.title}</h1>
+        <p><strong>{copy.guidance}</strong></p>
+      </div>
+      <div className="page result-body">
+        <div className="source-card">
+          <span>LUỒNG</span>
+          <p>
+            So trên {analysis.baseline_messages} tin nhắn cũ của người này
+            {analysis.style_distance !== null &&
+              ` · độ lệch cách nhắn tin ${(analysis.style_distance * 100).toFixed(0)}%`}
+          </p>
+        </div>
+        {analysis.insufficient_history && (
+          <div className="deep-check">
+            <h2>Chưa đủ tin nhắn cũ để so</h2>
+            <p>
+              Máy cần ít nhất 3 tin nhắn cũ của người này trước lúc họ hỏi tiền thì mới
+              so được cách nhắn tin. Bác dán thêm đoạn cũ hơn rồi kiểm tra lại.
+            </p>
+          </div>
+        )}
+        <h2>Dấu hiệu tìm thấy trong cả đoạn</h2>
+        {analysis.thread_signals.length ? (
+          <div className="signal-list">
+            {analysis.thread_signals.map((signal) => (
+              <article className="signal hit" key={signal.code}>
+                <span className="signal-mark">!</span>
+                <div>
+                  <h3>{signal.label}</h3>
+                  {signal.evidence && <blockquote>“{signal.evidence}”</blockquote>}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="input-status">Không tìm thấy dấu hiệu bất thường nào trong đoạn này.</p>
+        )}
+        <div className="recommendation">
+          <h2>{analysis.questions.length ? "Bác hãy làm thế này" : "Kết luận"}</h2>
+          {analysis.questions.map((question) => <p key={question}>{question}</p>)}
+          {!analysis.questions.length && <p>{analysis.explanation}</p>}
+          <small>{analysis.explanation}</small>
+        </div>
+        <div className="disclaimer">
+          CHẮN so cách nhắn tin, không đọc được suy nghĩ. Cách chắc chắn nhất vẫn là
+          <strong> nghe được giọng người đó</strong> trước khi chuyển tiền.
+        </div>
+        <button className="secondary-button" onClick={onBack}>Kiểm tra đoạn khác</button>
+      </div>
+    </section>
+  );
+}
+
 function Lookup({
   kind,
   value,
@@ -841,6 +1214,7 @@ const errorCopy: Record<ErrorKey, { title: string; body: string; action: string 
   offline: { title: "Mất mạng", body: "CHAN vẫn quét được quy tắc trên máy, nhưng chưa tra được danh sách tài khoản.", action: "Thử lại" },
   backend: { title: "Chưa kết nối được hệ thống", body: "Máy chủ CHAN chưa sẵn sàng. Bác thử lại sau ít phút.", action: "Thử lại" },
   lookupInvalid: { title: "Thông tin chưa đúng định dạng", body: "Bác kiểm tra lại số tài khoản, số điện thoại hoặc đường link.", action: "Sửa lại" },
+  threadTooShort: { title: "Cần ít nhất hai tin nhắn", body: "Để so được cách nhắn tin trước và sau, bác dán thêm vài tin nhắn cũ của người đó.", action: "Dán thêm" },
 };
 
 function ErrorBox({ error, onAction, onClose }: { error: ErrorKey; onAction: () => void; onClose: () => void }) {

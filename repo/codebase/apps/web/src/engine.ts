@@ -1,8 +1,11 @@
 import {
   analyzeOnServer,
+  analyzeThreadOnServer,
   fetchRuleBundle,
   type AnalyzeResponse,
+  type AnalyzeThreadResponse,
   type RuleBundle,
+  type ThreadMessage,
 } from "./api";
 
 let bundlePromise: Promise<RuleBundle> | null = null;
@@ -209,4 +212,80 @@ export async function deepAnalyzeMessage(
 
 export function resetRuleBundleForTests(): void {
   bundlePromise = null;
+}
+
+/**
+ * Parse a pasted conversation. Each line is one message, prefixed by who sent
+ * it. Anything unprefixed continues the previous message, because people paste
+ * messages that wrap onto several lines.
+ */
+export function parseThread(raw: string): ThreadMessage[] {
+  const messages: ThreadMessage[] = [];
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const match = /^(họ|ho|hắn|han|nó|no|người kia|tôi|toi|mình|minh|em|con)\s*[::]\s*(.*)$/i.exec(
+      trimmed,
+    );
+    if (match) {
+      const who = match[1].toLocaleLowerCase("vi");
+      const isUser = ["tôi", "toi", "mình", "minh", "em", "con"].includes(who);
+      const text = match[2].trim();
+      if (text) messages.push({ sender: isUser ? "user" : "contact", text });
+      continue;
+    }
+    const previous = messages[messages.length - 1];
+    if (previous) {
+      messages[messages.length - 1] = {
+        ...previous,
+        text: `${previous.text} ${trimmed}`.trim(),
+      };
+    } else {
+      messages.push({ sender: "contact", text: trimmed });
+    }
+  }
+  return messages;
+}
+
+function localThreadHigh(bundle: RuleBundle): AnalyzeThreadResponse {
+  return {
+    analysis_id: `local_${crypto.randomUUID()}`,
+    risk: "high",
+    thread_signals: [
+      {
+        code: "yeu_cau_otp",
+        label: "Có người đòi mã xác nhận trong đoạn trò chuyện",
+        confidence: 1,
+        evidence: "",
+      },
+    ],
+    explanation:
+      "Trong đoạn trò chuyện này có người đang hỏi mã xác nhận. Đừng đọc mã cho bất kỳ ai, kể cả người quen.",
+    questions: ["Tại sao họ cần mã xác nhận của tôi?"],
+    actions: ["report", "share_to_guardian"],
+    baseline_messages: 0,
+    style_distance: null,
+    insufficient_history: false,
+    ask_message_index: null,
+    ask_message_risk: "high",
+    ask_message_signals: [],
+    engine_version: LOCAL_ENGINE_VERSION,
+    rule_bundle_version: bundle.bundle_version,
+  };
+}
+
+/**
+ * L5 — judge a conversation. I1 still wins: if any turn contains or asks for an
+ * OTP, the verdict is made on the device and the thread never leaves it.
+ */
+export async function analyzeThread(
+  messages: ThreadMessage[],
+  contactName: string,
+): Promise<AnalyzeThreadResponse> {
+  const bundle = await ruleBundle();
+  const containsOtp = messages.some((message) =>
+    matchesAny(matchingText(message.text, bundle), bundle.l1.otp_block.patterns),
+  );
+  if (containsOtp) return localThreadHigh(bundle);
+  return analyzeThreadOnServer({ messages, contactName });
 }

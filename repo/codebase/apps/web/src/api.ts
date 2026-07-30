@@ -20,6 +20,37 @@ export type AnalyzeResponse = {
   rule_bundle_version: string;
 };
 
+export type ThreadSender = "contact" | "user";
+
+export type ThreadMessage = {
+  sender: ThreadSender;
+  text: string;
+};
+
+export type ThreadSignal = {
+  code: string;
+  label: string;
+  confidence: number;
+  evidence: string;
+};
+
+export type AnalyzeThreadResponse = {
+  analysis_id: string;
+  risk: Risk;
+  thread_signals: ThreadSignal[];
+  explanation: string;
+  questions: string[];
+  actions: string[];
+  baseline_messages: number;
+  style_distance: number | null;
+  insufficient_history: boolean;
+  ask_message_index: number | null;
+  ask_message_risk: Risk | null;
+  ask_message_signals: SignalResult[];
+  engine_version: string;
+  rule_bundle_version: string | null;
+};
+
 export type RuleBundle = {
   bundle_version: string;
   l0: {
@@ -181,6 +212,50 @@ export async function analyzeOnServer(input: {
   });
   if (!response.ok) throw await errorFrom(response);
   return (await response.json()) as AnalyzeResponse;
+}
+
+export type OcrThreadResponse = {
+  messages: ThreadMessage[];
+  provider: string;
+  inferred_senders: boolean;
+  next_step: "POST /v1/analyze-thread";
+};
+
+/** Screenshot of a chat to an attributed thread. Senders are a guess. */
+export async function extractThreadFromImage(
+  image: File,
+): Promise<OcrThreadResponse> {
+  if (!OCR_IMAGE_TYPES.has(image.type)) {
+    throw new ChanApiError(415, "unsupported_image_type");
+  }
+  if (image.size === 0) throw new ChanApiError(422, "empty_image");
+  if (image.size > OCR_MAX_BYTES) throw new ChanApiError(413, "image_too_large");
+  const form = new FormData();
+  form.set("image", image, image.name);
+  const response = await authenticatedFetch("/v1/ocr/thread", {
+    method: "POST",
+    body: form,
+  });
+  if (!response.ok) throw await errorFrom(response);
+  return (await response.json()) as OcrThreadResponse;
+}
+
+export async function analyzeThreadOnServer(input: {
+  messages: ThreadMessage[];
+  contactName: string;
+}): Promise<AnalyzeThreadResponse> {
+  const response = await authenticatedFetch("/v1/analyze-thread", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messages: input.messages,
+      contact_name: input.contactName,
+      source: "web",
+      locale: "vi-VN",
+    }),
+  });
+  if (!response.ok) throw await errorFrom(response);
+  return (await response.json()) as AnalyzeThreadResponse;
 }
 
 // Vercel Functions accept request bodies up to 4.5 MB. Keep enough multipart

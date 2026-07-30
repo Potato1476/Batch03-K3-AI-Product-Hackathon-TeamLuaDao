@@ -12,11 +12,24 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from chan_ml.redact import RedactionError, redact_l2
+from chan_ml.thread import (
+    THREAD_SIGNAL_LABELS,
+    ThreadMessage,
+    analyze_thread,
+)
 
 from .config import DetectionConfig
 from .intel import IntelLookupClient
 from .runtime import ModelPrediction, ModelRuntime, RuntimeProvider
-from .schemas import AnalyzeRequest, AnalyzeResponse, Risk, SignalResult
+from .schemas import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    AnalyzeThreadRequest,
+    AnalyzeThreadResponse,
+    Risk,
+    SignalResult,
+    ThreadSignalResult,
+)
 from .security import require_gateway
 
 _ACTIONS: dict[Risk, list[str]] = {
@@ -171,6 +184,80 @@ def create_app() -> FastAPI:
             rule_bundle_version=payload.rule_bundle_version,
             truncated=payload.truncated,
             blocklist_match=blocklist_match,
+        )
+
+    @application.post(
+        "/internal/v1/analyze-thread", response_model=AnalyzeThreadResponse
+    )
+    def analyze_conversation(
+        payload: AnalyzeThreadRequest,
+        _gateway: None = Depends(require_gateway),
+        runtime: ModelRuntime = Depends(get_runtime),
+    ) -> AnalyzeThreadResponse:
+        """L5: judge a conversation against the contact's own past.
+
+        A hijacked account writes one message that a real friend could also
+        write. The decision therefore has to be made across turns, on features
+        that survive impersonation: how this person types, whether they have
+        ever asked for money here, and whether they will take a call.
+        """
+        messages = [
+            ThreadMessage(sender=item.sender, text=item.text)
+            for item in payload.messages
+        ]
+        thread = analyze_thread(messages, contact_name=payload.contact_name)
+
+        # The message that asked for money still goes through the eight-signal
+        # model, so a thread that is *also* a classic scam picks up both.
+        ask_risk: Risk | None = None
+        ask_signals: list[SignalResult] = []
+        if thread.ask_message_index is not None:
+            try:
+                redaction = redact_l2(messages[thread.ask_message_index].text)
+            except RedactionError as error:
+                raise HTTPException(
+                    status_code=422,
+                    detail="content_failed_redaction_check",
+                ) from error
+            if redaction.otp_found:
+                ask_risk = "high"
+                ask_signals = [
+                    SignalResult(code="yeu_cau_otp", confidence=1.0, evidence="")
+                ]
+            else:
+                prediction = runtime.predict(redaction.text)
+                ask_risk = cast(Risk, prediction["risk"])
+                ask_signals = [
+                    SignalResult(**signal) for signal in prediction["signals"]
+                ]
+
+        risk = cast(Risk, thread.risk)
+        # A thread never talks its way down out of a per-message verdict.
+        if ask_risk == "high" or (ask_risk == "medium" and risk == "unknown"):
+            risk = ask_risk
+        return AnalyzeThreadResponse(
+            analysis_id=f"th_{uuid4().hex[:12]}",
+            risk=risk,
+            thread_signals=[
+                ThreadSignalResult(
+                    code=signal.code,
+                    label=THREAD_SIGNAL_LABELS.get(signal.code, signal.code),
+                    confidence=signal.confidence,
+                    evidence=signal.evidence,
+                )
+                for signal in thread.thread_signals
+            ],
+            explanation=thread.explanation,
+            questions=list(thread.questions),
+            actions=list(_ACTIONS[risk]),
+            baseline_messages=thread.baseline_messages,
+            style_distance=thread.style_distance,
+            insufficient_history=thread.insufficient_history,
+            ask_message_index=thread.ask_message_index,
+            ask_message_risk=ask_risk,
+            ask_message_signals=ask_signals,
+            engine_version=runtime.model_version,
+            rule_bundle_version=payload.rule_bundle_version,
         )
 
     return application

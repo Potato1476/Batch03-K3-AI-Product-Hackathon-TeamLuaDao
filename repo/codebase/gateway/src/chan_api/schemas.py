@@ -190,3 +190,58 @@ class OcrResponse(Base):
 
 class ErrorResponse(Base):
     detail: str
+
+
+# --- L5: conversation-level analysis ----------------------------------------
+
+
+class ThreadMessageIn(Base):
+    sender: Literal["contact", "user"]
+    text: str = Field(min_length=1, max_length=2_000)
+
+
+class AnalyzeThreadRequest(Base):
+    messages: list[ThreadMessageIn] = Field(min_length=2, max_length=60)
+    #: The name the user knows this contact by. Compared only against a name
+    #: written inside the thread; never stored (I2).
+    contact_name: str = Field(default="", max_length=80)
+    source: Source
+    locale: str = Field(default="vi-VN", max_length=16)
+
+
+class ThreadSignalOut(Base):
+    code: str = Field(max_length=64)
+    label: str = Field(max_length=120)
+    confidence: float = Field(ge=0.0, le=1.0)
+    evidence: str = Field(default="", max_length=240)
+
+
+class AnalyzeThreadResponse(Base):
+    analysis_id: str
+    risk: Risk
+    thread_signals: list[ThreadSignalOut]
+    explanation: str
+    questions: list[str]
+    actions: list[Action]
+    baseline_messages: int
+    style_distance: float | None = None
+    insufficient_history: bool = False
+    ask_message_index: int | None = None
+    ask_message_risk: Risk | None = None
+    ask_message_signals: list[SignalOut] = []
+    engine_version: str
+    rule_bundle_version: str | None = None
+
+
+class OcrThreadMessageOut(Base):
+    sender: Literal["contact", "user"]
+    text: str = Field(max_length=2_000)
+
+
+class OcrThreadResponse(Base):
+    """Sender is inferred from bubble position and must stay correctable."""
+
+    messages: list[OcrThreadMessageOut]
+    provider: str
+    inferred_senders: bool = True
+    next_step: Literal["POST /v1/analyze-thread"] = "POST /v1/analyze-thread"

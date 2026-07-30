@@ -131,6 +131,7 @@ Hai vai người dùng:
 | **L2** ẩn danh hóa | server biên | xóa PII trước khi tới LLM |
 | **L3** phân loại | server | LLM chấm 8 dấu hiệu + pgvector similarity |
 | **L4** tổng hợp | server | cộng điểm, áp ngưỡng, định hình output |
+| **L5** hội thoại | server | so một liên hệ với chính họ trong quá khứ — phát hiện tài khoản bị chiếm |
 
 L0+L1 sinh từ **cùng một** `packages/rules/*.json` cho cả TS và Kotlin → tương đương được bảo đảm bằng **dữ liệu**, không bằng kỷ luật lập trình.
 
@@ -216,6 +217,44 @@ Văn phong `explanation` và `questions`: viết cho người 60 tuổi đọc t
 
 ---
 
+## 6b. L5 — Hội thoại: tài khoản người quen bị chiếm
+
+Kịch bản: tài khoản Facebook/Zalo của một người bị chiếm, kẻ xấu đọc lịch sử
+chat, bắt chước cách xưng hô rồi nhắn cho người thân và bạn bè để vay tiền.
+
+**Vì sao L0-L4 không bắt được.** Tin nhắn đến từ đúng tài khoản thật, đúng tên
+thật, và câu hỏi vay tiền là câu một người bạn thật cũng nhắn. Chấm từng tin một
+thì không có gì để bám: hoặc bỏ sót, hoặc báo nhầm mọi lần có người hỏi vay tiền.
+
+**Quyết định nằm ở đâu.** Không nằm trong nội dung tin nhắn mà nằm ở **độ lệch
+giữa người này hôm nay và chính họ trước đó**. Bốn đặc trưng, tất cả đều xác
+định, không cần dữ liệu huấn luyện:
+
+| Tín hiệu L5 | Đo cái gì |
+|---|---|
+| `doi_giong_van` | Hồ sơ cách gõ: tỉ lệ dùng dấu, độ dài tin, emoji, dấu câu cuối câu, viết hoa đầu câu, tập từ xưng hô — so đoạn trước và đoạn sau lúc hỏi tiền |
+| `yeu_cau_tien_dot_ngot` | Lần đầu tiên có lời hỏi tiền trong cả đoạn |
+| `ne_goi_thoai` | Người dùng đề nghị gọi điện/video, phía kia lảng đi ("đang họp", "mic hỏng", "nhắn tin thôi") |
+| `tk_khac_ten` | Tên chủ tài khoản viết trong tin khác tên người dùng lưu liên hệ |
+
+**Bất biến.** Vốn từ L5 tách hẳn khỏi 8 signal code của L3: `mao_danh_tham_quyen`
+nghĩa là mạo danh cơ quan chức năng, dùng lại nó cho một người bạn bị hack sẽ
+sinh ra lời giải thích sai sự thật với người dùng. I1 vẫn thắng: OTP xuất hiện ở
+bất kỳ tin nào trong đoạn thì chặn ngay trên máy, cả đoạn không rời thiết bị. L5
+không ghi gì xuống database — I2 áp cho hội thoại y như cho tin nhắn.
+
+**Ngưỡng.** Cần tối thiểu 3 tin nhắn cũ của liên hệ trước lúc hỏi tiền thì mới so
+được. Dưới ngưỡng đó, hệ thống **nói rõ là chưa đủ dữ kiện** (lớp chỗ khó ①) chứ
+không đoán bừa và cũng không im lặng.
+
+**Đầu vào khác nhau theo client.** Android đọc được luồng tin nhắn nên gửi thẳng
+danh sách tin. Web không có quyền đó, nên đường vào là ảnh chụp màn hình đoạn
+chat: `/v1/ocr/thread` đọc bố cục bong bóng (trái = người kia, phải = người dùng)
+để dựng lại ai nhắn gì. **Suy đoán này có thể sai**, nên client bắt buộc cho
+người dùng sửa từng dòng trước khi phân tích.
+
+---
+
 ## 7. Hợp đồng API
 
 Mặt phẳng bảo đảm tương đương. Mọi client gọi cùng tập endpoint, nhận cùng cấu trúc. `source` chỉ dùng cho analytics, **không** làm thay đổi logic.
@@ -224,6 +263,8 @@ Mặt phẳng bảo đảm tương đương. Mọi client gọi cùng tập endp
 |---|---|---|
 | `/v1/analyze` | POST | phân tích một mẩu nội dung |
 | `/v1/ocr` | POST | ảnh → text, client gọi tiếp `/analyze` |
+| `/v1/analyze-thread` | POST | phân tích cả một đoạn hội thoại (L5) |
+| `/v1/ocr/thread` | POST | ảnh chụp đoạn chat → danh sách tin nhắn có người gửi, client gọi tiếp `/analyze-thread` |
 | `/v1/lookup/account` | GET | tra TK theo prefix hash |
 | `/v1/lookup/phone` | GET | tra SĐT đã bị báo cáo |
 | `/v1/lookup/url` | GET | tra tên miền / link |

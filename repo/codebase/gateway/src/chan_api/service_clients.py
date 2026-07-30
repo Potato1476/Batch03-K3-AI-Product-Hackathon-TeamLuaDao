@@ -41,12 +41,18 @@ class DetectionClient:
         self._timeout = timeout_seconds
 
     async def analyze(self, body: dict[str, Any]) -> dict[str, Any]:
+        return await self._post("/internal/v1/analyze", body)
+
+    async def analyze_thread(self, body: dict[str, Any]) -> dict[str, Any]:
+        return await self._post("/internal/v1/analyze-thread", body)
+
+    async def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         if not self._base_url or not self._api_key:
             raise ServiceUnavailableError("detection_service_not_configured")
         try:
             async with httpx.AsyncClient(timeout=self._timeout) as client:
                 response = await client.post(
-                    f"{self._base_url}/internal/v1/analyze",
+                    f"{self._base_url}{path}",
                     json=body,
                     headers={"X-CHAN-Detection-Key": self._api_key},
                 )

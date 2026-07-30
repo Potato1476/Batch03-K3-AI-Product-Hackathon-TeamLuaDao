@@ -81,3 +81,48 @@ class AnalyzeResponse(BaseModel):
     rule_bundle_version: str | None = None
     truncated: bool
     blocklist_match: bool = False
+
+
+# --- L5: conversation-level analysis ----------------------------------------
+
+
+class ThreadMessageIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sender: Literal["contact", "user"]
+    text: str = Field(min_length=1, max_length=2_000)
+
+
+class AnalyzeThreadRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    messages: list[ThreadMessageIn] = Field(min_length=2, max_length=60)
+    contact_name: str = Field(default="", max_length=80)
+    source: InputSource
+    locale: Literal["vi-VN"] = "vi-VN"
+    rule_bundle_version: str | None = Field(default=None, max_length=64)
+
+
+class ThreadSignalResult(BaseModel):
+    code: str
+    label: str
+    confidence: float = Field(ge=0.0, le=1.0)
+    evidence: str = Field(max_length=240)
+
+
+class AnalyzeThreadResponse(BaseModel):
+    analysis_id: str
+    risk: Risk
+    thread_signals: list[ThreadSignalResult]
+    explanation: str
+    questions: list[str]
+    actions: list[str]
+    baseline_messages: int
+    style_distance: float | None = None
+    insufficient_history: bool = False
+    #: Per-message verdict for the message that asked for money, when there is one.
+    ask_message_index: int | None = None
+    ask_message_risk: Risk | None = None
+    ask_message_signals: list[SignalResult] = []
+    engine_version: str
+    rule_bundle_version: str | None = None
