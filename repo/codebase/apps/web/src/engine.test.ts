@@ -39,6 +39,13 @@ const bundle = {
         boost_signal: "mao_danh_tham_quyen",
         boost: 0.2,
       },
+      delivery_payment_request: {
+        patterns: [
+          "(?i)(?=.*\\b(?:don hang|giao hang|shipper|buu pham|goi hang)\\b)(?=.*\\b(?:chuyen (?:tien|khoan)|gui tien|thanh toan (?:ho|truoc)|dong phi|tra tien giup)\\b)(?=.*\\b(?:ngoai cua|nha hang xom|nhan sau|lay sau|giu don)\\b)",
+        ],
+        boost_signal: "tk_ca_nhan",
+        boost: 0.2,
+      },
       truncation_marker: {
         patterns: ["\\.\\.\\.$"],
         boost_signal: null,
@@ -81,5 +88,21 @@ describe("on-device L0/L1 gate", () => {
     expect(result.risk).toBe("unknown");
     expect(result.engine_version).toBe("l1-local");
     expect(analyzeOnServerMock).not.toHaveBeenCalled();
+  });
+
+  it("sends a soft fake-shipper payment request to the server", async () => {
+    analyzeOnServerMock.mockResolvedValue({
+      analysis_id: "an_shipper",
+      risk: "medium",
+    });
+    const text =
+      "Chào bác Lý, bác có đơn hàng ở ngoài cửa, cháu gửi hàng ở nhà hàng xóm, " +
+      "bác chuyển tiền giúp cháu rồi về nhận sau nhé";
+    await analyzeMessage(text);
+    expect(analyzeOnServerMock).toHaveBeenCalledWith({
+      text,
+      localSignals: ["delivery_payment_request"],
+      truncated: false,
+    });
   });
 });

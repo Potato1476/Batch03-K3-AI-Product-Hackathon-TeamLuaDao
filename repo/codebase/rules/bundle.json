@@ -1,5 +1,5 @@
 {
-  "bundle_version": "rb-2026-07-30",
+  "bundle_version": "rb-2026-07-30.1",
   "schema_version": 1,
   "generated_for": "L0 normalize + L1 deterministic rules, on-device",
   "notice": "NGUỒN DUY NHẤT cho tầng luật. Bản TypeScript (Web) và bản Kotlin (Android) đọc cùng file này. Không hardcode regex/blacklist trong apps/*.",
@@ -129,6 +129,14 @@
         ],
         "boost_signal": "loi_ich_bat_thuong",
         "boost": 0.12
+      },
+      "delivery_payment_request": {
+        "patterns": [
+          "(?i)(?=.*\\b(?:don hang|giao hang|shipper|buu pham|goi hang)\\b)(?=.*\\b(?:chuyen (?:tien|khoan)|gui tien|thanh toan (?:ho|truoc)|dong phi|tra tien giup)\\b)(?=.*\\b(?:ngoai cua|nha hang xom|nhan sau|lay sau|giu don|don chua thanh toan|giao nham|hoi vien|huy don|dang ky)\\b)"
+        ],
+        "boost_signal": "tk_ca_nhan",
+        "boost": 0.20,
+        "comment": "Chỉ khớp khi đồng thời có ngữ cảnh giao hàng, yêu cầu tiền và cách giao/nhận bất thường."
       },
       "truncation_marker": {
         "patterns": ["\\u2026$", "\\.\\.\\.$", "(?i)\\[\\s*\\d+\\s*tin\\s*nhắn\\s*\\]"],

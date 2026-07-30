@@ -103,10 +103,17 @@ EMERGING_SCAM_SPECS: tuple[ScenarioTemplateSpec, ...] = (
     ScenarioTemplateSpec(
         "shipper",
         "fake_shipper",
-        "Shipper báo đơn chưa thanh toán. Chuyển phí giữ đơn vào <ACCOUNT> ngay rồi kết bạn {channel} để hủy đăng ký.",
-        "Đơn giao nhầm đã kích hoạt hội viên. Muốn tránh trừ tiền hàng tháng, nộp phí xác minh vào <ACCOUNT> trong {duration}.",
-        "Nhân viên giao hàng yêu cầu thanh toán trước vào tài khoản cá nhân và nhắn riêng để nhận lại phí.",
-        ("ap_luc_thoi_gian", "tk_ca_nhan", "chuyen_kenh"),
+        "Shipper báo đơn chưa thanh toán. Chuyển tiền giúp để giữ đơn, hàng đang để ngoài cửa và nhận sau.",
+        "Người giao hàng nói đã gửi đơn ở nhà hàng xóm rồi nhờ người nhận chuyển tiền hộ trước khi lấy.",
+        "Bác có đơn hàng ở ngoài cửa, cháu gửi ở nhà hàng xóm, bác chuyển tiền giúp cháu rồi về nhận sau.",
+        ("tk_ca_nhan",),
+        train_extra=(
+            "Cháu giao bưu phẩm nhưng bác vắng nhà. Cháu để bên hàng xóm, bác gửi tiền giúp cháu rồi lấy sau nhé.",
+            "Đơn hàng đã để ngoài cửa. Anh thanh toán hộ tiền hàng trước rồi về nhận sau.",
+            "Shipper nói giao nhầm địa chỉ và nhờ chuyển khoản phí đơn hàng trước khi đến lấy.",
+            "Hàng của cô đang gửi nhà kế bên, cô chuyển tiền giúp người giao rồi nhận lại sau.",
+            "Bưu phẩm chưa thanh toán đã để ở cửa, vui lòng gửi tiền trước cho nhân viên giao hàng.",
+        ),
     ),
     ScenarioTemplateSpec(
         "market",
@@ -429,6 +436,12 @@ EMERGING_LEGITIMATE_SPECS: tuple[ScenarioTemplateSpec, ...] = (
         "Đơn giao không thành công sẽ được thử lại; không có phí hủy hội viên hoặc tài khoản cá nhân.",
         (),
         False,
+        train_extra=(
+            "Shipper chỉ giao hàng khi người nhận có mặt; không để ngoài cửa và không nhờ hàng xóm thu tiền.",
+            "Đơn hàng thanh toán khi nhận, hãy kiểm tra hàng rồi trả đúng số tiền trên ứng dụng.",
+            "Nếu người nhận vắng nhà, đơn được giao lại; không chuyển tiền trước cho số lạ.",
+            "Người giao hàng đã tới cửa, bạn có thể nhận hàng và thanh toán trực tiếp theo ứng dụng.",
+        ),
     ),
     ScenarioTemplateSpec(
         "legit_market",

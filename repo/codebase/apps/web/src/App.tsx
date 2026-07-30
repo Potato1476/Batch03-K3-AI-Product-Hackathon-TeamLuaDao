@@ -405,7 +405,7 @@ const signalLabels: Record<string, string> = {
   mao_danh_tham_quyen: "Mạo danh cơ quan chức năng",
   yeu_cau_bi_mat: "Yêu cầu giữ bí mật",
   ap_luc_thoi_gian: "Ép gấp về thời gian",
-  tk_ca_nhan: "Yêu cầu chuyển vào tài khoản cá nhân",
+  tk_ca_nhan: "Yêu cầu chuyển tiền cho người chưa xác minh",
   cai_app_ngoai: "Yêu cầu cài ứng dụng ngoài cửa hàng",
   loi_ich_bat_thuong: "Hứa lợi ích bất thường",
   chuyen_kenh: "Yêu cầu chuyển kênh liên lạc",
