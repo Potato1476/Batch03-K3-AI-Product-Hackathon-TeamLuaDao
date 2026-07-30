@@ -52,7 +52,7 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
 | Client Android | *(chưa có trong nhánh này)* | Hùng Anh | |
 | Golden set & đo (§7) | `eval/` | Tuấn Anh | Hùng Anh |
 | Validation với user | `validation/` | **TODO — chưa chạy vòng nào** | |
-| Slide & demo | `demo-slides.pdf` | **TODO — file chưa tồn tại** | |
+| Slide & demo | `demo-slides.pdf` (sinh từ `slides/build_deck.py`) | **TODO — chưa chốt người trình bày** | |
 
 > **Bảng này là phân công, chưa phải xác nhận.** Luật vibe-coding: bị hỏi tại
 > CP5/CP6 mà không giải thích được phần có tên mình thì phần đó 0 điểm. Mỗi người
@@ -68,6 +68,7 @@ repo/
 ├── README.md          ← file này: thành viên + phân công
 ├── spec.md            ← AI Spec (hạn cứng: commit trước 23:59 ngày 1)
 ├── demo-slides.pdf    ← slide 6 trang theo 02-guide.md §5.1
+├── slides/            ← nguồn sinh ra demo-slides.pdf (build_deck.py)
 ├── design/            ← giao kèo layout & theme (cả nhóm ký chốt)
 ├── codebase/          ← prototype (ghi rõ phần nào mock)
 ├── eval/              ← golden set + bảng kết quả các lượt chạy

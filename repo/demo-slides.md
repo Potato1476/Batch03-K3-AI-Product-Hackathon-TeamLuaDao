@@ -4,6 +4,12 @@
 > Luật tự áp: **không có bằng chứng thì không có slide.** Mọi con số dưới đây
 > chạy lại được bằng lệnh ghi trong `eval/` và `evidence/`.
 
+> **File này là kịch bản nói, không phải slide chiếu.** Slide đã dựng là
+> [`demo-slides.pdf`](demo-slides.pdf), sinh từ [`slides/build_deck.py`](slides/README.md)
+> — 6 trang tối giản, mỗi trang một ý, trang cuối là link demo. Trang 5 dưới đây
+> (*User thật nói gì*) **chưa có trong bộ slide** vì vòng validation chưa chạy;
+> slide 05 hiện là *Số đo*. Khi có quote thật thì thêm trang vào `build_deck.py`.
+
 | Trang | Thời lượng | Người nói |
 |---|---|---|
 | 1. User & Job | 45" | *(điền)* |
