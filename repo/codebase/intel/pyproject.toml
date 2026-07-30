@@ -32,3 +32,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+  "postgres: requires a live PostgreSQL reachable via CHAN_TEST_DATABASE_URL",
+]
