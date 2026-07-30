@@ -10,7 +10,7 @@ Vietnamese adults aged 55+. Kotlin, Jetpack Compose, Material 3.
 The Android demo build connects to the hosted CHAN API at
 `https://chan-flame.vercel.app/api/`.
 
-- [Download CHAN-demo.apk](https://github.com/lystiger/CHAN/releases/download/sprint03-demo/CHAN-demo.apk)
+- [Download the CHAN demo APK](https://github.com/lystiger/CHAN/releases/download/sprint03-demo/app-debug.apk)
 - [Morning installation and phone setup](docs/FRIEND_INSTALL.md)
 
 This is a debug-signed APK for the private team demo, not a Play Store release.

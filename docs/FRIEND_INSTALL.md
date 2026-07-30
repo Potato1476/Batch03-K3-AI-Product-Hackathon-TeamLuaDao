@@ -6,10 +6,10 @@ USB hoặc Android Studio.
 ## 1. Tải và cài ứng dụng
 
 1. Mở liên kết sau bằng Chrome trên điện thoại:
-   [Tải CHAN-demo.apk](https://github.com/lystiger/CHAN/releases/download/sprint03-demo/CHAN-demo.apk).
+   [Tải CHAN demo APK](https://github.com/lystiger/CHAN/releases/download/sprint03-demo/app-debug.apk).
 2. Nếu Chrome hỏi, chọn **Vẫn tải xuống**. Đây là bản demo do nhóm tự build nên
    không đến từ Play Store.
-3. Mở file `CHAN-demo.apk` vừa tải.
+3. Mở file `app-debug.apk` vừa tải.
 4. Nếu Android chặn, chọn **Cài đặt** và bật **Cho phép từ nguồn này** cho
    Chrome, sau đó quay lại và chọn **Cài đặt**.
 5. Nếu Play Protect cảnh báo ứng dụng chưa được nhận diện, chỉ tiếp tục vì đây
