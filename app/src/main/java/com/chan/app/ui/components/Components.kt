@@ -87,21 +87,29 @@ fun PrimaryCta(
     }
 }
 
-/** Outlined secondary action. Minimum 54 dp tall. */
+/**
+ * Outlined secondary action. Minimum 54 dp tall.
+ *
+ * [enabled] keeps a button in place while it is temporarily unavailable — a
+ * control that vanishes and returns is harder to follow than one that greys out.
+ */
 @Composable
 fun SecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
+    enabled: Boolean = true,
 ) {
     val colors = ChanTheme.colors
     val dimens = ChanTheme.dimens
+    val contentColor = if (enabled) colors.brand else colors.disabled
     androidx.compose.material3.Surface(
         onClick = onClick,
+        enabled = enabled,
         shape = RoundedCornerShape(dimens.ctaCorner),
         color = colors.card,
-        border = BorderStroke(1.5.dp, colors.border),
+        border = BorderStroke(1.5.dp, if (enabled) colors.border else colors.disabled),
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = dimens.secondaryButtonMinHeight),
@@ -112,12 +120,12 @@ fun SecondaryButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (leadingIcon != null) {
-                Icon(leadingIcon, contentDescription = null, tint = colors.brand, modifier = Modifier.size(22.dp))
+                Icon(leadingIcon, contentDescription = null, tint = contentColor, modifier = Modifier.size(22.dp))
                 Spacer(Modifier.width(10.dp))
             }
             Text(
                 text = text,
-                style = ChanTheme.type.button.copy(color = colors.brand),
+                style = ChanTheme.type.button.copy(color = contentColor),
                 textAlign = TextAlign.Center,
             )
         }
@@ -166,27 +174,6 @@ fun RiskPill(risk: Risk, text: String, icon: ImageVector) {
         Icon(icon, contentDescription = null, tint = fg, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(8.dp))
         Text(text = text, style = ChanTheme.type.cardTitle.copy(color = fg))
-    }
-}
-
-/**
- * Green system-status card. Green here means system/on-device protection status
- * ONLY — never that a message, caller, account, or link is "safe".
- */
-@Composable
-fun SystemStatusCard(text: String, icon: ImageVector, modifier: Modifier = Modifier) {
-    val colors = ChanTheme.colors
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .background(colors.successSurface, RoundedCornerShape(ChanTheme.dimens.cardCorner))
-            .heightIn(min = 56.dp)
-            .padding(16.dp),
-    ) {
-        Icon(icon, contentDescription = null, tint = colors.success, modifier = Modifier.size(28.dp))
-        Spacer(Modifier.width(12.dp))
-        Text(text = text, style = ChanTheme.type.cardTitle, color = colors.successStrong)
     }
 }
 

@@ -1,0 +1,11 @@
+# Line-ending policy.
+#
+# Every text file in this repository is stored and checked out with LF. Without
+# this, a Windows clone with `core.autocrlf=true` rewrites the whole working
+# tree to CRLF on checkout, which is why `git diff --check` used to print a
+# "LF will be replaced by CRLF" advisory for every file it looked at. The
+# working tree already matches this policy, so declaring it changes no content.
+* text=auto eol=lf
+
+# Windows launchers are the exception: cmd.exe needs CRLF to run them.
+*.bat text eol=crlf

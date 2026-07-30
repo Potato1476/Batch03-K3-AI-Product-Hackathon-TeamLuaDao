@@ -1,7 +1,7 @@
 package com.chan.app
 
 import com.chan.app.notification.NotificationContentExtractor
-import com.chan.app.notification.NotificationDedupeCache
+import com.chan.app.notification.NotificationOccurrenceCache
 import com.chan.app.notification.NotificationSnapshot
 import com.chan.app.notification.ZALO_PACKAGE
 import org.junit.Assert.assertEquals
@@ -109,26 +109,46 @@ class NotificationIntakeTest {
     }
 
     @Test
-    fun duplicateNotificationsAreClaimedOnlyOnce() {
-        var clock = 0L
-        val cache = NotificationDedupeCache(ttlMillis = 1_000, now = { clock })
-        val digest = NotificationDedupeCache.digestOf(ZALO_PACKAGE, "key-1", "bac chuyen tien ngay")
+    fun oneOccurrenceIsClaimedOnlyOnce() {
+        val cache = NotificationOccurrenceCache(now = { 0L })
+        val occurrence = NotificationOccurrenceCache.digestOf(
+            packageName = ZALO_PACKAGE,
+            key = "key-1",
+            occurrenceToken = 5_000L,
+            normalizedContent = "bac chuyen tien ngay",
+        )
 
-        assertTrue("first sighting", cache.claim(digest))
-        assertFalse("a re-post of the same content is dropped", cache.claim(digest))
-
-        // A different message in the same conversation is still analysed.
-        assertTrue(cache.claim(NotificationDedupeCache.digestOf(ZALO_PACKAGE, "key-1", "noi dung khac")))
-
-        // Past the TTL the same content may be reconsidered.
-        clock = 2_000
-        assertTrue(cache.claim(digest))
+        assertTrue("first sighting", cache.claim(occurrence))
+        assertFalse("a re-post of the same occurrence is dropped", cache.claim(occurrence))
     }
 
     @Test
-    fun theDedupeCacheKeepsDigestsRatherThanContent() {
+    fun theSameWordsAtANewMomentAreANewOccurrence() {
+        val cache = NotificationOccurrenceCache(now = { 0L })
+        fun occurrence(token: Long) = NotificationOccurrenceCache.digestOf(
+            packageName = ZALO_PACKAGE,
+            key = "key-1",
+            occurrenceToken = token,
+            normalizedContent = "bac chuyen tien ngay",
+        )
+
+        assertTrue(cache.claim(occurrence(5_000L)))
+        // Sprint 02 suppressed this for ten minutes and the user was never
+        // warned about the second message (§D1).
+        assertTrue("A new message with the same words must be analysed", cache.claim(occurrence(6_000L)))
+
+        // A different message in the same conversation is still analysed.
+        assertTrue(
+            cache.claim(
+                NotificationOccurrenceCache.digestOf(ZALO_PACKAGE, "key-1", 5_000L, "noi dung khac"),
+            ),
+        )
+    }
+
+    @Test
+    fun theOccurrenceCacheKeepsDigestsRatherThanContent() {
         val content = "bac chuyen 20 trieu vao tai khoan 19001234567890"
-        val digest = NotificationDedupeCache.digestOf(ZALO_PACKAGE, "key-1", content)
+        val digest = NotificationOccurrenceCache.digestOf(ZALO_PACKAGE, "key-1", 5_000L, content)
 
         assertTrue(digest.matches(Regex("[0-9a-f]{64}")))
         assertFalse(digest.contains("19001234567890"))
@@ -136,13 +156,24 @@ class NotificationIntakeTest {
     }
 
     @Test
-    fun theDedupeCacheStaysBounded() {
-        val cache = NotificationDedupeCache(ttlMillis = 60_000, maxEntries = 8, now = { 0L })
+    fun theOccurrenceCacheStaysBounded() {
+        val cache = NotificationOccurrenceCache(maxEntries = 8, now = { 0L })
         repeat(50) { index ->
-            assertTrue(cache.claim(NotificationDedupeCache.digestOf(ZALO_PACKAGE, "key-$index", "noi dung $index")))
+            assertTrue(
+                cache.claim(
+                    NotificationOccurrenceCache.digestOf(
+                        ZALO_PACKAGE,
+                        "key-$index",
+                        index.toLong(),
+                        "noi dung $index",
+                    ),
+                ),
+            )
         }
         // The oldest entries were evicted, so an early digest is claimable again.
-        assertTrue(cache.claim(NotificationDedupeCache.digestOf(ZALO_PACKAGE, "key-0", "noi dung 0")))
+        assertTrue(
+            cache.claim(NotificationOccurrenceCache.digestOf(ZALO_PACKAGE, "key-0", 0L, "noi dung 0")),
+        )
     }
 
     // --- truncation --------------------------------------------------------

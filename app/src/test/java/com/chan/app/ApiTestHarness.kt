@@ -29,7 +29,13 @@ class ApiTestHarness {
 
     val tokenStore = InMemoryDeviceTokenStore()
 
-    private val client: OkHttpClient = OkHttpClient.Builder()
+    /**
+     * The production client with test-sized timeouts. Derived with `newBuilder`
+     * on purpose: every transport policy that matters — above all
+     * `retryOnConnectionFailure(false)` (§C1) — is inherited rather than
+     * re-declared, so a test cannot pass against settings the app does not use.
+     */
+    private val client: OkHttpClient = ChanNetwork.client().newBuilder()
         .connectTimeout(2, TimeUnit.SECONDS)
         .readTimeout(5, TimeUnit.SECONDS)
         .callTimeout(10, TimeUnit.SECONDS)

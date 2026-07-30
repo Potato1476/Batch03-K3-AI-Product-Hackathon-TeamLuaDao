@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,17 +8,38 @@ plugins {
 }
 
 /**
- * Base URL configuration (Sprint 02 §A2).
+ * Base URL configuration (Sprint 02 §A2, Sprint 03 §C2).
  *
  * No production URL or secret is ever hardcoded in Kotlin. The debug default is
- * the Android emulator loopback alias; a physical phone overrides it from an
- * uncommitted `local.properties` / `-P` Gradle property. The release build has
- * no default at all and fails if an explicit HTTPS URL is not supplied.
+ * the Android emulator loopback alias. A physical phone overrides it, and both
+ * documented ways of doing that are implemented here:
+ *
+ *  1. `-PCHAN_API_BASE_URL=http://<lan-ip>:8000/` on the command line;
+ *  2. `CHAN_API_BASE_URL=http://<lan-ip>:8000/` in the uncommitted, gitignored
+ *     `local.properties`.
+ *
+ * Gradle loads `gradle.properties` on its own but *not* `local.properties`, so
+ * the second form only works because it is read explicitly below. The README
+ * documents exactly these two and nothing else.
+ *
+ * The release build has no default at all and fails if an explicit HTTPS URL is
+ * not supplied on the command line; a LAN address must never reach a release.
  */
 fun String.ensureTrailingSlash(): String = if (endsWith("/")) this else "$this/"
 
-val debugApiBaseUrl: String =
-    (providers.gradleProperty("CHAN_API_BASE_URL").orNull ?: "http://10.0.2.2:8000/").ensureTrailingSlash()
+fun localProperty(name: String): String? {
+    val file = rootProject.file("local.properties")
+    if (!file.isFile) return null
+    val properties = Properties()
+    file.inputStream().use { stream -> properties.load(stream) }
+    return properties.getProperty(name)?.trim()?.takeIf { value -> value.isNotEmpty() }
+}
+
+val debugApiBaseUrl: String = (
+    providers.gradleProperty("CHAN_API_BASE_URL").orNull
+        ?: localProperty("CHAN_API_BASE_URL")
+        ?: "http://10.0.2.2:8000/"
+    ).ensureTrailingSlash()
 val releaseApiBaseUrl: String? =
     providers.gradleProperty("CHAN_RELEASE_API_BASE_URL").orNull?.ensureTrailingSlash()
 
@@ -29,8 +52,8 @@ android {
         applicationId = "com.chan.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2.0-sprint02"
+        versionCode = 3
+        versionName = "0.3.0-sprint03"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }

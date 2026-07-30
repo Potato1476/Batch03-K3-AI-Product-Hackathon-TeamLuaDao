@@ -2,6 +2,7 @@ package com.chan.app
 
 import com.chan.app.data.LiveChanRepository
 import com.chan.app.data.lookup.IndicatorHasher
+import com.chan.app.data.net.ChanNetwork
 import com.chan.app.data.rules.BootstrapBundleSource
 import com.chan.app.data.rules.CachedBundle
 import com.chan.app.data.rules.FileBundleCache
@@ -16,7 +17,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
+import okhttp3.mockwebserver.SocketPolicy
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -244,6 +247,37 @@ class LiveChanRepositoryTest {
         val other = (repository().lookup(LookupType.PHONE, "0987654321") as ChanOutcome.Success).value
         assertFalse(other.matched)
         assertEquals(Risk.UNKNOWN, other.risk)
+    }
+
+    // --- transport policy (§C1) --------------------------------------------
+
+    @Test
+    fun aFailedAnalyzeConnectionIsNotAutomaticallyReplayed() = runTest {
+        harness.router.always("/v1/devices/token") { ApiTestHarness.tokenResponse("token-1") }
+        // The server takes the request and drops the connection. With OkHttp's
+        // `retryOnConnectionFailure` the message body would be re-sent over a
+        // second connection — a hidden replay of someone's message.
+        harness.router.always("/v1/analyze") {
+            MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AFTER_REQUEST)
+        }
+
+        val outcome = repository().analyzeMessage(ABOVE_GATE_TEXT, InputMode.MANUAL)
+
+        assertTrue(outcome is ChanOutcome.Failure)
+        assertEquals(
+            "A failed analyze must be attempted exactly once",
+            1,
+            harness.router.requestsFor("/v1/analyze").size,
+        )
+    }
+
+    @Test
+    fun theTransportItselfPerformsNoRetries() {
+        // The one retry CHAN performs is the explicit 401 recovery in ChanApi.
+        assertFalse(
+            "retryOnConnectionFailure must stay off for every request",
+            ChanNetwork.client().retryOnConnectionFailure,
+        )
     }
 
     private companion object {

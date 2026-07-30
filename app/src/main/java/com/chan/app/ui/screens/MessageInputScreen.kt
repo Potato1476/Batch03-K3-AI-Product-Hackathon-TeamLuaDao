@@ -45,7 +45,12 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.chan.app.R
+import com.chan.app.speech.SpeechSettings
 import com.chan.app.speech.SpeechState
+import com.chan.app.ui.DictationUiPolicy
+import com.chan.app.ui.MicAction
+import com.chan.app.ui.MicButton
+import com.chan.app.ui.MicEmphasis
 import com.chan.app.ui.UserSafeMessages
 import com.chan.app.ui.components.BackTopBar
 import com.chan.app.ui.components.ChanCard
@@ -69,13 +74,14 @@ fun MessageInputScreen(
     selectedImageUri: String?,
     canAnalyze: Boolean,
     speechState: SpeechState,
-    usingOnDeviceRecognizer: Boolean,
     onMessageChange: (String) -> Unit,
     onImageSelected: (String) -> Unit,
     onClearImage: () -> Unit,
     onAnalyze: () -> Unit,
     onStartDictation: (Boolean) -> Unit,
     onStopDictation: () -> Unit,
+    onCancelDictation: () -> Unit,
+    onDismissSpeech: () -> Unit,
     onMicrophoneDenied: () -> Unit,
     onReleaseRecognizer: () -> Unit,
     onBack: () -> Unit,
@@ -147,10 +153,13 @@ fun MessageInputScreen(
             Spacer(Modifier.height(16.dp))
             DictationPanel(
                 speechState = speechState,
-                usingOnDeviceRecognizer = usingOnDeviceRecognizer,
+                // Every "try again" path goes back through the permission
+                // check: a revoked microphone must not fail silently.
                 onStart = { requestDictation() },
                 onStop = onStopDictation,
+                onCancel = onCancelDictation,
                 onAllowDeviceService = { onStartDictation(true) },
+                onDismiss = onDismissSpeech,
             )
         } else {
             ChanCard {
@@ -215,70 +224,135 @@ fun MessageInputScreen(
     }
 }
 
+/**
+ * The microphone control (§A5).
+ *
+ * Every decision about *what* to offer lives in [DictationUiPolicy], which is
+ * unit tested state by state. This composable only draws the answer, so the two
+ * rules it must obey cannot drift: the generic "Đọc bằng micro" button appears
+ * only where starting again makes sense, and a broken recognizer explains
+ * itself before it offers anything.
+ */
 @Composable
 private fun DictationPanel(
     speechState: SpeechState,
-    usingOnDeviceRecognizer: Boolean,
     onStart: () -> Unit,
     onStop: () -> Unit,
+    onCancel: () -> Unit,
     onAllowDeviceService: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val colors = ChanTheme.colors
-    val listening = speechState is SpeechState.Listening || speechState is SpeechState.ReceivingPartial
+    val context = LocalContext.current
+    val ui = DictationUiPolicy.forState(speechState)
     val statusRes = UserSafeMessages.forSpeech(speechState)
     val statusLabel = stringResource(R.string.cd_speech_status)
+    val micLabel = stringResource(R.string.cd_speech_microphone)
+    val sessionActive = speechState.isSessionActive
 
-    ChanCard {
-        if (listening) {
-            PrimaryCta(
-                text = stringResource(R.string.speech_button_stop),
-                onClick = onStop,
-                leadingIcon = Icons.Filled.Stop,
+    @Composable
+    fun status() {
+        if (statusRes == null) return
+        Text(
+            text = stringResource(statusRes),
+            style = ChanTheme.type.bodyStrong,
+            color = if (sessionActive) colors.brand else colors.bodyText,
+            // Announced to a screen reader as it changes.
+            modifier = Modifier.semantics {
+                contentDescription = statusLabel
+                liveRegion = LiveRegionMode.Polite
+            },
+        )
+    }
+
+    @Composable
+    fun action(button: MicButton, index: Int) {
+        if (index > 0) Spacer(Modifier.height(8.dp))
+        val label = stringResource(button.labelRes)
+        val onClick: () -> Unit = when (button.action) {
+            MicAction.START, MicAction.RETRY, MicAction.RETRY_ON_DEVICE -> onStart
+            MicAction.PREPARING -> ({})
+            MicAction.STOP -> onStop
+            MicAction.CANCEL -> onCancel
+            MicAction.USE_DEVICE_SERVICE -> onAllowDeviceService
+            MicAction.DISMISS -> onDismiss
+            MicAction.OPEN_SPEECH_SETTINGS -> ({ SpeechSettings.open(context) })
+            MicAction.OPEN_APP_SETTINGS -> ({ SpeechSettings.openAppSettings(context) })
+        }
+        // §A5: never smaller than a 48 dp touch target.
+        val modifier = Modifier
+            .heightIn(min = 48.dp)
+            .semantics {
+                contentDescription = if (button.action == MicAction.START) micLabel else label
+            }
+
+        when (button.emphasis) {
+            MicEmphasis.PRIMARY -> PrimaryCta(
+                text = label,
+                onClick = onClick,
+                enabled = button.enabled,
+                leadingIcon = if (button.action == MicAction.STOP) Icons.Filled.Stop else null,
+                modifier = modifier,
             )
-        } else {
-            SecondaryButton(
-                text = stringResource(R.string.speech_button_start),
-                onClick = onStart,
-                leadingIcon = Icons.Filled.Mic,
+            MicEmphasis.SECONDARY -> SecondaryButton(
+                text = label,
+                onClick = onClick,
+                enabled = button.enabled,
+                leadingIcon = when (button.action) {
+                    MicAction.START, MicAction.PREPARING, MicAction.RETRY -> Icons.Filled.Mic
+                    else -> null
+                },
+                modifier = modifier,
             )
         }
+    }
 
-        if (statusRes != null) {
-            Spacer(Modifier.height(10.dp))
+    ChanCard {
+        // A failure explains itself before it asks for a decision.
+        if (ui.statusBeforeActions) {
+            status()
+            if (ui.showPartial || ui.buttons.isNotEmpty()) Spacer(Modifier.height(12.dp))
+        }
+
+        // The privacy consequence sits above the button that accepts it.
+        if (ui.showDeviceServicePrivacy) {
             Text(
-                text = stringResource(statusRes),
-                style = ChanTheme.type.bodyStrong,
-                color = if (listening) colors.brand else colors.bodyText,
-                // Announced to a screen reader as it changes.
-                modifier = Modifier.semantics {
-                    contentDescription = statusLabel
-                    liveRegion = LiveRegionMode.Polite
-                },
+                text = stringResource(R.string.speech_device_service_privacy),
+                style = ChanTheme.type.body,
+                color = colors.bodyText,
             )
+            Spacer(Modifier.height(12.dp))
         }
 
         // Partial text is visible but stays out of the editable field until the
         // recognizer commits to it.
-        (speechState as? SpeechState.ReceivingPartial)?.let { partial ->
-            Spacer(Modifier.height(8.dp))
+        if (ui.showPartial) {
+            (speechState as? SpeechState.ReceivingPartial)?.let { partial ->
+                Text(text = partial.text, style = ChanTheme.type.body, color = colors.mutedText)
+                Spacer(Modifier.height(12.dp))
+            }
+        }
+
+        ui.buttons.forEachIndexed { index, button -> action(button, index) }
+
+        if (!ui.statusBeforeActions && statusRes != null) {
+            Spacer(Modifier.height(10.dp))
+            status()
+        }
+
+        // Paste and the image picker are still there, one screen-section above.
+        if (ui.showAlternativesHint) {
+            Spacer(Modifier.height(10.dp))
             Text(
-                text = partial.text,
+                text = stringResource(R.string.speech_alternatives_hint),
                 style = ChanTheme.type.body,
-                color = colors.mutedText,
+                color = colors.bodyText,
             )
         }
 
-        if (speechState is SpeechState.OnDeviceUnavailable) {
-            Spacer(Modifier.height(12.dp))
-            SecondaryButton(
-                text = stringResource(R.string.speech_use_device_service),
-                onClick = onAllowDeviceService,
-            )
-        }
-
-        if (listening && usingOnDeviceRecognizer) {
+        if (ui.showOnDeviceNote) {
             Spacer(Modifier.height(8.dp))
-            // Only claimed when the on-device factory is genuinely in use.
+            // Only claimed when the on-device recognizer is genuinely running.
             Text(
                 text = stringResource(R.string.speech_on_device_note),
                 style = ChanTheme.type.caption,
