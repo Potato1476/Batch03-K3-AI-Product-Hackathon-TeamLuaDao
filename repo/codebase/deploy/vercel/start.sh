@@ -34,6 +34,16 @@ if [ -z "${CHAN_DATABASE_URL:-}" ]; then
   exit 1
 fi
 
+# Vercel gives every invocation a fresh writable /tmp, so directories created
+# while building the image are not guaranteed to exist at runtime.
+mkdir -p \
+  /tmp/nginx/client_body \
+  /tmp/nginx/proxy \
+  /tmp/nginx/fastcgi \
+  /tmp/nginx/uwsgi \
+  /tmp/nginx/scgi \
+  /tmp/chan/model-registry
+
 envsubst '${PORT}' \
   < /app/deploy/vercel/nginx.conf.template \
   > /tmp/nginx.conf
