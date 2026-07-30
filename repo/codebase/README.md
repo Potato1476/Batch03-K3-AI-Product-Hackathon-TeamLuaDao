@@ -1,6 +1,6 @@
 # Prototype
 
-## CHẮN ML detection engine
+## CHAN ML detection engine
 
 The shared Vietnamese phishing-signal algorithm is implemented in
 [`ml/`](ml/README.md). Web and Android use the deployed
@@ -15,6 +15,21 @@ It provides:
 - the deterministic `high` / `medium` / `unknown` L4 policy;
 - train, evaluate, and privacy-safe inference commands;
 - a serialized local model artifact generated from the documented commands.
+
+## CHAN Web PWA
+
+Frontend responsive React + TypeScript nằm trong
+[`apps/web/`](apps/web/README.md). App có đầy đủ luồng kiểm tra tin nhắn và số
+điện thoại theo giao kèo thiết kế, PWA manifest/share target, dark mode, linting
+và automated tests.
+
+```bash
+cd codebase/apps/web
+npm ci
+npm run lint
+npm run test
+npm run build
+```
 
 The versioned 250,000-record dataset, model, metrics, sizes, and checksums are
 listed in [`ml/ARTIFACTS.json`](ml/ARTIFACTS.json).
@@ -70,7 +85,8 @@ Biến môi trường cần thiết: xem
 | OpenPhish connector | THẬT nhưng khóa mặc định | chỉ bật sau khi có quyền bằng văn bản |
 | LLM L3 / pgvector similarity | MOCK / chưa nối | giữ đúng giới hạn hackathon trong architecture |
 | Detection `/v1/analyze` | THẬT | model synthetic baseline; cần API Gateway khi deploy |
-| Web / Android clients | Chưa có trong nhánh này | gọi chung `/v1/analyze` |
+| Web PWA | THẬT (UI), MOCK (API data) | `apps/web/`; sẵn sàng nối Detection `/v1/analyze` |
+| Android client | Chưa có trong nhánh này | sẽ gọi chung `/v1/analyze` |
 
 ## Lời gọi AI thật ở quyết định trung tâm
 
@@ -84,6 +100,7 @@ Biến môi trường cần thiết: xem
 ```
 codebase/
 ├── README.md
+├── apps/web/       ← React + TypeScript PWA, lint và tests
 ├── ml/             ← dataset generator + classifier + evaluation
 ├── detection/      ← public inference API cho Web/Android/Zalo OA
 ├── api/            ← private ingestion + review + daily training

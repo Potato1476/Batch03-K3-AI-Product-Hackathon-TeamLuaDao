@@ -9,6 +9,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 build/
+dist/
 repo/codebase/ml/artifacts/*
 !repo/codebase/ml/artifacts/chan-signal-model.joblib
 !repo/codebase/ml/artifacts/validation-metrics.json

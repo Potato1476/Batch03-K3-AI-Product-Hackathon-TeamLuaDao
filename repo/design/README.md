@@ -1,7 +1,7 @@
 # CHAN — Giao kèo thiết kế (layout & theme)
 
 > Nguồn sự thật duy nhất về **màu, chữ, khoảng cách, component và layout** của CHẮN.
-> Trích xuất từ prototype Claude Design `CHAN.dc.html` · phiên bản 1.0 · 2026-07-30
+> Trích xuất từ prototype Claude Design `CHAN.dc.html` · phiên bản 1.1 · 2026-07-30
 > Song hành với [`docs/CHAN-ARCHITECTURE.md`](../docs/CHAN-ARCHITECTURE.md) (kiến trúc & bất biến bảo mật).
 
 **Cách dùng file này:** trước khi viết dòng UI đầu tiên, cả nhóm đọc §1 → §4 và ký vào §14. Sau đó mọi PR chạm giao diện phải qua checklist §13. Nếu bạn cần một giá trị màu/kích thước không có trong file này — đừng tự chế, mở issue và bổ sung vào đây trước.
@@ -119,6 +119,44 @@ Nếu dự án dùng Tailwind thì không cần khai báo gì thêm, ba thang n�
 }
 ```
 
+### 2.6 Chế độ tối
+
+Đã chốt: **có dark mode**, bật/tắt ở màn Cài đặt. Cơ chế trong prototype là ghi đè theo thuộc tính, không phải biến CSS — vì mỗi phần tử trong `.dc.html` mang style nội tuyến. Khi dựng UI thật, ánh xạ thẳng sang biến CSS ở §2.5.
+
+Mỗi phần tử cần đổi màu mang một trong bốn thuộc tính đánh dấu, rồi `[data-theme="dark"]` ghi đè:
+
+| Thuộc tính | Giá trị | Ý nghĩa |
+|---|---|---|
+| `data-sf` | `card` · `sunk` · `tint` · `ok` · `bad` · `warn` | Nền bề mặt |
+| `data-bd` | `1` · `ok` · `bad` · `warn` | Màu viền |
+| `data-tc` | `h` · `h2` · `b` · `m` · `bad` · `bad2` · `ok` · `ok2` · `warn` · `warn2` | Màu chữ |
+| `data-theme` | `light` · `dark` | Đặt ở gốc khung màn hình |
+
+**Bảng màu tối**
+
+| Vai trò | Sáng | Tối |
+|---|---|---|
+| Nền màn hình (`sunk`) | `#F5F8FE` | `#0B1220` |
+| Nền thẻ (`card`) | `#FFFFFF` | `#17223C` |
+| Nền chìm trong thẻ (`sunk`) | `#F5F8FE` | `#111B31` |
+| Nền nhấn (`tint`) | `#EAF0FC` | `#243252` |
+| Viền mặc định | `#C3D2EE` | `#2E3D61` |
+| Chữ tiêu đề thương hiệu (`h`) | `#26339E` | `#BACDF8` |
+| Chữ nhấn mạnh (`h2`) | `#33436B` | `#E3EAF9` |
+| Chữ thân bài (`b`) | `#4A5B85` | `#BCC9E2` |
+| Chữ phụ (`m`) | `#6B7C9E` | `#8EA0C2` |
+| Nền/viền/chữ đỏ | `#FEF2F2` / `#FCA5A5` / `#991B1B` | `#2E1519` / `#8E2B2B` / `#FCA5A5` |
+| Nền/viền/chữ hổ phách | `#FFFBEB` / `#FCD34D` / `#92400E` | `#2C2110` / `#8A5A12` / `#FCD34D` |
+| Nền/viền/chữ lục | `#ECFDF5` / `#6EE7B7` / `#065F46` | `#0E2A22` / `#1C6B52` / `#6EE7B7` |
+| Nền nút chính | `#26339E` | `#3B4BD4` |
+| Viền nhấn nút | `#26339E` | `#5D6EEE` |
+| Nút chính bị vô hiệu | `#93A6CC` | `#3A4A70` |
+| Chữ tab không hoạt động | `#93A6CC` | `#7E90B8` |
+
+**Hai quy tắc bắt buộc.** Một, mọi nền màu thương hiệu ở chế độ tối dùng `#3B4BD4`, **không** dùng `#26339E` — màu sáng quá tối trên nền `#0B1220` và tụt tương phản. Hai, thang rủi ro ở §2.4 giữ nguyên *vai trò*: đỏ vẫn là `high`, hổ phách vẫn là `medium`, lục vẫn tuyệt đối không gắn với kết quả phân tích tin nhắn.
+
+Khung thiết bị (`#0B0B0D`, `#232326`) và thanh trạng thái **không** đổi theo theme.
+
 ---
 
 ## 3. Chữ
@@ -201,7 +239,9 @@ Hai nền tảng **chỉ khác nhau ở phần chrome trên cùng**. Từ vùng 
 
 **Thanh tab dưới (dùng chung):** nền trắng, `border-top: 1px var(--ink-200)`, padding `10px 10px 8px`, gap 6px. Mỗi tab `flex: 1`, cao tối thiểu 56px, bo 14px, icon 24px trên nhãn 13px/700. Tab đang chọn: chữ `--brand` trên nền `--ink-100`; tab thường: chữ `--ink-400`, nền trong suốt.
 
-Ba tab: **Trang chủ** (nhà) · **Kiểm tra** (kính lúp) · **Bảo vệ** (khiên có dấu tích). Tab "Kiểm tra" sáng cho cả 4 màn thuộc luồng phân tích và tra cứu.
+Bốn tab: **Trang chủ** (nhà) · **Kiểm tra** (kính lúp) · **Bảo vệ** (khiên có dấu tích) · **Cài đặt** (bánh răng). Tab "Kiểm tra" sáng cho cả 4 màn thuộc luồng phân tích và tra cứu.
+
+Khi đang mất mạng, một băng cảnh báo tràn viền chèn vào **giữa chrome trên và vùng nội dung** (xem §7). Nó đẩy nội dung xuống chứ không phủ lên.
 
 ---
 
@@ -219,6 +259,7 @@ Tám trạng thái. Mọi màn vào bằng `animation: chanEnter .3s var(--ease-
 | 6 | Tra cứu tài khoản | `check` | Nút quay lại → tiêu đề → 3 pill loại → ô nhập 64px → nút tra cứu → hộp k-Anonymity |
 | 7 | Kết quả tra cứu | `checkResult` | Hero hổ phách → 2 ô thống kê → danh sách báo cáo → panel xanh khuyến nghị → hộp miễn trừ |
 | 8 | Bảo vệ & riêng tư | `shield` | Tiêu đề → khối lục lớp L0/L1 → danh sách cam kết → thẻ người bảo hộ + nút ngừng chia sẻ |
+| 9 | Cài đặt | `settings` | Công tắc chế độ tối → bảng quyền truy cập → khối giả lập lỗi → thẻ người thân |
 
 Toast (nổi trên màn 5, tự ẩn sau 6s) là thành phần riêng, không phải một màn.
 
@@ -264,6 +305,33 @@ Toast (nổi trên màn 5, tự ẩn sau 6s) là thành phần riêng, không ph
 
 **Vùng tải ảnh** — cao ≥180px, `border: 2px dashed var(--ink-400)`, bo 16px, nền `--ink-50`, nội dung canh giữa theo cột.
 
+**Hộp lỗi** — `border: 2px solid var(--danger)`, nền `--danger-bg`, bo 16px, padding 18px. Bố cục: icon tròn cảnh báo 24px + (tiêu đề 19px/800 `--danger-deep` / mô tả 17px `--danger-text`), rồi hàng nút cao ≥52px gồm nút khắc phục (nền `--danger`, chữ trắng, `flex: 1`) và nút "Đóng" (nền trắng, viền `--ink-300`, cố định 108px).
+
+Đặt hộp lỗi **ngay dưới phần mô tả của màn hình, trên nội dung chính** — không dùng modal, không dùng toast. Người 55+ dễ bỏ lỡ thứ tự biến mất, và lỗi ở đây luôn là thứ chặn hành động kế tiếp.
+
+**Băng mất mạng** — dải tràn viền ngay dưới thanh trạng thái, nền `--warn`, chữ trắng 16px/700, icon 20px. Đây là *trạng thái hệ thống*, không phải mức rủi ro `medium` — nên nó nằm ngoài khung màn hình nội dung và không bao giờ xuất hiện cùng lúc với hero hổ phách.
+
+### 7.1 Danh mục lỗi
+
+Bốn lỗi, mỗi lỗi một hành động khắc phục cụ thể. Không có lỗi nào chỉ hiện "Đã có lỗi xảy ra".
+
+| Khoá | Tiêu đề | Khi nào | Nút khắc phục |
+|---|---|---|---|
+| `mic` | Không dùng được micro | Người dùng chưa cấp quyền micro | Mở quyền micro |
+| `micMissing` | Không tìm thấy micro | Thiết bị không có micro | Gửi ảnh thay → chuyển sang chế độ ảnh |
+| `ocr` | Không đọc được chữ trong ảnh | OCR thất bại | Chụp lại → về trạng thái chọn ảnh |
+| `offline` | Mất mạng | Bấm tra cứu khi không có mạng | Thử lại |
+
+**Nguyên tắc viết lỗi:** nói cái gì hỏng bằng lời thường, rồi cho **một đường thoát khác** ngay trong câu. Ví dụ lỗi micro nói "hoặc dán chữ thay vì nói" — người dùng không bị kẹt vì một kênh nhập liệu hỏng.
+
+Lỗi mất mạng phải nói rõ cái gì **vẫn chạy**: "CHAN vẫn quét được 128 quy tắc trên máy, nhưng chưa tra được danh sách tài khoản." Đây là hệ quả trực tiếp của kiến trúc L1 chạy offline — đừng viết thành "không dùng được".
+
+### 7.2 Giả lập lỗi (chỉ trong prototype)
+
+Màn Cài đặt có khối "Thử tình huống lỗi" với 4 công tắc: mất mạng · chặn micro · máy không có micro · ảnh không đọc được. Bật công tắc rồi thao tác bình thường thì lỗi tương ứng sẽ nổi lên đúng chỗ.
+
+Khối này **chỉ tồn tại trong prototype để demo và user test** — không đưa vào bản dựng thật.
+
 ---
 
 ## 8. Icon
@@ -290,7 +358,15 @@ Cỡ mặc định 24×24. Ngoại lệ: micro lớn 38px (`stroke-width: 1.8`),
 | `chanWave` | .9s | `ease-in-out` | 6 vạch sóng âm, lệch pha `.12s` mỗi vạch |
 | `chanScan` | 1.2s | `linear` | Vạch quét OCR (`--ok-accent`) |
 
-Chỉ animate `opacity` và `transform`. Tôn trọng `prefers-reduced-motion`: tắt `chanPulse`, `chanRing`, `chanWave`, `chanScan`; giữ `chanEnter`/`chanDrop` nhưng rút còn 0.01s.
+Chỉ animate `opacity` và `transform`. Tôn trọng `prefers-reduced-motion`: tắt `chanPulse`, `chanRing`, `chanWave`, `chanScan`; giữ `chanEnter`/`chanDrop` nhưng rút còn 0.01s. **Đã triển khai trong prototype.**
+
+Lưu ý khi tắt animation: ba hiệu ứng cần giá trị dự phòng, nếu không sẽ hỏng bố cục.
+
+| Hiệu ứng | Vì sao cần dự phòng | Giá trị |
+|---|---|---|
+| `chanWave` | Chiều cao vạch sóng do animation sinh ra — tắt đi thì cao 0, biến mất | `height: 22px` |
+| `chanRing` | Vòng lan là hình tròn đỏ đặc, tắt animation thì che kín nút micro | `opacity: 0` |
+| `chanScan` | Vạch quét định vị bằng `top` động, tắt đi thì dạt lên đỉnh khung | `top: 50%` |
 
 ---
 
@@ -350,6 +426,8 @@ Người review tick đủ 8 ô trước khi approve:
 - [ ] Icon dùng SVG nội tuyến, `stroke-width: 1.9`, `currentColor`.
 - [ ] Chuyển động chỉ đụng `opacity`/`transform` và có nhánh `prefers-reduced-motion`.
 - [ ] Copy xưng "bác", không có thuật ngữ kỹ thuật lọt vào luồng chính.
+- [ ] Đã xem ở **cả hai theme**; không còn nền thương hiệu `#26339E` lọt vào chế độ tối (phải là `#3B4BD4`).
+- [ ] Mọi lỗi mới đều có tiêu đề bằng lời thường + một đường thoát khác; không có "Đã có lỗi xảy ra".
 
 ---
 
@@ -369,9 +447,16 @@ Ký vào đây nghĩa là: bạn đã đọc §1–§4 và sẽ không tự thê
 
 ## 15. Chưa chốt — cần nhóm quyết
 
-Bốn điểm prototype chưa trả lời. Quyết xong thì cập nhật thẳng vào file này và xoá khỏi mục 15.
+Quyết xong thì cập nhật thẳng vào file này và xoá khỏi mục 15.
 
-1. **Chế độ tối.** Prototype chỉ có bản sáng. Người 55+ hay để máy ở chế độ tối vào buổi đêm — mà lừa đảo hay xảy ra buổi đêm. Cần quyết: làm dark theme, hay khoá app ở light theme.
-2. **Trạng thái lỗi.** Chưa có thiết kế cho: mất mạng khi gọi L2, OCR thất bại, micro bị từ chối quyền. Ít nhất cần một mẫu "hộp lỗi" dùng chung.
-3. **Cỡ chữ động.** Chưa quyết có tôn trọng `font-scale` của hệ điều hành hay không. Nếu có thì mọi `height` cố định ở §7 phải đổi sang `min-height`.
-4. **Nút quay lại 44px.** Nợ kỹ thuật ở §4 — nâng lên 48px hay giữ nguyên vì nằm trên hero màu đã đủ tương phản.
+**Đã chốt (v1.1):** ~~Chế độ tối~~ → §2.6 · ~~Trạng thái lỗi~~ → §7.1
+
+Còn lại hai điểm:
+
+1. **Cỡ chữ động.** Chưa quyết có tôn trọng `font-scale` của hệ điều hành hay không. Nếu có thì mọi `height` cố định ở §7 phải đổi sang `min-height`.
+2. **Nút quay lại 44px.** Nợ kỹ thuật ở §4 — nâng lên 48px hay giữ nguyên vì nằm trên hero màu đã đủ tương phản.
+
+Hai điểm mới phát sinh từ v1.1:
+
+3. **Theo hệ điều hành hay tự chọn?** Hiện dark mode chỉ bật bằng tay ở Cài đặt. Cần quyết có đọc `prefers-color-scheme` làm mặc định lần đầu hay không.
+4. **Tương phản bảng màu tối.** Các cặp màu ở §2.6 chưa được đo WCAG như bảng sáng. Cần một lượt kiểm tra trước khi chốt cứng.
