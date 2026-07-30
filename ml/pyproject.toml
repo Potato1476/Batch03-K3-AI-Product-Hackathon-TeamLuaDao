@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chan-ml"
+version = "0.1.0"
+description = "Privacy-preserving Vietnamese phishing signal classifier for CHAN"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "joblib>=1.4,<2",
+  "numpy>=2.0,<3",
+  "scikit-learn>=1.5,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9"]
+
+[project.scripts]
+chan-generate = "chan_ml.synthetic:main"
+chan-train = "chan_ml.train:main"
+chan-evaluate = "chan_ml.evaluate:main"
+chan-predict = "chan_ml.predict:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

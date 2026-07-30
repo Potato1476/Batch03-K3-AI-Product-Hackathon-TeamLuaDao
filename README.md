@@ -2,6 +2,13 @@
 
 **SPEC → Prototype → Demo.** Đây không phải cuộc thi code — đây là cuộc thi **tư duy sản phẩm AI**.
 
+## CHẮN — ML detection pipeline
+
+The repository now includes the team's reproducible Vietnamese phishing-signal
+dataset and model pipeline under [`ml/`](ml/README.md), with a versioned
+synthetic evaluation summary under [`eval/`](eval/README.md). Generated data
+and trained artifacts remain local and are intentionally excluded from Git.
+
 - Thời lượng: **1,5 ngày** (một ngày build + một buổi demo)
 - Nhóm: **4-5 người** · zone tối đa 5 nhóm · thi theo lớp
 

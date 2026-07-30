@@ -1,0 +1,56 @@
+{
+  "run_name": "chan-ml-synthetic-v0.4",
+  "engine_version": "ml-0.2.0",
+  "generator_version": "synthetic-0.4.0",
+  "seed": 20260730,
+  "dataset": {
+    "records": 100000,
+    "train": 79873,
+    "validation": 9967,
+    "test": 10160,
+    "phishing": 54833,
+    "non_phishing": 45167,
+    "contains_real_person_data": false,
+    "redaction_state": "L2 placeholders only",
+    "content_sha256_uncompressed_jsonl": "e882f23a188e38862198c1856e53aab404c470a7cc05851fa572f4f443d98ec9"
+  },
+  "model": {
+    "algorithm": "word+character TF-IDF, eight one-vs-rest logistic regressions, sentence max-pooling, temperature scaling, deterministic L4 policy",
+    "word_features": 40000,
+    "character_features": 80000,
+    "regularization_c": 4.0,
+    "probability_temperature": 0.35
+  },
+  "validation": {
+    "phishing_recall": 0.934965,
+    "legitimate_false_positive_rate": 0.025818,
+    "risk_accuracy": 0.873081,
+    "truncated_phishing_recall": 0.915254,
+    "acceptance_passed": true
+  },
+  "test": {
+    "phishing_recall": 0.971768,
+    "legitimate_false_positive_rate": 0.001522,
+    "risk_accuracy": 0.851181,
+    "truncated_phishing_recall": 0.883929,
+    "acceptance_passed": true
+  },
+  "local_latency": {
+    "machine_context": "developer workstation; model-only single-message inference",
+    "runs": 200,
+    "p50_ms": 2.34,
+    "p95_ms": 5.09,
+    "max_ms": 5.38
+  },
+  "tests": {
+    "passed": 10,
+    "failed": 0
+  },
+  "limitations": [
+    "Synthetic performance is not production performance.",
+    "The synthetic template family was iterated during development and is not an external benchmark.",
+    "A frozen human-labeled golden set is still required.",
+    "The truncated test slice is below 90 percent recall.",
+    "End-to-end API and LLM latency were not measured by this model-only benchmark."
+  ]
+}
