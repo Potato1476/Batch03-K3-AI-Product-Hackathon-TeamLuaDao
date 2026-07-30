@@ -5,8 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY ml /app/ml
-COPY repo/codebase/api /app/training-api
+COPY codebase/ml /app/ml
+COPY codebase/api /app/training-api
 
 RUN python -m pip install --no-cache-dir /app/ml /app/training-api \
     && useradd --create-home --uid 10001 chan \

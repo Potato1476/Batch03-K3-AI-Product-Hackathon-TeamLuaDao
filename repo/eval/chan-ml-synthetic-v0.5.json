@@ -1,7 +1,7 @@
 {
-  "run_name": "chan-ml-synthetic-v0.4",
+  "run_name": "chan-ml-synthetic-v0.5",
   "engine_version": "ml-0.2.0",
-  "generator_version": "synthetic-0.4.0",
+  "generator_version": "synthetic-0.5.0",
   "seed": 20260730,
   "dataset": {
     "records": 100000,
@@ -12,7 +12,7 @@
     "non_phishing": 45167,
     "contains_real_person_data": false,
     "redaction_state": "L2 placeholders only",
-    "content_sha256_uncompressed_jsonl": "e882f23a188e38862198c1856e53aab404c470a7cc05851fa572f4f443d98ec9"
+    "content_sha256_uncompressed_jsonl": "30caae89893738fdc137957ada7cbe9e5a87f739df1aa885335442f5e12bfe91"
   },
   "model": {
     "algorithm": "word+character TF-IDF, eight one-vs-rest logistic regressions, sentence max-pooling, temperature scaling, deterministic L4 policy",
@@ -43,7 +43,7 @@
     "max_ms": 5.38
   },
   "tests": {
-    "passed": 10,
+    "passed": 20,
     "failed": 0
   },
   "limitations": [

@@ -3,7 +3,7 @@
 ## CHẮN ML detection engine
 
 The shared Vietnamese phishing-signal algorithm is implemented in
-[`../../ml/`](../../ml/README.md). Web, Android, and API developers should use
+[`ml/`](ml/README.md). Web, Android, and API developers should use
 that package as the common L3/L4 contract instead of duplicating detection
 logic in a client.
 
@@ -16,7 +16,7 @@ It provides:
 - a serialized local model artifact generated from the documented commands.
 
 FastAPI integration is shown in the
-[`ml/README.md` API section](../../ml/README.md#api-integration). Generated
+[`ml/README.md` API section](ml/README.md#api-integration). Generated
 datasets and model artifacts are intentionally ignored by Git.
 
 New phishing scenarios are not limited to the committed synthetic generator.
@@ -29,10 +29,20 @@ promotion service is in [`api/`](api/README.md).
 ## Chạy thế nào
 
 ```bash
-# TODO: lệnh cài + lệnh chạy
+cd repo
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -e 'codebase/ml[dev]'
+.venv/bin/python -m pip install -e 'codebase/api[dev]'
+
+# Test toàn bộ ML + training platform
+.venv/bin/pytest -q codebase/ml/tests codebase/api/tests
+
+# Chạy private training API sau khi cấu hình PostgreSQL/.env
+.venv/bin/chan-training-api
 ```
 
-Biến môi trường cần thiết: xem `.env.example`.
+Biến môi trường cần thiết: xem
+[`api/.env.example`](api/.env.example).
 
 ## Phần THẬT vs phần MOCK
 
@@ -40,9 +50,11 @@ Biến môi trường cần thiết: xem `.env.example`.
 
 | Thành phần | Thật / Mock | Ghi chú |
 |---|---|---|
-| Quyết định AI trung tâm | THẬT | lời gọi model thật, log tại `logs/` |
-| | | |
-| | | |
+| Bộ phân loại 8 tín hiệu | THẬT | `ml/src/chan_ml/model.py` |
+| L4 risk policy | THẬT | `ml/src/chan_ml/policy.py` |
+| Ingestion + daily retraining | THẬT | cần PostgreSQL và artifact storage |
+| LLM L3 / pgvector similarity | MOCK / chưa nối | giữ đúng giới hạn hackathon trong architecture |
+| Web / Android clients | Chưa có trong nhánh này | dùng chung `/v1/analyze` khi được tích hợp |
 
 ## Lời gọi AI thật ở quyết định trung tâm
 
@@ -56,6 +68,8 @@ Biến môi trường cần thiết: xem `.env.example`.
 ```
 codebase/
 ├── README.md
+├── ml/             ← dataset generator + classifier + evaluation
+├── api/            ← private ingestion + review + daily training
 ├── prompts/        ← prompt của quyết định AI trung tâm
 ├── logs/           ← trace lời gọi AI thật (bằng chứng cho R5)
 └── demo-backup/    ← screenshot/video dự phòng cho CP6

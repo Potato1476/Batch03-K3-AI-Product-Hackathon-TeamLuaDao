@@ -1,9 +1,21 @@
-# Nhóm [XX] · Zone [X] — [Tên lát cắt]
+# Nhóm LuaDao · CHẮN — Trợ lý chống lừa đảo
 
 Hướng: [ ] A — VLearn · [ ] B — Trợ lý Học viên · [x] C — Làn mở
 Loại: [ ] Tối ưu tính năng có sẵn · [ ] Tính năng mới
 
-**Lát cắt một câu:** _(1 user · 1 việc · 1 quyết định AI · 1 kết quả — copy y hệt spec.md §4)_
+**Lát cắt một câu:** Khi người dùng nhận một tin nhắn đáng ngờ, CHẮN phân
+tích các dấu hiệu thao túng và đưa ra mức cảnh báo cùng câu hỏi kiểm tra trước
+khi người dùng chuyển tiền hoặc cung cấp thông tin.
+
+## Thành phần kỹ thuật
+
+- [`docs/CHAN-ARCHITECTURE.md`](docs/CHAN-ARCHITECTURE.md): nguồn sự thật duy
+  nhất về kiến trúc và các bất biến bảo mật.
+- [`codebase/ml/`](codebase/ml/README.md): generator dữ liệu, model 8 tín hiệu,
+  L4 policy và evaluation.
+- [`codebase/api/`](codebase/api/README.md): PostgreSQL ingestion, quarantine,
+  review, daily retraining, model registry và hot reload.
+- [`eval/`](eval/README.md): golden set, kết quả đo và synthetic baseline.
 
 ## Thành viên
 

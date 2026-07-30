@@ -3,10 +3,30 @@
 ## CHẮN ML synthetic baseline
 
 The versioned synthetic run summary is available at
-[`../../eval/chan-ml-synthetic-v0.4.json`](../../eval/chan-ml-synthetic-v0.4.json).
+[`chan-ml-synthetic-v0.5.json`](chan-ml-synthetic-v0.5.json).
 It records dataset provenance, model configuration, recall, false-positive
-rate, truncated-notification performance, latency, and limitations. See
-[`../../eval/README.md`](../../eval/README.md) before interpreting the numbers.
+rate, truncated-notification performance, latency, and limitations.
+
+The full local outputs are generated under:
+
+- `../codebase/ml/data/generated/chan-synthetic.jsonl.gz`
+- `../codebase/ml/data/generated/chan-synthetic.jsonl.gz.manifest.json`
+- `../codebase/ml/artifacts/chan-signal-model.joblib`
+- `../codebase/ml/artifacts/validation-metrics.json`
+- `../codebase/ml/artifacts/test-metrics.json`
+
+These generated files are ignored by Git. Recreate them with the commands in
+[`../codebase/ml/README.md`](../codebase/ml/README.md).
+
+The synthetic metrics validate the pipeline, not production performance. The
+template family was iterated during development, so this is not an untouched
+external benchmark. Release still requires a frozen, human-labeled set with at
+least 100 permitted real scam messages and 30 legitimate but suspicious
+messages.
+
+The truncated-notification test slice remains below 90% recall. Preserve
+`truncated=true`, lower user confidence, and ask for the complete message as
+specified by the architecture.
 
 Chấm theo rubric R4 (15 điểm) và checklist CP3.
 

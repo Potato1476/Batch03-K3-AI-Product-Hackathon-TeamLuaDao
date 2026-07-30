@@ -10,33 +10,34 @@ values.
 Use Python 3.11–3.13:
 
 ```bash
-cd ml
+cd repo
 python3.12 -m venv .venv
-.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m pip install -e 'codebase/ml[dev]'
+.venv/bin/python -m pip install -e 'codebase/api[dev]'
 
 # Generate 100,000 deterministic, compressed examples.
 .venv/bin/chan-generate \
   --size 100000 \
   --seed 20260730 \
-  --output data/generated/chan-synthetic.jsonl.gz
+  --output codebase/ml/data/generated/chan-synthetic.jsonl.gz
 
 # Train on the held-out train split and evaluate validation.
 .venv/bin/chan-train \
-  --dataset data/generated/chan-synthetic.jsonl.gz \
-  --output artifacts/chan-signal-model.joblib \
-  --metrics-output artifacts/validation-metrics.json
+  --dataset codebase/ml/data/generated/chan-synthetic.jsonl.gz \
+  --output codebase/ml/artifacts/chan-signal-model.joblib \
+  --metrics-output codebase/ml/artifacts/validation-metrics.json
 
 # Evaluate once on the held-out test split.
 .venv/bin/chan-evaluate \
-  --model artifacts/chan-signal-model.joblib \
-  --dataset data/generated/chan-synthetic.jsonl.gz \
+  --model codebase/ml/artifacts/chan-signal-model.joblib \
+  --dataset codebase/ml/data/generated/chan-synthetic.jsonl.gz \
   --split test \
-  --output artifacts/test-metrics.json
+  --output codebase/ml/artifacts/test-metrics.json
 
 # L2-redacted inference. Stdin avoids shell-history exposure.
 printf '%s' 'Công an yêu cầu giữ bí mật và chuyển <AMOUNT:trieu> vào <ACCOUNT> ngay.' \
   | .venv/bin/chan-predict \
-      --model artifacts/chan-signal-model.joblib \
+      --model codebase/ml/artifacts/chan-signal-model.joblib \
       --stdin
 ```
 
@@ -51,7 +52,7 @@ L2 in memory before model inference.
 ```python
 import joblib
 
-model = joblib.load("artifacts/chan-signal-model.joblib")
+model = joblib.load("codebase/ml/artifacts/chan-signal-model.joblib")
 
 def classify_redacted(redacted_text: str, similarity_max: float) -> dict:
     return model.predict(
@@ -90,7 +91,7 @@ team is ready; do not commit private messages.
 The synthetic corpus is a seed and regression fixture, not the live database.
 The product's private ingestion API, PostgreSQL migration, quarantine/review
 flow, daily trainer, and guarded model registry are documented in
-[`repo/codebase/api/README.md`](../repo/codebase/api/README.md).
+[`../api/README.md`](../api/README.md).
 
 Daily training combines the stable base corpus with approved, L2-redacted
 scenarios from PostgreSQL. A candidate is evaluated against a separate frozen

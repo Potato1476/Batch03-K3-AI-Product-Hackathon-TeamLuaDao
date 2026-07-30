@@ -59,30 +59,31 @@ scenario is not lost among tens of thousands of base examples. The default is
 Use Python 3.11–3.13 and PostgreSQL:
 
 ```bash
+cd repo
 python3.12 -m venv .venv
-.venv/bin/python -m pip install -e 'ml[dev]'
-.venv/bin/python -m pip install -e 'repo/codebase/api[dev]'
+.venv/bin/python -m pip install -e 'codebase/ml[dev]'
+.venv/bin/python -m pip install -e 'codebase/api[dev]'
 
 createdb chan
-psql chan < repo/codebase/api/migrations/001_continuous_training.sql
+psql chan < codebase/api/migrations/001_continuous_training.sql
 
 export CHAN_DATABASE_URL='postgresql://localhost/chan'
 export CHAN_TRAINING_API_KEYS='feed-ingest=first-long-random-secret,ml-reviewer=second-long-random-secret'
 export CHAN_MODEL_ARTIFACT_ROOT="$PWD/.local/model-registry"
-export CHAN_BASE_DATASET_PATH="$PWD/ml/data/generated/chan-synthetic.jsonl.gz"
+export CHAN_BASE_DATASET_PATH="$PWD/codebase/ml/data/generated/chan-synthetic.jsonl.gz"
 export CHAN_GOLDEN_DATASET_PATH="$PWD/path/to/frozen-golden.jsonl.gz"
 
 .venv/bin/chan-training-api
 ```
 
 Generate the base corpus with `chan-generate` as documented in
-[`../../../ml/README.md`](../../../ml/README.md). Production must use a
+[`../ml/README.md`](../ml/README.md). Production must use a
 separate frozen, human-reviewed golden set—not the daily training rows.
 
-Build the service container from the repository root:
+Build the service container from inside the `repo/` project root:
 
 ```bash
-docker build -f repo/codebase/api/Dockerfile -t chan-training-api .
+docker build -f codebase/api/Dockerfile -t chan-training-api .
 ```
 
 Use the same image with the command `chan-training-worker --enqueue` for a
