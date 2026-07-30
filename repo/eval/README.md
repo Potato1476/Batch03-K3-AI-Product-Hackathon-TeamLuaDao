@@ -1,5 +1,13 @@
 # eval/ — Golden set & kết quả đo
 
+## CHẮN ML synthetic baseline
+
+The versioned synthetic run summary is available at
+[`../../eval/chan-ml-synthetic-v0.4.json`](../../eval/chan-ml-synthetic-v0.4.json).
+It records dataset provenance, model configuration, recall, false-positive
+rate, truncated-notification performance, latency, and limitations. See
+[`../../eval/README.md`](../../eval/README.md) before interpreting the numbers.
+
 Chấm theo rubric R4 (15 điểm) và checklist CP3.
 
 | File | Nội dung |
