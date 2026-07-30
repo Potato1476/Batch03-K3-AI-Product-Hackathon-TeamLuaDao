@@ -95,6 +95,48 @@ function matchesAny(text: string, patterns: string[]): boolean {
   return patterns.some((pattern) => compilePattern(pattern)?.test(text) ?? false);
 }
 
+/** Engine tag of a verdict decided entirely on the device by L0/L1. */
+export const LOCAL_ENGINE_VERSION = "l1-local";
+
+type LocalEvaluation = {
+  otpBlocked: boolean;
+  localSignals: string[];
+  truncated: boolean;
+  gated: boolean;
+};
+
+function evaluateLocally(text: string, bundle: RuleBundle): LocalEvaluation {
+  const normalized = matchingText(text, bundle);
+  if (matchesAny(normalized, bundle.l1.otp_block.patterns)) {
+    return {
+      otpBlocked: true,
+      localSignals: [],
+      truncated: false,
+      gated: false,
+    };
+  }
+  const localSignals = Object.entries(bundle.l1.local_signals)
+    .filter(([, rule]) => matchesAny(normalized, rule.patterns))
+    .map(([name]) => name);
+  const gate = bundle.l1.gate;
+  const score = localSignals.reduce(
+    (total, name) =>
+      total + Math.max(0, bundle.l1.local_signals[name]?.boost ?? 0),
+    0,
+  );
+  const shouldAlwaysCall = localSignals.some((name) =>
+    gate.always_call_when_local_signal.includes(name),
+  );
+  return {
+    otpBlocked: false,
+    localSignals,
+    truncated: localSignals.includes("truncation_marker"),
+    gated:
+      normalized.length < gate.min_length_to_call_server ||
+      (!shouldAlwaysCall && score < gate.min_score_to_call_server),
+  };
+}
+
 function localHigh(bundle: RuleBundle): AnalyzeResponse {
   return {
     analysis_id: `local_${crypto.randomUUID()}`,
@@ -106,7 +148,7 @@ function localHigh(bundle: RuleBundle): AnalyzeResponse {
     questions: ["Tại sao họ cần mã xác nhận của tôi?"],
     verified_hotline: null,
     actions: ["report", "share_to_guardian"],
-    engine_version: "l1-local",
+    engine_version: LOCAL_ENGINE_VERSION,
     rule_bundle_version: bundle.bundle_version,
   };
 }
@@ -117,46 +159,52 @@ function localUnknown(bundle: RuleBundle): AnalyzeResponse {
     risk: "unknown",
     score: 0,
     signals: [],
-    explanation: "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+    // The gate decided not to spend the message's privacy, not that the
+    // message is fine. The client must not present this as a finished check.
+    explanation:
+      "Các quy tắc trên máy không thấy dấu hiệu nào, nên tin nhắn chưa được gửi đi chấm sâu. Đây chưa phải kết luận.",
     questions: [
       "Tin nhắn đến từ đâu và có yêu cầu bấm link, chuyển tiền hoặc cung cấp mã xác nhận không?",
     ],
     verified_hotline: null,
     actions: [],
-    engine_version: "l1-local",
+    engine_version: LOCAL_ENGINE_VERSION,
     rule_bundle_version: bundle.bundle_version,
   };
 }
 
 export async function analyzeMessage(text: string): Promise<AnalyzeResponse> {
   const bundle = await ruleBundle();
-  const normalized = matchingText(text, bundle);
+  const local = evaluateLocally(text, bundle);
 
   // I1: a value or request for OTP is decided entirely on-device.
-  if (matchesAny(normalized, bundle.l1.otp_block.patterns)) {
-    return localHigh(bundle);
-  }
+  if (local.otpBlocked) return localHigh(bundle);
+  if (local.gated) return localUnknown(bundle);
+  return analyzeOnServer({
+    text,
+    localSignals: local.localSignals,
+    truncated: local.truncated,
+  });
+}
 
-  const localSignals = Object.entries(bundle.l1.local_signals)
-    .filter(([, rule]) => matchesAny(normalized, rule.patterns))
-    .map(([name]) => name);
-  const truncated = localSignals.includes("truncation_marker");
-  const gate = bundle.l1.gate;
-  const score = localSignals.reduce(
-    (total, name) =>
-      total + Math.max(0, bundle.l1.local_signals[name]?.boost ?? 0),
-    0,
-  );
-  const shouldAlwaysCall = localSignals.some((name) =>
-    gate.always_call_when_local_signal.includes(name),
-  );
-  if (
-    normalized.length < gate.min_length_to_call_server ||
-    (!shouldAlwaysCall && score < gate.min_score_to_call_server)
-  ) {
-    return localUnknown(bundle);
-  }
-  return analyzeOnServer({ text, localSignals, truncated });
+/**
+ * Escalate past the L1 gate on an explicit user request. The gate trades recall
+ * for privacy, so a message it kept on the device must stay one tap away from
+ * the model instead of ending as a silent "no signals found".
+ */
+export async function deepAnalyzeMessage(
+  text: string,
+): Promise<AnalyzeResponse> {
+  const bundle = await ruleBundle();
+  const local = evaluateLocally(text, bundle);
+
+  // I1 outranks the user's request: OTP content never leaves the device.
+  if (local.otpBlocked) return localHigh(bundle);
+  return analyzeOnServer({
+    text,
+    localSignals: local.localSignals,
+    truncated: local.truncated,
+  });
 }
 
 export function resetRuleBundleForTests(): void {

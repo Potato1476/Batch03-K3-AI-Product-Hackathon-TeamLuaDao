@@ -19,7 +19,7 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
   chung cho Web, Android và Zalo OA.
 - [`codebase/TEAM_HANDOFF.md`](codebase/TEAM_HANDOFF.md): hướng dẫn tích hợp,
   vị trí dataset/model và trách nhiệm từng đội.
-- [`codebase/api/`](codebase/api/README.md): PostgreSQL ingestion, quarantine,
+- [`codebase/training_api/`](codebase/training_api/README.md): PostgreSQL ingestion, quarantine,
   review, daily retraining, model registry và hot reload.
 - [`codebase/intel/`](codebase/intel/README.md): PhishTank/PhishVN ingestion,
   hash-only blocklists, k-anonymous lookup và community report consensus.

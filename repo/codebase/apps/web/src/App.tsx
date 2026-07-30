@@ -8,7 +8,11 @@ import {
   type LookupKind,
   type LookupResult as LookupApiResult,
 } from "./api";
-import { analyzeMessage } from "./engine";
+import {
+  analyzeMessage,
+  deepAnalyzeMessage,
+  LOCAL_ENGINE_VERSION,
+} from "./engine";
 import {
   SpeechInputError,
   startLocalSpeechRecognition,
@@ -42,6 +46,9 @@ export function App() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [error, setError] = useState<ErrorKey | null>(null);
   const [analysis, setAnalysis] = useState<AnalyzeResponse | null>(null);
+  // The result screen quotes what was actually checked, which may differ from
+  // the textarea once the user starts editing the next message.
+  const [analyzedMessage, setAnalyzedMessage] = useState("");
   const [lookupResult, setLookupResult] = useState<LookupApiResult | null>(null);
   const [simulations, setSimulations] = useState<Simulations>({
     mic: false,
@@ -58,7 +65,10 @@ export function App() {
     }
   };
 
-  const runAnalysis = async () => {
+  const runCheck = async (
+    text: string,
+    check: (text: string) => Promise<AnalyzeResponse>,
+  ) => {
     if (simulations.offline) {
       setError("offline");
       return;
@@ -66,7 +76,8 @@ export function App() {
     setError(null);
     go("loading");
     try {
-      const result = await analyzeMessage(message);
+      const result = await check(text);
+      setAnalyzedMessage(text);
       setAnalysis(result);
       go("result");
     } catch {
@@ -74,6 +85,9 @@ export function App() {
       go("input");
     }
   };
+
+  const runAnalysis = () => runCheck(message, analyzeMessage);
+  const runDeepAnalysis = () => runCheck(analyzedMessage, deepAnalyzeMessage);
 
   const runLookup = async () => {
     if (simulations.offline) {
@@ -121,7 +135,14 @@ export function App() {
             />
           )}
           {screen === "loading" && <Loading />}
-          {screen === "result" && analysis && <Result analysis={analysis} onBack={() => go("input")} />}
+          {screen === "result" && analysis && (
+            <Result
+              analysis={analysis}
+              message={analyzedMessage}
+              onBack={() => go("input")}
+              onDeepCheck={() => void runDeepAnalysis()}
+            />
+          )}
           {screen === "check" && (
             <Lookup
               kind={lookupKind}
@@ -433,8 +454,46 @@ const riskCopy = {
   },
 } as const;
 
-function Result({ analysis, onBack }: { analysis: AnalyzeResponse; onBack: () => void }) {
-  const copy = riskCopy[analysis.risk];
+const localOnlyCopy = {
+  hero: "neutral-hero",
+  pill: "CHƯA CHẤM SÂU",
+  title: "Máy chưa thấy dấu hiệu nào",
+  guidance: "Tin nhắn chưa được gửi đi chấm sâu. Đây chưa phải kết luận.",
+} as const;
+
+function CheckedMessage({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = text.length > 240;
+  const shown = expanded || !isLong ? text : `${text.slice(0, 240).trimEnd()}…`;
+  return (
+    <div className="checked-message">
+      <p className="eyebrow">TIN NHẮN BÁC VỪA KIỂM TRA</p>
+      <p className="checked-message-text">{shown}</p>
+      {isLong && (
+        <button type="button" className="link-button" onClick={() => setExpanded(!expanded)}>
+          {expanded ? "Thu gọn tin nhắn" : "Xem đầy đủ tin nhắn"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Result({
+  analysis,
+  message,
+  onBack,
+  onDeepCheck,
+}: {
+  analysis: AnalyzeResponse;
+  message: string;
+  onBack: () => void;
+  onDeepCheck: () => void;
+}) {
+  // A gate decision is not a verdict: say so instead of borrowing the copy of
+  // a real "no signals found" answer from the model.
+  const localOnly =
+    analysis.engine_version === LOCAL_ENGINE_VERSION && analysis.risk === "unknown";
+  const copy = localOnly ? localOnlyCopy : riskCopy[analysis.risk];
   const hits = new Map(analysis.signals.map((signal) => [signal.code, signal]));
   return (
     <section>
@@ -445,7 +504,23 @@ function Result({ analysis, onBack }: { analysis: AnalyzeResponse; onBack: () =>
         <p><strong>{copy.guidance}</strong></p>
       </div>
       <div className="page result-body">
-        <div className="source-card"><span>WEB</span><p>Kết quả từ CHAN · {analysis.engine_version}</p></div>
+        {message && <CheckedMessage text={message} />}
+        {localOnly && (
+          <div className="deep-check">
+            <h2>Bác muốn kiểm tra kỹ hơn?</h2>
+            <p>
+              CHAN mới chỉ đối chiếu quy tắc ngay trên máy để giữ riêng tư. Bấm nút
+              dưới đây để gửi tin nhắn cho máy chủ chấm đầy đủ 8 dấu hiệu.
+            </p>
+            <button type="button" className="cta" onClick={onDeepCheck}>
+              Kiểm tra kỹ hơn
+            </button>
+          </div>
+        )}
+        <div className="source-card">
+          <span>{localOnly ? "MÁY" : "WEB"}</span>
+          <p>Kết quả từ CHAN · {analysis.engine_version}</p>
+        </div>
         <h2>Trúng {analysis.signals.length}/8 dấu hiệu thao túng</h2>
         <div className="signal-list">
           {Object.entries(signalLabels).map(([code, label]) => {

@@ -38,7 +38,7 @@ New phishing scenarios are not limited to the committed synthetic generator.
 The database-backed ingestion, review, daily retraining, and guarded model
 promotion service is in [`training_api/`](training_api/README.md).
 
-**Mức prototype khai báo:** [ ] Sketch [ ] Mock [ ] Working
+**Mức prototype khai báo:** [ ] Sketch [ ] Mock [x] Working
 *(Phải khớp thực tế và khớp `spec.md` §4 — rubric R5 chấm 2 điểm riêng cho việc khai đúng.)*
 
 ## Chạy thế nào

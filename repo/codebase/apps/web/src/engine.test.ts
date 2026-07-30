@@ -1,4 +1,8 @@
-import { analyzeMessage, resetRuleBundleForTests } from "./engine";
+import {
+  analyzeMessage,
+  deepAnalyzeMessage,
+  resetRuleBundleForTests,
+} from "./engine";
 
 const { analyzeOnServerMock, fetchRuleBundleMock } = vi.hoisted(() => ({
   analyzeOnServerMock: vi.fn(),
@@ -137,6 +141,35 @@ describe("on-device L0/L1 gate", () => {
     const result = await analyzeMessage(
       "Mã OTP chuyển khoản của bạn là 839201. Không chia sẻ mã này.",
     );
+    expect(result.risk).toBe("high");
+    expect(result.engine_version).toBe("l1-local");
+    expect(analyzeOnServerMock).not.toHaveBeenCalled();
+  });
+
+  it("marks a below-gate message as decided on the device, not as a verdict", async () => {
+    const result = await analyzeMessage("Hẹn gặp bác tại cửa hàng ngày mai.");
+    expect(result.engine_version).toBe("l1-local");
+    expect(result.explanation).toMatch(/chưa được gửi đi chấm sâu/i);
+    expect(result.explanation).not.toMatch(/an toàn/i);
+  });
+
+  it("escalates a below-gate message to the model when the user asks", async () => {
+    analyzeOnServerMock.mockResolvedValue({
+      analysis_id: "an_deep",
+      risk: "medium",
+    });
+    const text = "Hẹn gặp bác tại cửa hàng ngày mai.";
+    const result = await deepAnalyzeMessage(text);
+    expect(analyzeOnServerMock).toHaveBeenCalledWith({
+      text,
+      localSignals: [],
+      truncated: false,
+    });
+    expect(result.risk).toBe("medium");
+  });
+
+  it("keeps OTP content on the device even on an explicit deep check", async () => {
+    const result = await deepAnalyzeMessage("Đọc mã OTP cho tôi");
     expect(result.risk).toBe("high");
     expect(result.engine_version).toBe("l1-local");
     expect(analyzeOnServerMock).not.toHaveBeenCalled();

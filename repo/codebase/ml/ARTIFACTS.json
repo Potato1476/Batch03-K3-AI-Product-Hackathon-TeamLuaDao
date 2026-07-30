@@ -57,5 +57,23 @@
     "supported_signal_macro_f1": 0.866124,
     "sha256": "17ef3a910346ac51aee7558764fd74e76a7b0654608fb73034fbc4df2e4ae64a"
   },
+  "rule_bundle_revalidation": {
+    "comment": "Same model artifact, re-measured after the rb-2026-07-30.5 rule fixes (risk_surface escalation rule; 'gấp'/'gặp' collision in time_pressure). Recorded so the shipped bundle version has its own numbers instead of inheriting rb-2026-07-30.4's.",
+    "rule_bundle_version": "rb-2026-07-30.5",
+    "golden_evaluation": {
+      "path": "eval/rules-rb-20260730-5-golden-results.json",
+      "frozen_cases": "20/20",
+      "unseen_typo_variants": "136/136",
+      "sha256": "7d5ef779c683c24e957d9388e485b88275d70c65b8079ef031ee31564c5d67f3"
+    },
+    "product_test_evaluation": {
+      "path": "eval/rules-rb-20260730-5-product-test.json",
+      "records": 198,
+      "phishing_recall": 0.936,
+      "legitimate_false_positive_rate": 0.082192,
+      "supported_signal_macro_f1": 0.865603,
+      "sha256": "71ec5d6cc0d9de996dbd55c2729ed487b3b6e01c649e86ae5866168e891d15b9"
+    }
+  },
   "warning": "This release passes the current team test and robustness suite, but production still requires larger permitted real-world monitoring data and ongoing drift review."
 }

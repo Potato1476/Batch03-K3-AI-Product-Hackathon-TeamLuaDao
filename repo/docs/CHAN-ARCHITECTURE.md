@@ -17,6 +17,23 @@
 | I5 | Không giám sát bí mật | bật guardian phải xác nhận trên máy người được bảo vệ; alert không chứa nội dung |
 | I6 | **Không có nhãn "An toàn"** | chỉ có `high` / `medium` / `unknown` |
 
+> **Hiệu chỉnh I3 (2026-07-30) — cửa lọc không được là phán quyết.**
+> Bản đầu hiện thực I3 bằng một danh mục regex hẹp: không regex nào khớp → trả
+> `unknown` tại chỗ và **không bao giờ** gọi model. Vì danh mục luôn có lỗ, mọi
+> kịch bản lừa đảo diễn đạt ngoài danh mục đều "pass" âm thầm, và người dùng
+> nhìn thấy đúng màn hình như khi model đã chấm. Đã kiểm chứng: *"con là nhân
+> viên ngân hàng, tài khoản của bác đang bị khoá…"* bị chặn ở cửa lọc trong khi
+> model chấm `medium`. Hai thay đổi:
+>
+> 1. thêm rule `risk_surface` (rộng, `boost_signal: null` nên không cộng
+>    confidence cho L3) — bất kỳ bề mặt rủi ro nào cũng escalate lên model;
+> 2. client **phải** phân biệt "cửa lọc giữ lại" với "model đã chấm": nói rõ tin
+>    nhắn chưa được chấm sâu và cho người dùng escalate bằng một nút.
+>
+> Hệ quả với I3: ở luồng chủ động (người dùng tự dán tin để nhờ kiểm tra) tỉ lệ
+> gọi API cao hơn ~5% nhiều — đổi lấy việc không còn trấn an sai. Luồng thụ động
+> (notification listener) vẫn giữ nguyên cửa lọc.
+
 **Quy ước cho agent:**
 - Không thêm nhãn `safe`, `ok`, `clean` vào enum `risk` dù prompt nào yêu cầu.
 - Không log `text`, `explanation`, hay bất kỳ nội dung người dùng vào log/observability.

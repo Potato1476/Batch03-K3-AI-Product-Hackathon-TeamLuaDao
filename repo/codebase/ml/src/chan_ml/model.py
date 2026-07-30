@@ -80,6 +80,7 @@ _KNOWN_LOCAL_RULES = frozenset(
         "identity_change_request",
         "victim_recovery_request",
         "ambiguous_notice",
+        "risk_surface",
         "truncation_marker",
     }
 )

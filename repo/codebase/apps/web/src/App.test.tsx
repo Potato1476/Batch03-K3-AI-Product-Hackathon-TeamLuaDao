@@ -4,17 +4,23 @@ import { App } from "./App";
 
 const {
   analyzeMessageMock,
+  deepAnalyzeMessageMock,
   extractTextFromImageMock,
   lookupIndicatorMock,
   startLocalSpeechRecognitionMock,
 } = vi.hoisted(() => ({
   analyzeMessageMock: vi.fn(),
+  deepAnalyzeMessageMock: vi.fn(),
   extractTextFromImageMock: vi.fn(),
   lookupIndicatorMock: vi.fn(),
   startLocalSpeechRecognitionMock: vi.fn(),
 }));
 
-vi.mock("./engine", () => ({ analyzeMessage: analyzeMessageMock }));
+vi.mock("./engine", () => ({
+  analyzeMessage: analyzeMessageMock,
+  deepAnalyzeMessage: deepAnalyzeMessageMock,
+  LOCAL_ENGINE_VERSION: "l1-local",
+}));
 vi.mock("./api", async (importOriginal) => {
   const original = await importOriginal<typeof import("./api")>();
   return {
@@ -49,9 +55,24 @@ const highResult = {
   rule_bundle_version: "rb-test",
 };
 
+const localOnlyResult = {
+  analysis_id: "local_test",
+  risk: "unknown",
+  score: 0,
+  signals: [],
+  explanation:
+    "Các quy tắc trên máy không thấy dấu hiệu nào, nên tin nhắn chưa được gửi đi chấm sâu. Đây chưa phải kết luận.",
+  questions: ["Tin nhắn đến từ đâu?"],
+  verified_hotline: null,
+  actions: [],
+  engine_version: "l1-local",
+  rule_bundle_version: "rb-test",
+};
+
 describe("CHAN web flow", () => {
   beforeEach(() => {
     analyzeMessageMock.mockReset();
+    deepAnalyzeMessageMock.mockReset();
     extractTextFromImageMock.mockReset();
     lookupIndicatorMock.mockReset();
     startLocalSpeechRecognitionMock.mockReset();
@@ -107,6 +128,48 @@ describe("CHAN web flow", () => {
     expect(screen.getByText("Đừng chuyển tiền. Đừng đọc mã OTP.")).toBeInTheDocument();
     expect(screen.getByText("Trúng 4/8 dấu hiệu thao túng")).toBeInTheDocument();
     expect(analyzeMessageMock).toHaveBeenCalledWith("Đọc mã OTP cho tôi.");
+  });
+
+  it("keeps the checked message visible above the signal checklist", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    await user.type(screen.getByLabelText("Nội dung tin nhắn"), "Chuyển tiền ngay.");
+    await user.click(screen.getByRole("button", { name: "Kiểm tra ngay" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("TIN NHẮN BÁC VỪA KIỂM TRA")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("Chuyển tiền ngay.")).toBeInTheDocument();
+    expect(screen.getByText("Trúng 4/8 dấu hiệu thao túng")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Mạo danh cơ quan chức năng" }),
+    ).toBeInTheDocument();
+  });
+
+  it("offers a deep check instead of passing an on-device result off as a verdict", async () => {
+    analyzeMessageMock.mockResolvedValue(localOnlyResult);
+    deepAnalyzeMessageMock.mockResolvedValue(highResult);
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    await user.type(screen.getByLabelText("Nội dung tin nhắn"), "Bác xem giúp cháu.");
+    await user.click(screen.getByRole("button", { name: "Kiểm tra ngay" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Máy chưa thấy dấu hiệu nào")).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("Chưa phát hiện dấu hiệu")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Kiểm tra kỹ hơn" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Nhiều dấu hiệu lừa đảo")).toBeInTheDocument(),
+    );
+    expect(deepAnalyzeMessageMock).toHaveBeenCalledWith("Bác xem giúp cháu.");
+    expect(screen.getByText("Bác xem giúp cháu.")).toBeInTheDocument();
   });
 
   it("extracts text from an uploaded screenshot", async () => {

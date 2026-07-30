@@ -1,0 +1,493 @@
+{
+  "evaluated_at": "2026-07-30T13:56:46.655867+00:00",
+  "records_checked": 198,
+  "phishing_records": 125,
+  "legitimate_records": 73,
+  "phishing_recall": 0.936,
+  "legitimate_false_positive_rate": 0.082192,
+  "risk_accuracy": 0.828283,
+  "by_signal": {
+    "mao_danh_tham_quyen": {
+      "precision": 0.976744,
+      "recall": 0.913043,
+      "f1": 0.94382,
+      "support": 46
+    },
+    "yeu_cau_bi_mat": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "ap_luc_thoi_gian": {
+      "precision": 0.916667,
+      "recall": 0.956522,
+      "f1": 0.93617,
+      "support": 23
+    },
+    "tk_ca_nhan": {
+      "precision": 0.973333,
+      "recall": 1.0,
+      "f1": 0.986486,
+      "support": 73
+    },
+    "cai_app_ngoai": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 8
+    },
+    "loi_ich_bat_thuong": {
+      "precision": 0.333333,
+      "recall": 0.75,
+      "f1": 0.461538,
+      "support": 4
+    },
+    "chuyen_kenh": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "yeu_cau_otp": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    }
+  },
+  "supported_signal_macro_f1": 0.865603,
+  "risk_confusion": {
+    "high->high": 89,
+    "high->medium": 15,
+    "high->unknown": 3,
+    "medium->high": 5,
+    "medium->medium": 8,
+    "medium->unknown": 5,
+    "unknown->medium": 6,
+    "unknown->unknown": 67
+  },
+  "acceptance": {
+    "recall_at_least_0_90": true,
+    "false_positive_below_0_15": true,
+    "signal_risk_invariants": true,
+    "passed": true
+  },
+  "invariant_errors": [],
+  "mismatch_count": 42,
+  "mismatches": [
+    {
+      "id": "team_606e4edad225641af9aa5a1d",
+      "split": "test",
+      "expected_risk": "unknown",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_77f96574429e754ecad8bd9f",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "medium",
+      "expected_signals": [
+        "mao_danh_tham_quyen"
+      ],
+      "actual_signals": []
+    },
+    {
+      "id": "team_e16f8b4d34b33aa66a278c3d",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "unknown",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_9274cefb92e9fa9ef3e4066b",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "high",
+      "expected_signals": [
+        "mao_danh_tham_quyen"
+      ],
+      "actual_signals": [
+        "mao_danh_tham_quyen"
+      ]
+    },
+    {
+      "id": "team_b7c33c73c669cff3c482c94e",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "high",
+      "expected_signals": [
+        "mao_danh_tham_quyen"
+      ],
+      "actual_signals": [
+        "mao_danh_tham_quyen"
+      ]
+    },
+    {
+      "id": "team_0de661c26783f017c4efaff4",
+      "split": "test",
+      "expected_risk": "unknown",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": [
+        "tk_ca_nhan"
+      ]
+    },
+    {
+      "id": "team_0e4466cddc33b043f2c4fce7",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_219cd59d2e2282a5b4d95713",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "unknown",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_7cfde4b53a7f33078aa0aece",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": [
+        "ap_luc_thoi_gian"
+      ]
+    },
+    {
+      "id": "team_ee1561d3912fcd62b550780d",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "high",
+      "expected_signals": [
+        "cai_app_ngoai"
+      ],
+      "actual_signals": [
+        "cai_app_ngoai",
+        "loi_ich_bat_thuong"
+      ]
+    },
+    {
+      "id": "team_614678325d572c93cb7eafe3",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [
+        "ap_luc_thoi_gian",
+        "mao_danh_tham_quyen"
+      ],
+      "actual_signals": [
+        "ap_luc_thoi_gian"
+      ]
+    },
+    {
+      "id": "team_cd704d0edb6ef7c09caf3f22",
+      "split": "test",
+      "expected_risk": "unknown",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": [
+        "ap_luc_thoi_gian"
+      ]
+    },
+    {
+      "id": "team_ca48e302a9f432b6bbfbf7d2",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_01f0118741ea6330ed749e88",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "high",
+      "expected_signals": [
+        "loi_ich_bat_thuong"
+      ],
+      "actual_signals": [
+        "loi_ich_bat_thuong"
+      ]
+    },
+    {
+      "id": "team_d76133759daabc239e06dbc8",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [
+        "loi_ich_bat_thuong"
+      ],
+      "actual_signals": []
+    },
+    {
+      "id": "team_a96d0cad78d7ad06812a7a06",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_6e38321e0dedfc83dc758022",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "unknown",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_1ac03baeb64718489964722d",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "medium",
+      "expected_signals": [
+        "mao_danh_tham_quyen"
+      ],
+      "actual_signals": []
+    },
+    {
+      "id": "team_e4cee5f91c499272aa984759",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_939c8c78de65e8f896c2392d",
+      "split": "test",
+      "expected_risk": "unknown",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_4800912a4398b610e41e921b",
+      "split": "test",
+      "expected_risk": "unknown",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_bc4a94500f1a79a57d97a714",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "unknown",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_fdf3447aa6f435ae9416adad",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "unknown",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_8a73434a161ae7b1040f18df",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_c3e80934df459489dc6dafe8",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_0fd8d06068a57acfe8c492cc",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_6777842383de36a379f91b59",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "unknown",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_55490973f70e509f7bd32747",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "unknown",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_0c1f45bc6b3239aa2afd872d",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "unknown",
+      "expected_signals": [
+        "mao_danh_tham_quyen"
+      ],
+      "actual_signals": []
+    },
+    {
+      "id": "team_c90bd6d464f42b260db10836",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "high",
+      "expected_signals": [
+        "tk_ca_nhan"
+      ],
+      "actual_signals": [
+        "loi_ich_bat_thuong",
+        "tk_ca_nhan"
+      ]
+    },
+    {
+      "id": "team_1f903f227216013f4647c2cd",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "high",
+      "expected_signals": [
+        "tk_ca_nhan"
+      ],
+      "actual_signals": [
+        "loi_ich_bat_thuong",
+        "tk_ca_nhan"
+      ]
+    },
+    {
+      "id": "team_67c9a485353dfd8ed19db0d6",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "high",
+      "expected_signals": [
+        "tk_ca_nhan"
+      ],
+      "actual_signals": [
+        "loi_ich_bat_thuong",
+        "tk_ca_nhan"
+      ]
+    },
+    {
+      "id": "team_01ffcdcc3f40649c50b716f2",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "high",
+      "expected_signals": [
+        "tk_ca_nhan"
+      ],
+      "actual_signals": [
+        "loi_ich_bat_thuong",
+        "tk_ca_nhan"
+      ]
+    },
+    {
+      "id": "team_655091360a4e051726e5ecac",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "high",
+      "expected_signals": [
+        "tk_ca_nhan"
+      ],
+      "actual_signals": [
+        "loi_ich_bat_thuong",
+        "tk_ca_nhan"
+      ]
+    },
+    {
+      "id": "team_55568aa51e091d4f6e4742b0",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_8f143178da3165fc1f0eaf9e",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_93a2bfa50d8bf611ac8d4783",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_334a36095d20e3c209c22313",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "high",
+      "expected_signals": [
+        "ap_luc_thoi_gian",
+        "mao_danh_tham_quyen"
+      ],
+      "actual_signals": [
+        "ap_luc_thoi_gian",
+        "mao_danh_tham_quyen"
+      ]
+    },
+    {
+      "id": "team_ab46c3927bc8503f36f335bb",
+      "split": "test",
+      "expected_risk": "medium",
+      "actual_risk": "high",
+      "expected_signals": [
+        "ap_luc_thoi_gian",
+        "mao_danh_tham_quyen"
+      ],
+      "actual_signals": [
+        "mao_danh_tham_quyen"
+      ]
+    },
+    {
+      "id": "team_63c350f99b6e9c6f516d0642",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_039b84931328cb229f023262",
+      "split": "test",
+      "expected_risk": "high",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": []
+    },
+    {
+      "id": "team_594e770f3d6974fe850a6c00",
+      "split": "test",
+      "expected_risk": "unknown",
+      "actual_risk": "medium",
+      "expected_signals": [],
+      "actual_signals": [
+        "mao_danh_tham_quyen",
+        "tk_ca_nhan"
+      ]
+    }
+  ],
+  "split": "test",
+  "rule_bundle_version": "rb-2026-07-30.5"
+}

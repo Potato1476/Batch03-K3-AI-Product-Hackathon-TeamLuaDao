@@ -1,0 +1,2627 @@
+{
+  "evaluated_at": "2026-07-30T13:57:19.296613+00:00",
+  "model": "chan-signal-model.joblib",
+  "rule_bundle_version": "rb-2026-07-30.5",
+  "pass_count": 20,
+  "total_count": 20,
+  "result": "20/20",
+  "cases": [
+    {
+      "id": "G01",
+      "input": "Chao anh, em la can bo thue quan 1. Ho so thue cua anh co loi, cap nhat ngay trong 2h neu khong se bi khoa tai khoan.",
+      "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+      "actual_risk": "high",
+      "actual_score": 0.759588,
+      "actual_signals": [
+        "ap_luc_thoi_gian",
+        "mao_danh_tham_quyen"
+      ],
+      "local_signals": [
+        "authority_claim",
+        "time_pressure",
+        "ambiguous_notice"
+      ],
+      "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G02",
+      "input": "Vietcombank thong bao: Tai khoan cua quy khach bi khoa. Vui long dang nhap http://vcb-sec.com de mo lai.",
+      "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "mao_danh_tham_quyen"
+      ],
+      "local_signals": [
+        "generic_url",
+        "suspicious_account_link",
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G03",
+      "input": "Chuyen ngay 5 trieu vao STK 123456789 VCB ten Nguyen Van A. Chuyen xong xoa tin nhan, khong noi voi gia dinh.",
+      "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+      "actual_risk": "high",
+      "actual_score": 0.990244,
+      "actual_signals": [
+        "ap_luc_thoi_gian",
+        "tk_ca_nhan",
+        "yeu_cau_bi_mat"
+      ],
+      "local_signals": [
+        "secrecy_request",
+        "personal_transfer_request",
+        "risk_surface"
+      ],
+      "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G04",
+      "input": "Ma OTP xac thuc giao dich VCB cua ban la 839201. Tuyet doi khong chia se ma nay.",
+      "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+      "actual_risk": "high",
+      "actual_score": 1.0,
+      "actual_signals": [
+        "yeu_cau_otp"
+      ],
+      "local_signals": [
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G05",
+      "input": "Thong bao tu Cuc Canh sat: Ban co giay phat nguoi 5 trieu. Truy cap http://phatnguoi-gov.com de nộp phat.",
+      "expected": "risk: high. Signals: mao_danh_tham_quyen",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "mao_danh_tham_quyen"
+      ],
+      "local_signals": [
+        "generic_url",
+        "authority_claim",
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G06",
+      "input": "Thong tin thue bao SIM cua quy khach chua chuan hoa. Se khoai SIM sau 24h. Vui long lien he 0912345678.",
+      "expected": "risk: high. Signals: ap_luc_thoi_gian",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "ap_luc_thoi_gian",
+        "mao_danh_tham_quyen"
+      ],
+      "local_signals": [
+        "time_pressure",
+        "sim_lock_notice",
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G07",
+      "input": "Chuc mung quy khach trung thuong xe SH va 100 trieu. Truy cap http://trungthuong2026.com de nhan thuong.",
+      "expected": "risk: high. Signals: loi_ich_bat_thuong",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "loi_ich_bat_thuong"
+      ],
+      "local_signals": [
+        "generic_url",
+        "unusual_reward",
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G08",
+      "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat quyen tro nang.",
+      "expected": "risk: high. Signals: cai_app_ngoai",
+      "actual_risk": "high",
+      "actual_score": 0.733273,
+      "actual_signals": [
+        "cai_app_ngoai",
+        "mao_danh_tham_quyen"
+      ],
+      "local_signals": [
+        "apk_link",
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G09",
+      "input": "Alo / 123456 / ???",
+      "expected": "risk: unknown, score < 0.35, signals: []",
+      "actual_risk": "unknown",
+      "actual_score": 0.0,
+      "actual_signals": [],
+      "local_signals": [],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G10",
+      "input": "Chuc anh mot ngay tot lang, khi nao ranh qua em choi.",
+      "expected": "risk: unknown, score < 0.10, signals: []",
+      "actual_risk": "unknown",
+      "actual_score": 0.0,
+      "actual_signals": [],
+      "local_signals": [],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G11",
+      "input": "Co oi chau la Tuan day, dien thoai chau bi hong nen dung so nay. Co dang ranh khong chau nho chut viec?",
+      "expected": "risk: medium, score in [0.35, 0.69]",
+      "actual_risk": "medium",
+      "actual_score": 0.35,
+      "actual_signals": [],
+      "local_signals": [
+        "identity_change_request"
+      ],
+      "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G12",
+      "input": "Tuyen cong tac vien xem Youtube 500k/ngay. Nhap hop thu Zalo 0988776655 de xem chi tiet.",
+      "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+      "actual_risk": "medium",
+      "actual_score": 0.41354,
+      "actual_signals": [
+        "chuyen_kenh",
+        "loi_ich_bat_thuong"
+      ],
+      "local_signals": [
+        "channel_switch",
+        "unusual_reward",
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G13",
+      "input": "Toi vua bi lua mat 20 trieu qua Zalo, bay gio lam sao de doi lai tien tu ngan hang?",
+      "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+      "actual_risk": "unknown",
+      "actual_score": 0.018117,
+      "actual_signals": [],
+      "local_signals": [
+        "victim_recovery_request",
+        "risk_surface"
+      ],
+      "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G14",
+      "input": "Co nen dau tu vao san giao dich coin ABC nay khong, cam ket lai 30%/thang?",
+      "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+      "actual_risk": "medium",
+      "actual_score": 0.35,
+      "actual_signals": [
+        "loi_ich_bat_thuong"
+      ],
+      "local_signals": [
+        "unusual_reward",
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G15",
+      "input": "Vietcombank: So du TK 0011001234567 +1,000,000 VND. So du 15,200,000 VND. Ref: Luong T7.",
+      "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+      "actual_risk": "unknown",
+      "actual_score": 0.021741,
+      "actual_signals": [],
+      "local_signals": [
+        "risk_surface"
+      ],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G16",
+      "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Ba con tuyet doi KHONG chuyen tien.",
+      "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+      "actual_risk": "unknown",
+      "actual_score": 0.046298,
+      "actual_signals": [],
+      "local_signals": [
+        "authority_claim",
+        "risk_surface"
+      ],
+      "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G17",
+      "input": "C.h.a.o a.n.h, e.m l.a c.a.n b.o t.h.u.e, c.a.p n.h.a.t h.o s.o n.g.a.y",
+      "expected": "L0 normalized -> risk: high. Signals: mao_danh_tham_quyen",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "mao_danh_tham_quyen"
+      ],
+      "local_signals": [
+        "authority_claim",
+        "ambiguous_notice"
+      ],
+      "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G18",
+      "input": "Chuc mung ban nhan qua 50Tr. Z.a.l.o: O.9.0.9.1.2.3.4.5.6",
+      "expected": "L0 normalized -> risk: medium / high",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "ap_luc_thoi_gian",
+        "chuyen_kenh",
+        "loi_ich_bat_thuong"
+      ],
+      "local_signals": [
+        "unusual_reward",
+        "risk_surface"
+      ],
+      "explanation": "Người gửi thúc ép phải làm ngay. Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G19",
+      "input": "Nhấp vào bit.ly/3xYz12 để cập nhật tài khoản VCB gấp trước 17h.",
+      "expected": "Extract URL rút gọn -> risk: high",
+      "actual_risk": "high",
+      "actual_score": 0.7,
+      "actual_signals": [
+        "ap_luc_thoi_gian"
+      ],
+      "local_signals": [
+        "url_shortened",
+        "time_pressure",
+        "risk_surface"
+      ],
+      "explanation": "Người gửi thúc ép phải làm ngay.",
+      "passed": true,
+      "failures": []
+    },
+    {
+      "id": "G20",
+      "input": "Gửi mã OTP 6 số vừa nhận để hỗ trợ hủy lệnh chuyển tiền nhầm 50 triệu.",
+      "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+      "actual_risk": "high",
+      "actual_score": 1.0,
+      "actual_signals": [
+        "yeu_cau_otp"
+      ],
+      "local_signals": [
+        "risk_surface"
+      ],
+      "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+      "passed": true,
+      "failures": []
+    }
+  ],
+  "robustness": {
+    "description": "Deterministic train-unseen variants with missing diacritics, one-character edits, whitespace and separator obfuscation.",
+    "pass_count": 136,
+    "total_count": 136,
+    "result": "136/136",
+    "cases": [
+      {
+        "id": "G01-T01",
+        "input": "Chao anh, em la can bo thue quan 1. Ho so thue cua anh co loi, cap nhat ngay trong 2h neu khong se bi khoa tai kohan.",
+        "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.756099,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "time_pressure",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G01-T02",
+        "input": "Chao anh, em la can bo thue  quan 1. Ho so thue cua anhco loi, cap nhat ngay trong 2h neu khong se bi khoa tai k_h_o_a_n.",
+        "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.753186,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "time_pressure",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G01-T03",
+        "input": "Chao anh, em la can bo thue  quan 1. Ho sothue cua anh co loi, cap nhat ngay trong 2h neu khong se bi khoa tai khoan.",
+        "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "time_pressure"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G01-T04",
+        "input": "Chao anh, em la can bo thue quan 1. Ho so thue cua anh co loi, cap nhat ngay trong 2h neu khnog se bi khoa tai khan.",
+        "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.758082,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "time_pressure",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G01-T05",
+        "input": "Chao anh, em la can bo thue quan 1. Ho so thue cua anh co loi, cap nhat ngay trog 2h neu khong se bi khoa tai khoan.",
+        "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.760581,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "time_pressure",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G01-T06",
+        "input": "Chao anh, em la   can bo thue quan 1. Ho so thue cua anh co loi, cap nhat ngay trong 2h neu khng se  bi khoa tai khoan.",
+        "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.754237,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "time_pressure",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G01-T07",
+        "input": "Chao anh, em la can bo thue quan 1. Ho so thue cua anh co loi, cap nhat ngay trong 2h neu kong se bi khoa tai khoan.",
+        "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.754223,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "time_pressure",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G01-T08",
+        "input": "Chao anh, em  la can bo thue quan 1. Ho so thue cua anh co loi, cap nhat ngay trnog 2h neu khong se bi khoa   tai khoan.",
+        "expected": "risk: high, score >= 0.70. Signals: mao_danh_tham_quyen, ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.765588,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "time_pressure",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G02-T01",
+        "input": "Vietcombank thong bao: Tai khoan cua quy k_h_a_c_h bi khoa. Vui long dang nhap http://vcb-sec.com de mo lai.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "suspicious_account_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G02-T02",
+        "input": "Vietcombank thong bao: Tai koan cua quy khach bi khoa. Vuilong dang nhap http://vcb-sec.com de molai.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "suspicious_account_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G02-T03",
+        "input": "Vietcombank thong bao: Tai khoan cua quy khcah bi khoa. Vui long dang nhap http://vcb-sec.com de mo lai.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "suspicious_account_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G02-T04",
+        "input": "Vietcombank thnog bao: Tai khoan cua quy khch bi khoa. Vui long dang nhap http://vcb-sec.com de mo lai.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "suspicious_account_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G02-T05",
+        "input": "Vietcombank   thong bao: Tai khoan cua quy khach bi khoa. Vui long dang nhap http://vcb-sec.com de mo  lai.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "suspicious_account_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G02-T06",
+        "input": "Vietcombank thong bao: Tai khaon cua quy khch bi khoa. Vui long dang nhap http://vcb-sec.com de mo lai.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "suspicious_account_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G02-T07",
+        "input": "Vietcombank thng bao: Tai khoan cua quy khach bi khoa. Vui long dang nhap http://vcb-sec.com de mo lai.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "suspicious_account_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G02-T08",
+        "input": "Vietcombank thong bao: Tai koan cua quy khacu bi khoa. Vui long dang nhap http://vcb-sec.com de mo lai.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen, link độc hại",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "suspicious_account_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G03-T01",
+        "input": "Chyen ngay 5 tieu vao STK 123456789 VCB ten Nguen Van A. Chuyen xong xoa tin nhan, khong noi voi gia dinh.",
+        "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+        "actual_risk": "high",
+        "actual_score": 0.813738,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "tk_ca_nhan",
+          "yeu_cau_bi_mat"
+        ],
+        "local_signals": [
+          "secrecy_request",
+          "personal_transfer_request",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G03-T02",
+        "input": "Chyuej ngay 5 treij vao STK 123456789 VCB ten Nguyen Van A. Cjyuen xong xoa tin nhan, khong noi voi gia dinh.",
+        "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+        "actual_risk": "high",
+        "actual_score": 0.808712,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "tk_ca_nhan",
+          "yeu_cau_bi_mat"
+        ],
+        "local_signals": [
+          "secrecy_request",
+          "personal_transfer_request",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G03-T03",
+        "input": "Cuyen ngay 5 triu vao STK 123456789 VCB ten Nguyen Van A. Chuyen xong xoa tin nhan, khog noi voi gia dinh.",
+        "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+        "actual_risk": "high",
+        "actual_score": 0.813047,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "tk_ca_nhan",
+          "yeu_cau_bi_mat"
+        ],
+        "local_signals": [
+          "secrecy_request",
+          "personal_transfer_request",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G03-T04",
+        "input": "C.h.u.y.e.n ngay 5 t-r-i-e-u vao STK 123456789 VCB ten N_g_u_y_e_n Van A. Chuyen xong xoa tin nhan, khkng noi voi gia dinh.",
+        "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+        "actual_risk": "high",
+        "actual_score": 0.892193,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "tk_ca_nhan",
+          "yeu_cau_bi_mat"
+        ],
+        "local_signals": [
+          "secrecy_request",
+          "personal_transfer_request",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G03-T05",
+        "input": "C_h_u_y_e_n ngay 5 t_r_i_e_u vao STK 123456789 VCB ten N-g-u-y-e-n Van A. Chuyen xong xoa tin nhan, khong noi voi gia dinh.",
+        "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+        "actual_risk": "high",
+        "actual_score": 0.892193,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "tk_ca_nhan",
+          "yeu_cau_bi_mat"
+        ],
+        "local_signals": [
+          "secrecy_request",
+          "personal_transfer_request",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G03-T06",
+        "input": "Chuyen ngay    5 trieu  vao STK 123456789 VCB ten Nguyen   Van A. Chuyenxong xoa tin nhan, khong noi voi gia dinh.",
+        "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+        "actual_risk": "high",
+        "actual_score": 0.990244,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "tk_ca_nhan",
+          "yeu_cau_bi_mat"
+        ],
+        "local_signals": [
+          "secrecy_request",
+          "personal_transfer_request",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G03-T07",
+        "input": "Chuuen ngay 5 triey vao STK 123456789 VCB ten Nguyen Van A. Chuydn xong xoa tin nhan, khong noi voi gia dinh.",
+        "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+        "actual_risk": "high",
+        "actual_score": 0.802926,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "tk_ca_nhan",
+          "yeu_cau_bi_mat"
+        ],
+        "local_signals": [
+          "secrecy_request",
+          "personal_transfer_request",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G03-T08",
+        "input": "Chjyenngay 5 triwu vao STK   123456789 VCB ten Hguyen Van A. Chuyen xong   xoa tin nhan, khong noi voi gia dinh.",
+        "expected": "risk: high. Signals: yeu_cau_bi_mat, tk_ca_nhan",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "tk_ca_nhan",
+          "yeu_cau_bi_mat"
+        ],
+        "local_signals": [
+          "secrecy_request",
+          "personal_transfer_request",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi yêu cầu giữ bí mật với gia đình. Tin nhắn yêu cầu chuyển tiền cho người nhận chưa được xác minh.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G04-T01",
+        "input": "Ma OTP xac thuc giao   dich VCB cua ban la 839201. Tuyet  doi khong chia se ma nay.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G04-T02",
+        "input": "Ma OTP xac thuc giao dich VCB cua ban la 839201. T.y.u.e.t doi khong chia se ma nay.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G04-T03",
+        "input": "Ma OTP xac thuc giao dich VCB cua ban la 839201. Tuhet doi khong chia se ma nay.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G04-T04",
+        "input": "Ma OTP xac thuc giao dich VCB cua ban la 839201. Tyet doi kohng chia se ma nay.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G04-T05",
+        "input": "Ma OTP xac thuc   giao dich VCB cua ban la 839201. Tuyet doi  khong chia se ma nay.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G04-T06",
+        "input": "Ma OTP xac thuc giao dich VCB cua ban la 839201. T-u-y-e-t doi khnog chia se ma nay.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G04-T07",
+        "input": "Ma OTP xac thuc giao dich VCB cua ban la 839201. Tuyt doi khong chia se ma nay.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G04-T08",
+        "input": "Ma OTP xac thuc giao dich VCB cua ban la 839201. Tuyt doi kong chia se ma nay.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G05-T01",
+        "input": "T_h_o_n_g bao tu Cuc Canh sat: Ban co giay phat nguoi 5 t*r*i*e*u. Truy cap http://phatnguoi-gov.com de nop phat.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G05-T02",
+        "input": "Tong bao tu Cuc Canh sat: Ban co giay phat nghoi 5 treu. Truy cap http://phatnguoi-gov.com de nop phat.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "authority_claim"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G05-T03",
+        "input": "Tohng bao tu Cuc Canh sat: Ban co giay phat nguoi 5 treiu. Truy cap http://phatnguoi-gov.com de nộp phat.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G05-T04",
+        "input": "Thong bao tu Cuc Canh sat: Ban co giay phat nguoi 5 trieu. Truy cap http://phatnguoi-gov.com de nop phat.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G05-T05",
+        "input": "Thong bao tu Cuc Canh sat: Ban co giay phat nguoo 5 trieh. Truy cap http://phatnguoi-gov.com de nop phat.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "authority_claim"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G05-T06",
+        "input": "T-h-o-n-g bao tu CucCanh sat: Ban co giay phat nguoi 5 t*r*i*e*u.  Truy cap http://phatnguoi-gov.com d*e*n*ộ*p phat.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G05-T07",
+        "input": "Ghong bao tu Cuc Canh sat: Ban co giay phat nguoi 5 triwu. Truy cap http://phatnguoi-gov.com de nop phat.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "authority_claim"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G05-T08",
+        "input": "Thnog baotu Cuc Canh sat: Ban co giay phat nguoi 5 treiu.   Truy cap http://phatnguoi-gov.comde nop phat.",
+        "expected": "risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "generic_url",
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G06-T01",
+        "input": "Thong tin thue bao SIM cua quy khach chua chuan hoa. Se kgoai SIM sau 24h. Vui long lien he 0912345678.",
+        "expected": "risk: high. Signals: ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "time_pressure"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G06-T02",
+        "input": "Tbong tin thue bao SIM cua quy khsch chua chuan hoa. Se khoai SIM sau 24h. Vui long lien he 0912345678.",
+        "expected": "risk: high. Signals: ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "time_pressure",
+          "sim_lock_notice",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G06-T03",
+        "input": "Thong tin thue bao SIM cua quy khach chua chaun hoa. Se khoai SIM sau 24h. Vui long lien he 0912345678.",
+        "expected": "risk: high. Signals: ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G06-T04",
+        "input": "Thong tin thue bao SIM cua quykhach chua chuan hoa. Se khoai SIM sau 24h. Vuilong lien he 0912345678.",
+        "expected": "risk: high. Signals: ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "time_pressure",
+          "sim_lock_notice",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G06-T05",
+        "input": "T*h*o*n*g tin thue bao SIM cua quy khach chua chuan hoa. Se khoai SIM sau 24h. Vui long lien he 0912345678.",
+        "expected": "risk: high. Signals: ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "time_pressure",
+          "sim_lock_notice",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G06-T06",
+        "input": "Thong tin thue bao SIM cua quy khah chua dhuan hoa. Se khoai SIM sau 24h. Vui long lien he 0912345678.",
+        "expected": "risk: high. Signals: ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G06-T07",
+        "input": "Thong tin thue bao SIM cua quy jhach chua chuan hoa. Se khoai SIM sau 24h. Vui long lien he 0912345678.",
+        "expected": "risk: high. Signals: ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "time_pressure",
+          "sim_lock_notice",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G06-T08",
+        "input": "Tohng tin thue bao SIM cua quy khaxh chua chuan hoa. Se khoai SIM sau 24h. Vui long lien he 0912345678.",
+        "expected": "risk: high. Signals: ap_luc_thoi_gian",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "time_pressure",
+          "sim_lock_notice",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền. Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G07-T01",
+        "input": "Chuc mung quy khah trung thuong xe SH va 100 tieu. Truy cap http://trungthuong2026.com de nhan tuong.",
+        "expected": "risk: high. Signals: loi_ich_bat_thuong",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "generic_url",
+          "unusual_reward"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G07-T02",
+        "input": "Chuc mung quy khach turng ghuong xe SH va 100 treij. Truy cap http://trungthuong2026.com de nhan fuhong.",
+        "expected": "risk: high. Signals: loi_ich_bat_thuong",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "generic_url"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G07-T03",
+        "input": "Chuc mung quy khach trung t*h*u*o*n*g xe SH va 100 t_r_i_e_u. Truy cap http://trungthuong2026.com de nhan t-h-u-o-n-g.",
+        "expected": "risk: high. Signals: loi_ich_bat_thuong",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "generic_url",
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G07-T04",
+        "input": "Chuc mung quy khcah trung thung xe SH va 100 triu. Truy cap http://trungthuong2026.com de nhan tunog.",
+        "expected": "risk: high. Signals: loi_ich_bat_thuong",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "generic_url",
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G07-T05",
+        "input": "Chuc mung quy khach trung thuobg xe SH va 100 triey. Truy cap http://trungthuong2026.com de nhan tguong.",
+        "expected": "risk: high. Signals: loi_ich_bat_thuong",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "generic_url"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G07-T06",
+        "input": "Chuc mung quy k-h-a-c-h teung thuong xe SH va 100 t*r*i*e*u. Truy cap http://trungthuong2026.com de nhan t-h-u-o-n-g.",
+        "expected": "risk: high. Signals: loi_ich_bat_thuong",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "generic_url",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G07-T07",
+        "input": "Chuc mung quy khach trung thuong   xe SH va 100   trieu. Truy cap http://trungthuong2026.com   de nhan thuong.",
+        "expected": "risk: high. Signals: loi_ich_bat_thuong",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "generic_url",
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G07-T08",
+        "input": "Chuc mung quy kahch t.r.u.n.g thuong xe SH va 100 t-r-i-e-u. Truy cap http://trungthuong2026.com de nhan t*h*u*o*n*g.",
+        "expected": "risk: high. Signals: loi_ich_bat_thuong",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "generic_url",
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G08-T01",
+        "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat queyn tro nang.",
+        "expected": "risk: high. Signals: cai_app_ngoai",
+        "actual_risk": "high",
+        "actual_score": 0.717142,
+        "actual_signals": [
+          "cai_app_ngoai",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "apk_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G08-T02",
+        "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat qguen tro nang.",
+        "expected": "risk: high. Signals: cai_app_ngoai",
+        "actual_risk": "high",
+        "actual_score": 0.750333,
+        "actual_signals": [
+          "cai_app_ngoai",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "apk_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G08-T03",
+        "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat   quyen tro nang.",
+        "expected": "risk: high. Signals: cai_app_ngoai",
+        "actual_risk": "high",
+        "actual_score": 0.733273,
+        "actual_signals": [
+          "cai_app_ngoai",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "apk_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G08-T04",
+        "input": "Anh vao link gock-app.apk de tai phan mem ho   tro khai thue va bat quyen tro   nang.",
+        "expected": "risk: high. Signals: cai_app_ngoai",
+        "actual_risk": "high",
+        "actual_score": 0.733273,
+        "actual_signals": [
+          "cai_app_ngoai",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "apk_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G08-T05",
+        "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat qyuen tro nang.",
+        "expected": "risk: high. Signals: cai_app_ngoai",
+        "actual_risk": "high",
+        "actual_score": 0.702304,
+        "actual_signals": [
+          "cai_app_ngoai",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "apk_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G08-T06",
+        "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat q.u.y.e.n tro   nang.",
+        "expected": "risk: high. Signals: cai_app_ngoai",
+        "actual_risk": "high",
+        "actual_score": 0.733273,
+        "actual_signals": [
+          "cai_app_ngoai",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "apk_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G08-T07",
+        "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat auyen tro nang.",
+        "expected": "risk: high. Signals: cai_app_ngoai",
+        "actual_risk": "high",
+        "actual_score": 0.701215,
+        "actual_signals": [
+          "cai_app_ngoai",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "apk_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G08-T08",
+        "input": "Anh vao link gock-app.apk de tai phan mem ho tro khai thue va bat qyen tro nang.",
+        "expected": "risk: high. Signals: cai_app_ngoai",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "cai_app_ngoai",
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "apk_link",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn yêu cầu cài ứng dụng ngoài cửa hàng chính thức. Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G09-T01",
+        "input": "Alo /    123456  / ???",
+        "expected": "risk: unknown, score < 0.35, signals: []",
+        "actual_risk": "unknown",
+        "actual_score": 0.0,
+        "actual_signals": [],
+        "local_signals": [],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G09-T02",
+        "input": "Alo /    123456  /???",
+        "expected": "risk: unknown, score < 0.35, signals: []",
+        "actual_risk": "unknown",
+        "actual_score": 0.0,
+        "actual_signals": [],
+        "local_signals": [],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G10-T01",
+        "input": "Chuc anh mot ngay tot lang, khi naoranh qua em choi.",
+        "expected": "risk: unknown, score < 0.10, signals: []",
+        "actual_risk": "unknown",
+        "actual_score": 0.0,
+        "actual_signals": [],
+        "local_signals": [],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G10-T02",
+        "input": "Chuc anh mot ngay tot lang, khi nao ranh qua em  choi.",
+        "expected": "risk: unknown, score < 0.10, signals: []",
+        "actual_risk": "unknown",
+        "actual_score": 0.0,
+        "actual_signals": [],
+        "local_signals": [],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G10-T03",
+        "input": "Cucanh mot ngay tot lang, khi nao ranh qua em choi.",
+        "expected": "risk: unknown, score < 0.10, signals: []",
+        "actual_risk": "unknown",
+        "actual_score": 0.0,
+        "actual_signals": [],
+        "local_signals": [],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G11-T01",
+        "input": "Co oi chau la Tuan day, dien thoai chau bi hong nen dung so nay. Co dang ranh khng chau nho chut viec?",
+        "expected": "risk: medium, score in [0.35, 0.69]",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [],
+        "local_signals": [
+          "identity_change_request"
+        ],
+        "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G11-T02",
+        "input": "Co oi   chau la Tuan day, dien thoai chau bi hong nen dung so nay. Co dang ranh kong chau nho chut viec?",
+        "expected": "risk: medium, score in [0.35, 0.69]",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [],
+        "local_signals": [
+          "identity_change_request"
+        ],
+        "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G11-T03",
+        "input": "Co oi chau la Tuan day, dien thoai chau bi hong nen dung so nay. Co dang ranh khong chau nho chut   viec?",
+        "expected": "risk: medium, score in [0.35, 0.69]",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [],
+        "local_signals": [
+          "identity_change_request"
+        ],
+        "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G11-T04",
+        "input": "Co oi chau la Tuan day, dien thoau chau bi hong nen dung so nay. Co dang ranh k_h_o_n_g chau nho chut viec?",
+        "expected": "risk: medium, score in [0.35, 0.69]",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [],
+        "local_signals": [
+          "identity_change_request"
+        ],
+        "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G11-T05",
+        "input": "Co oi chau la Tuan day, dien ghoai chau bi hong nen dung so nay. Co dang ranh khong chau nho chut viec?",
+        "expected": "risk: medium, score in [0.35, 0.69]",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [],
+        "local_signals": [
+          "identity_change_request"
+        ],
+        "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G11-T06",
+        "input": "Co oi chau la Tuan day, dien tgoai chau bi hong nen dung so nay. Co dang ranh khng chau nho chut viec?",
+        "expected": "risk: medium, score in [0.35, 0.69]",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [],
+        "local_signals": [
+          "identity_change_request"
+        ],
+        "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G11-T07",
+        "input": "Co oi chau la Tuan day, dien yhoai chau bi hong nen dung so nay. Co dang ranh khong chau nho chut viec?",
+        "expected": "risk: medium, score in [0.35, 0.69]",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [],
+        "local_signals": [
+          "identity_change_request"
+        ],
+        "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G11-T08",
+        "input": "Co oichau la Tuan day, dien thoai chau bi hong nen dung so nay. Co dang ranh khonv chau nho chut viec?",
+        "expected": "risk: medium, score in [0.35, 0.69]",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [],
+        "local_signals": [
+          "identity_change_request"
+        ],
+        "explanation": "Cần kiểm tra thêm trước khi làm theo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G12-T01",
+        "input": "Tuyeh cong tac vien xem Youtube 500k/ngay. Nhap hop thu Zalo 0988776655 de xem chi tiet.",
+        "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+        "actual_risk": "medium",
+        "actual_score": 0.411455,
+        "actual_signals": [
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "channel_switch",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G12-T02",
+        "input": "Tuen cong tac vien xem Y*o*u*t*u*b*e 500k/ngay. Nhap hop thu Zalo 0988776655 de xem chi tiet.",
+        "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+        "actual_risk": "medium",
+        "actual_score": 0.410534,
+        "actual_signals": [
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "channel_switch",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G12-T03",
+        "input": "Tuyen cong tac vien xem Yoitube 500k/ngay. Nhap hop thu Zalo 0988776655 de xem chi tiet.",
+        "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+        "actual_risk": "medium",
+        "actual_score": 0.413796,
+        "actual_signals": [
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "channel_switch",
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G12-T04",
+        "input": "Tuyem cong tac vien xem Youtube 500k/ngay. Nhap   hop thu Zalo 0988776655 de xemxhi tiet.",
+        "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+        "actual_risk": "medium",
+        "actual_score": 0.40822,
+        "actual_signals": [
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "channel_switch",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G12-T05",
+        "input": "Tuywn cong tac vien xem Youtube 500k/ngay. Nhap hop thu Zalo 0988776655 de xem chi tiet.",
+        "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+        "actual_risk": "medium",
+        "actual_score": 0.412814,
+        "actual_signals": [
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "channel_switch",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G12-T06",
+        "input": "T*u*y*e*n cong tac vien xemYoutube 500k/ngay. Nhap hop thu Zalo 0988776655 de xem   chi tiet.",
+        "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+        "actual_risk": "medium",
+        "actual_score": 0.415029,
+        "actual_signals": [
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "channel_switch",
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G12-T07",
+        "input": "Tuyen cong tac vien xem Youtubd 500k/ngay. Nhap hop thu Zalo 0988776655 de xem chi tiet.",
+        "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+        "actual_risk": "medium",
+        "actual_score": 0.41388,
+        "actual_signals": [
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "channel_switch",
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G12-T08",
+        "input": "Tuen cong tac vien xem Y-o-u-t-u-b-e 500k/ngay. Nhap hop thu Zalo 0988776655 de xem chi tiet.",
+        "expected": "risk: medium. Signals: loi_ich_bat_thuong, chuyen_kenh",
+        "actual_risk": "medium",
+        "actual_score": 0.410534,
+        "actual_signals": [
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "channel_switch",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G13-T01",
+        "input": "Toi vua bi lua mat 20 treu qua Zalo, bay gio lam sao de doi lai tien tu ngan hang?",
+        "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+        "actual_risk": "unknown",
+        "actual_score": 0.011125,
+        "actual_signals": [],
+        "local_signals": [
+          "victim_recovery_request",
+          "risk_surface"
+        ],
+        "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G13-T02",
+        "input": "Toi vua  bi luamat 20 trieu qua Zalo,  bay gio lam sao de doi lai tien tu   ngan hang?",
+        "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+        "actual_risk": "unknown",
+        "actual_score": 0.018337,
+        "actual_signals": [],
+        "local_signals": [
+          "victim_recovery_request",
+          "risk_surface"
+        ],
+        "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G13-T03",
+        "input": "Toi vua bi lua mat 20 t.r.i.e.u qua Zalo, bay gio lam sao de doi lai tien tu ngan hang?",
+        "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+        "actual_risk": "unknown",
+        "actual_score": 0.013446,
+        "actual_signals": [],
+        "local_signals": [
+          "victim_recovery_request",
+          "risk_surface"
+        ],
+        "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G13-T04",
+        "input": "Toi vua   bi   lua mat 20 trieu   qua  Zalo, bay gio lam sao de doi lai tien tu ngan hang?",
+        "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+        "actual_risk": "unknown",
+        "actual_score": 0.018117,
+        "actual_signals": [],
+        "local_signals": [
+          "victim_recovery_request",
+          "risk_surface"
+        ],
+        "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G13-T05",
+        "input": "Toi vua bi lua mat 20 triu qua Zalo, bay gio lam sao de doi lai tien tu ngan hang?",
+        "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+        "actual_risk": "unknown",
+        "actual_score": 0.011944,
+        "actual_signals": [],
+        "local_signals": [
+          "victim_recovery_request",
+          "risk_surface"
+        ],
+        "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G13-T06",
+        "input": "Toi vua bi lua mat  20 tieu qua Zalo, bay gio lam sao de doi   lai tien tu ngan hang?",
+        "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+        "actual_risk": "unknown",
+        "actual_score": 0.011869,
+        "actual_signals": [],
+        "local_signals": [
+          "victim_recovery_request",
+          "risk_surface"
+        ],
+        "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G13-T07",
+        "input": "Toi vua bi lua mat 20 tireu qua Zalo, bay gio lam sao de doi lai tien tu ngan hang?",
+        "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+        "actual_risk": "unknown",
+        "actual_score": 0.011397,
+        "actual_signals": [],
+        "local_signals": [
+          "victim_recovery_request",
+          "risk_surface"
+        ],
+        "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G13-T08",
+        "input": "Toi vua bi lua mat 20 t-r-i-e-u qua Zalo, bay gio lam sao de doi lai tien tu ngan hang?",
+        "expected": "Out-of-scope, hướng dẫn liên hệ Công an/Ngân hàng",
+        "actual_risk": "unknown",
+        "actual_score": 0.013446,
+        "actual_signals": [],
+        "local_signals": [
+          "victim_recovery_request",
+          "risk_surface"
+        ],
+        "explanation": "Nếu bác vừa chuyển tiền do bị lừa, hãy gọi ngay ngân hàng để yêu cầu chặn giao dịch và trình báo Công an. CHẮN không thể tự lấy lại tiền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G14-T01",
+        "input": "Co nen dau tu vao san giao dich coin ABC nay khonv, cam ket lai 30%/yhang?",
+        "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G14-T02",
+        "input": "Co nen dau tu vao san giao dich coin ABC nay khng, cam ket lai 30%/tang?",
+        "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G14-T03",
+        "input": "Co nen dau tu vao san giao dich coin ABC nay k_h_o_n_g, cam ket lai 30%/t*h*a*n*g?",
+        "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G14-T04",
+        "input": "Co nen dau tu vao san giao dich coin ABC nay konhg, cam ket lai 30%/tanhg?",
+        "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G14-T05",
+        "input": "Co nen dau tu vao san giao dich coin ABC nay khong, cam ketlai 30%/thang?",
+        "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G14-T06",
+        "input": "Co nen dau tu vao san giao dich   coin ABC nay khng, cam ket lai 30%/tang?",
+        "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G14-T07",
+        "input": "Co nen dau tu vao san giao dich coin ABC nay khnog, cam ket lai 30%/thnag?",
+        "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G14-T08",
+        "input": "Co nen dau tu vao san giao dich coin ABC nay kong, cam ket lai 30%/thng?",
+        "expected": "Out-of-scope warning, cảnh báo nguy cơ Ponzi",
+        "actual_risk": "medium",
+        "actual_score": 0.35,
+        "actual_signals": [
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn hứa một khoản lợi ích bất thường.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G15-T01",
+        "input": "V*i*e*t*c*o*m*b*a*n*k: So du TK 0011001234567 +1,000,000 VND. So du 15,200,000 VND. Ref: L.u.o.n.g T7.",
+        "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+        "actual_risk": "unknown",
+        "actual_score": 0.021741,
+        "actual_signals": [],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G15-T02",
+        "input": "V_i_e_t_c_o_m_b_a_n_k: So du TK 0011001234567 +1,000,000 VND. So du 15,200,000 VND. Ref: L*u*o*n*g T7.",
+        "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+        "actual_risk": "unknown",
+        "actual_score": 0.021741,
+        "actual_signals": [],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G15-T03",
+        "input": "V_i_e_t_c_o_m_b_a_n_k: So du TK 0011001234567 +1,000,000 VND. So du 15,200,000 VND. Ref: L_u_o_n_g T7.",
+        "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+        "actual_risk": "unknown",
+        "actual_score": 0.021741,
+        "actual_signals": [],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G15-T04",
+        "input": "Vietcomvank: So du  TK 0011001234567   +1,000,000 VND.So du 15,200,000 VND. Ref: Puong  T7.",
+        "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+        "actual_risk": "unknown",
+        "actual_score": 0.0207,
+        "actual_signals": [],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G15-T05",
+        "input": "Vietcombank:   So du TK 0011001234567+1,000,000 VND. So  du 15,200,000 VND.Ref: Luong T7.",
+        "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+        "actual_risk": "unknown",
+        "actual_score": 0.021503,
+        "actual_signals": [],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G15-T06",
+        "input": "Vitcombank:  So du TK 0011001234567  +1,000,000 VND.  So du 15,200,000   VND. Ref: Luog T7.",
+        "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+        "actual_risk": "unknown",
+        "actual_score": 0.021132,
+        "actual_signals": [],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G15-T07",
+        "input": "V.i.e.t.c.o.m.b.a.n.k: So du TK 0011001234567 +1,000,000 VND. So du 15,200,000 VND. Ref: L*u*o*n*g T7.",
+        "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+        "actual_risk": "unknown",
+        "actual_score": 0.021741,
+        "actual_signals": [],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G15-T08",
+        "input": "Vietcobmahk: So du TK 0011001234567 +1,000,000 VND. So du 15,200,000 VND. Ref: Lpung T7.",
+        "expected": "risk: unknown, score < 0.20 (Không báo động nhầm)",
+        "actual_risk": "unknown",
+        "actual_score": 0.022145,
+        "actual_signals": [],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G16-T01",
+        "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Ba con tuyet doi KHONG chuen tien.",
+        "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+        "actual_risk": "unknown",
+        "actual_score": 0.253586,
+        "actual_signals": [],
+        "local_signals": [
+          "authority_claim"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G16-T02",
+        "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Ba con tuyet  doi KHONG cuyen tien.",
+        "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+        "actual_risk": "unknown",
+        "actual_score": 0.244922,
+        "actual_signals": [],
+        "local_signals": [
+          "authority_claim"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G16-T03",
+        "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Bacon tuyet doi KHONG chuyen tien.",
+        "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+        "actual_risk": "unknown",
+        "actual_score": 0.04628,
+        "actual_signals": [],
+        "local_signals": [
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G16-T04",
+        "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an.Ba con t*u*y*e*t doi KHONG chuyen tien.",
+        "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+        "actual_risk": "unknown",
+        "actual_score": 0.0452,
+        "actual_signals": [],
+        "local_signals": [
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G16-T05",
+        "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Ba con tuyet doi KHONG chueyn tien.",
+        "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+        "actual_risk": "unknown",
+        "actual_score": 0.260975,
+        "actual_signals": [],
+        "local_signals": [
+          "authority_claim"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G16-T06",
+        "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Ba con tuyet doi K-H-O-N-G cuhyen tien.",
+        "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+        "actual_risk": "unknown",
+        "actual_score": 0.241343,
+        "actual_signals": [],
+        "local_signals": [
+          "authority_claim"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G16-T07",
+        "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Ba con tuyet doi KHNG chuyen tien.",
+        "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+        "actual_risk": "unknown",
+        "actual_score": 0.283547,
+        "actual_signals": [],
+        "local_signals": [
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G16-T08",
+        "input": "Cong an TP Ha Noi canh bao: Hien nay co thu doan mao danh cong an. Ba con tuyt doi KOHNG chuyen tien.",
+        "expected": "risk: unknown, score < 0.35 (Hiểu ngữ cảnh bảo vệ)",
+        "actual_risk": "unknown",
+        "actual_score": 0.276569,
+        "actual_signals": [],
+        "local_signals": [
+          "authority_claim",
+          "risk_surface"
+        ],
+        "explanation": "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G17-T01",
+        "input": "C.h.a.o a.n.h, e.m l.a c.a.n b.o   t.h.u.e, c.a.p n.h.a.t h.o s.o n.g.a.y",
+        "expected": "L0 normalized -> risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G17-T02",
+        "input": "C.h.a.o a.n.h, e.m l.a c.a.n b.o t.h.u.e, c.a.pn.h.a.t h.o s.o n.g.a.y",
+        "expected": "L0 normalized -> risk: high. Signals: mao_danh_tham_quyen",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "mao_danh_tham_quyen"
+        ],
+        "local_signals": [
+          "authority_claim",
+          "ambiguous_notice"
+        ],
+        "explanation": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G18-T01",
+        "input": "Chuc mung ban nhan qua 50Tr.   Z.a.l.o: O.9.0.9.1.2.3.4.5.6",
+        "expected": "L0 normalized -> risk: medium / high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian",
+          "chuyen_kenh",
+          "loi_ich_bat_thuong"
+        ],
+        "local_signals": [
+          "unusual_reward",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay. Tin nhắn hứa một khoản lợi ích bất thường. Người gửi muốn chuyển sang một kênh liên lạc riêng.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G19-T01",
+        "input": "Nhap vao bit.ly/3xYz12 de cap nhat tai khaon VCB gap truoc 17h.",
+        "expected": "Extract URL rút gọn -> risk: high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian"
+        ],
+        "local_signals": [
+          "url_shortened",
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G19-T02",
+        "input": "Nhap vao bit.ly/3xYz12 de cap nhat tai jhoah VCB gap truoc 17h.",
+        "expected": "Extract URL rút gọn -> risk: high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian"
+        ],
+        "local_signals": [
+          "url_shortened",
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G19-T03",
+        "input": "Nhấp vào bit.ly/3xYz12 để cập nhật tài khoản VCB gấp tưrớc 17h.",
+        "expected": "Extract URL rút gọn -> risk: high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian"
+        ],
+        "local_signals": [
+          "url_shortened",
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G19-T04",
+        "input": "Nhap vao bit.ly/3xYz12 de cap nhat tai koan VCB gap t_r_u_o_c 17h.",
+        "expected": "Extract URL rút gọn -> risk: high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian"
+        ],
+        "local_signals": [
+          "url_shortened",
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G19-T05",
+        "input": "Nhap vao bit.ly/3xYz12 de cap nhat tai khoan VCB gap t*r*u*o*c 17h.",
+        "expected": "Extract URL rút gọn -> risk: high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian"
+        ],
+        "local_signals": [
+          "url_shortened",
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G19-T06",
+        "input": "Nhấp vào bit.ly/3xYz12 để cập nhật tài khản VCB gấp trưic 17h.",
+        "expected": "Extract URL rút gọn -> risk: high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian"
+        ],
+        "local_signals": [
+          "url_shortened",
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G19-T07",
+        "input": "Nhap vao bit.ly/3xYz12 de cap nhat tai khoan VCB gap t_r_u_o_c 17h.",
+        "expected": "Extract URL rút gọn -> risk: high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian"
+        ],
+        "local_signals": [
+          "url_shortened",
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G19-T08",
+        "input": "Nhap vao bit.ly/3xYz12 de cap nhat tai k.h.a.o.n VCB gap truoc 17h.",
+        "expected": "Extract URL rút gọn -> risk: high",
+        "actual_risk": "high",
+        "actual_score": 0.7,
+        "actual_signals": [
+          "ap_luc_thoi_gian"
+        ],
+        "local_signals": [
+          "url_shortened",
+          "time_pressure",
+          "risk_surface"
+        ],
+        "explanation": "Người gửi thúc ép phải làm ngay.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G20-T01",
+        "input": "Gui ma OTP 6 so vua nhan de ho tro huy lenh c-h-u-y-e-n tien nham 50 t-r-i-e-u.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G20-T02",
+        "input": "Gui ma OTP 6 so vua nhan de ho tro huy lenh chyeyn tien nham 50 tideu.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G20-T03",
+        "input": "Gửimã OTP 6 số vừa nhận để hỗ trợhủy lệnh chuyển tiền nhầm 50   triệu.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G20-T04",
+        "input": "Guima OTP 6 so vua   nhan de ho tro huy lenh c.h.u.y.e.n tien nham 50   t.r.i.e.u.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G20-T05",
+        "input": "Gui ma   OTP 6 so vua nhan de   ho tro huy lenh chuyen tien nham 50trieu.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G20-T06",
+        "input": "Gửi mã OTP 6 số vừa nhận để hỗ trợ hủy lệnh c_h_u_y_ể_n tiền nhầm 50 t.r.i.ệ.u.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [
+          "risk_surface"
+        ],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G20-T07",
+        "input": "Gui ma OTP 6 so vua nhan de ho tro huy lenh chuyej tien nham 50 frieu.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      },
+      {
+        "id": "G20-T08",
+        "input": "Gui ma OTP 6 so vua nhan de ho tro huy lenh duhyen tien nham 50 freiu.",
+        "expected": "risk: high (Blocked at L1). Signals: yeu_cau_otp",
+        "actual_risk": "high",
+        "actual_score": 1.0,
+        "actual_signals": [
+          "yeu_cau_otp"
+        ],
+        "local_signals": [],
+        "explanation": "Tin nhắn chứa hoặc yêu cầu mã xác nhận. Đừng chia sẻ mã.",
+        "passed": true,
+        "failures": []
+      }
+    ]
+  }
+}

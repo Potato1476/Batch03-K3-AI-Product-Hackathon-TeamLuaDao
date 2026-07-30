@@ -1,5 +1,5 @@
 {
-  "bundle_version": "rb-2026-07-30.4",
+  "bundle_version": "rb-2026-07-30.5",
   "schema_version": 1,
   "generated_for": "L0 normalize + L1 deterministic rules, on-device",
   "notice": "NGUỒN DUY NHẤT cho tầng luật. Bản TypeScript (Web) và bản Kotlin (Android) đọc cùng file này. Không hardcode regex/blacklist trong apps/*.",
@@ -58,8 +58,8 @@
     "gate": {
       "min_score_to_call_server": 0.12,
       "min_length_to_call_server": 12,
-      "always_call_when_local_signal": ["apk_link", "blocklist_hit"],
-      "comment": "Cửa lọc ~5% (I3). Dưới ngưỡng: trả unknown tại chỗ, không byte nào rời thiết bị."
+      "always_call_when_local_signal": ["apk_link", "blocklist_hit", "risk_surface"],
+      "comment": "Cửa lọc (I3). Dưới ngưỡng: trả unknown tại chỗ, không byte nào rời thiết bị. Cửa này CHỈ quyết định có gọi server hay không — nó không phải một phán quyết. Client phải nói rõ tin nhắn chưa được chấm sâu và cho người dùng escalate bằng tay."
     },
 
     "otp_block": {
@@ -139,7 +139,8 @@
           "(?i)\\btrong\\s+\\d+\\s*(?:ph[úu]t|giờ|gio|tiếng|ng[àa]y)\\b",
           "(?i)\\btrước\\s+\\d{1,2}\\s*(?:h|giờ|gio)\\b",
           "(?i)\\bsau\\s+\\d{1,3}\\s*(?:h|giờ|gio|tiếng|tieng)\\b",
-          "(?i)(?:ngay\\s*lập\\s*tức|ngay\\s*lap\\s*tuc|gấp|gap|khẩn|khan)\\b",
+          "(?i)(?:ngay\\s*lập\\s*tức|ngay\\s*lap\\s*tuc|kh[ẩa]n\\s*(?:cấp|cap|trương|truong))\\b",
+          "(?i)\\bg[ấa]p\\b(?!\\s*(?:lại|lai|nhau|mặt|mat|gỡ|go|anh|chị|chi|em|bác|bac|cô|co|chú|chu|ông|ong|bà|ba|con|bố|bo|mẹ|me|cháu|chau|thầy|thay|bạn|ban|ai|người|nguoi|khách|khach|đối\\s*tác|doi\\s*tac|vấn\\s*đề|van\\s*de|khó\\s*khăn|kho\\s*khan|sự\\s*cố|su\\s*co|rắc\\s*rối|rac\\s*roi|trục\\s*trặc|truc\\s*trac|tình\\s*huống|tinh\\s*huong|trường\\s*hợp|truong\\s*hop|chuyện|chuyen)\\b)",
           "(?i)(?:sẽ|se)\\s+(?:(?:bị|bi)\\s+)?(?:kh[óo]a|khoa|cắt|cat|phong\\s*tỏa|phạt|phat|khởi\\s*tố)(?:\\s+(?:sim|tài\\s*khoản|tai\\s*khoan))?"
         ],
         "boost_signal": "ap_luc_thoi_gian",
@@ -215,6 +216,21 @@
         ],
         "boost_signal": null,
         "boost": 0.12
+      },
+      "risk_surface": {
+        "comment": "Cửa escalation rộng. Không cộng confidence cho L3 (boost_signal null) — chỉ để tin nhắn có bề mặt rủi ro được model chấm thay vì trả unknown tại chỗ. Danh mục regex hẹp luôn có lỗ; lỗ đó trước đây biến thành 'luôn pass'.",
+        "patterns": [
+          "(?i)\\b(?:nhan\\s*vien|nhân\\s*viên|chuyen\\s*vien|chuyên\\s*viên|ben\\s*(?:em|minh|anh|chi)|bên\\s*(?:em|mình|anh|chị)|tong\\s*dai|tổng\\s*đài|bo\\s*phan|bộ\\s*phận|trung\\s*tam|trung\\s*tâm)\\b",
+          "(?i)\\b(?:ngan\\s*hang|ngân\\s*hàng|vietcombank|vcb|bidv|agribank|techcombank|vpbank|mbbank|vietinbank|sacombank|momo|zalopay|viettel|vinaphone|mobifone|buu\\s*dien|bưu\\s*điện|bao\\s*hiem\\s*xa\\s*hoi|bảo\\s*hiểm\\s*xã\\s*hội|kho\\s*bac|kho\\s*bạc|hai\\s*quan|hải\\s*quan|so\\s*giao\\s*dich|sở\\s*giao\\s*dịch)\\b",
+          "(?i)\\b(?:tai\\s*khoan|tài\\s*khoản|the\\s*ngan\\s*hang|thẻ\\s*ngân\\s*hàng|sim|thue\\s*bao|thuê\\s*bao|ho\\s*so|hồ\\s*sơ)\\b.{0,40}\\b(?:kho[áa]|khoa|dong\\s*bang|đông\\s*băng|đóng\\s*băng|tam\\s*ngung|tạm\\s*ngưng|tam\\s*dung|tạm\\s*dừng|het\\s*han|hết\\s*hạn|vo\\s*hieu|vô\\s*hiệu|bi\\s*loi|bị\\s*lỗi|can\\s*xac\\s*minh|cần\\s*xác\\s*minh|can\\s*cap\\s*nhat|cần\\s*cập\\s*nhật)\\b",
+          "(?i)\\b(?:chuyen|chuyển|gui|gửi|nop|nộp|nap|nạp|dong|đóng|ung|ứng|tra|trả|thanh\\s*to[áa]n|vay|muon|mượn|cho\\s*vay)\\b.{0,24}\\b(?:tien|tiền|khoan|khoản|phi|phí|le\\s*phi|lệ\\s*phí|coc|cọc|hoc\\s*phi|học\\s*phí|vien\\s*phi|viện\\s*phí|thue|thuế|no|nợ)\\b",
+          "(?i)(?<![\\w.,])\\d{1,3}(?:[.,]\\d{3})*\\s*(?:k|tr|trieu|triệu|ty|tỷ|ngh[ìi]n|ngan|ngàn|d[ôo]ng|đồng|vnd|vnđ)\\b",
+          "(?i)\\b(?:cccd|cmnd|can\\s*cuoc|căn\\s*cước|chung\\s*minh\\s*nhan\\s*dan|chứng\\s*minh\\s*nhân\\s*dân|so\\s*the|số\\s*thẻ|mat\\s*khau|mật\\s*khẩu|mk|tai\\s*khoan\\s*va\\s*mat\\s*khau|thong\\s*tin\\s*ca\\s*nhan|thông\\s*tin\\s*cá\\s*nhân|so\\s*bao\\s*hiem|số\\s*bảo\\s*hiểm|ma\\s*so\\s*thue|mã\\s*số\\s*thuế)\\b",
+          "(?i)\\b(?:dau\\s*tu|đầu\\s*tu|đầu\\s*tư|s[àa]n|lai\\s*suat|lãi\\s*suất|loi\\s*nhuan|lợi\\s*nhuận|sinh\\s*loi|sinh\\s*lời|hoa\\s*hong|hoa\\s*hồng|chiet\\s*khau|chiết\\s*khấu)\\b",
+          "(?i)\\b(?:bam|bấm|nhan|nhấn|truy\\s*cap|truy\\s*cập|dang\\s*nhap|đăng\\s*nhập|xac\\s*thuc|xác\\s*thực|xac\\s*nhan|xác\\s*nhận|dang\\s*ky|đăng\\s*ký|kich\\s*hoat|kích\\s*hoạt|cai|cài|tai|tải|mo|mở|vao|vào|theo|dinh\\s*danh|định\\s*danh|cap\\s*nhat|cập\\s*nhật)\\b.{0,32}\\b(?:link|li[êe]n\\s*ket|liên\\s*kết|duong\\s*dan|đường\\s*dẫn|website|web|trang|app|ung\\s*dung|ứng\\s*dụng|phan\\s*mem|phần\\s*mềm|he\\s*thong|hệ\\s*thống|tai\\s*khoan|tài\\s*khoản|dinh\\s*danh|định\\s*danh)\\b"
+        ],
+        "boost_signal": null,
+        "boost": 0.0
       },
       "truncation_marker": {
         "patterns": ["\\u2026$", "\\.\\.\\.$", "(?i)\\[\\s*\\d+\\s*tin\\s*nhắn\\s*\\]"],
