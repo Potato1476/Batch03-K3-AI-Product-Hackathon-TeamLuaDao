@@ -12,19 +12,22 @@ import com.chan.app.data.ThemePreferenceStore
 import com.chan.app.domain.ChanRepository
 import com.chan.app.domain.LookupType
 import com.chan.app.notification.NotificationAccess
+import com.chan.app.notification.ProtectionReconnectController
+import com.chan.app.notification.ReconnectDecision
 import com.chan.app.speech.AndroidRecognizerProvider
 import com.chan.app.speech.DefaultSpeechToTextController
 import com.chan.app.speech.SpeechState
 import com.chan.app.speech.SpeechToTextController
 import com.chan.app.ui.navigation.Tab
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /**
  * Android state holder. Delegates flow/navigation logic to [ChanStateHolder]
  * (unit-tested separately) and adds persistence, live permission state, the
- * speech controller, and the coroutine scope that cancels in-flight analysis
- * when the screen goes away.
+ * speech controller, listener liveness, and the coroutine scope that cancels
+ * in-flight analysis when the screen goes away.
  */
 class ChanViewModel @JvmOverloads constructor(
     app: Application,
@@ -50,6 +53,19 @@ class ChanViewModel @JvmOverloads constructor(
                 if (current is SpeechState.FinalText) appendDictatedText(current.text)
             }
         }
+        // Listener liveness and the content-free activity record are process
+        // state, so the UI follows them rather than polling.
+        viewModelScope.launch {
+            graph.runtime.connection.collect { refreshSystemStatus() }
+        }
+        viewModelScope.launch {
+            graph.telemetry.activity.collect { activity ->
+                holder.applySystemStatus(state.value.systemStatus.copy(activity = activity))
+            }
+        }
+        // §B4: an indicator left behind by a killed process is removed before
+        // any screen reports a state.
+        graph.reconcileProtectionStatus()
         graph.refreshRulesInBackground()
         refreshSystemStatus()
     }
@@ -57,6 +73,9 @@ class ChanViewModel @JvmOverloads constructor(
     // Navigation
     fun selectTab(tab: Tab) = holder.selectTab(tab)
     fun back(): Boolean = holder.back()
+
+    /** Opened from the ongoing protection-status notification. Carries no content. */
+    fun openProtection() = holder.selectTab(Tab.PROTECT)
 
     // Home
     fun openMessageInput() = holder.openMessageInput()
@@ -105,6 +124,56 @@ class ChanViewModel @JvmOverloads constructor(
     fun setZaloScanning(enabled: Boolean) {
         graph.protection.zaloScanningEnabled = enabled
         refreshSystemStatus()
+        if (enabled) {
+            // Turning protection on is a deliberate act, so it gets its own
+            // attempt rather than sharing the one budgeted for this resume.
+            requestReconnect(automatic = false)
+        } else {
+            // Pausing protection takes the indicator with it, immediately.
+            graph.protectionStatus.cancel()
+        }
+    }
+
+    /**
+     * Called when the app comes forward (§B3).
+     *
+     * Re-reads every system layer, then makes **one** automatic rebind attempt
+     * if protection is configured but no listener is bound. There is no retry
+     * loop, alarm, or background job behind this.
+     */
+    fun onForeground() {
+        graph.reconnect.onForeground()
+        refreshSystemStatus()
+        requestReconnect(automatic = true)
+    }
+
+    /**
+     * The user tapped "Kết nối lại". One outstanding attempt at a time — while
+     * a request is pending the control is disabled, and this refuses anyway.
+     */
+    fun reconnectNow() = requestReconnect(automatic = false)
+
+    private fun requestReconnect(automatic: Boolean) {
+        val scanning = graph.protection.zaloScanningEnabled
+        val access = NotificationAccess.isListenerEnabled(getApplication())
+        val decision = if (automatic) {
+            graph.reconnect.requestAutomatic(scanning, access)
+        } else {
+            graph.reconnect.requestManual(scanning, access)
+        }
+        refreshSystemStatus()
+        if (decision != ReconnectDecision.REQUESTED) return
+
+        // Bounded, and honest about what the bound means: when the window ends
+        // without `onListenerConnected`, CHAN stops claiming to be connecting
+        // and says Android has not connected it. Waiting longer would not
+        // change an ignored requestRebind, so the screen switches to the one
+        // remedy that works — re-toggling Notification Access by hand.
+        viewModelScope.launch {
+            delay(ProtectionReconnectController.REBIND_WINDOW_MILLIS)
+            graph.runtime.endAttemptIfUnanswered()
+            refreshSystemStatus()
+        }
     }
 
     /**
@@ -120,14 +189,18 @@ class ChanViewModel @JvmOverloads constructor(
         ) == PackageManager.PERMISSION_GRANTED
 
         holder.applySystemStatus(
-            SystemStatus(
+            state.value.systemStatus.copy(
                 notificationAccessGranted = NotificationAccess.isListenerEnabled(context),
                 zaloScanningEnabled = graph.protection.zaloScanningEnabled,
                 warningsAllowed = NotificationAccess.areWarningsAllowed(context),
                 microphoneGranted = microphoneGranted,
-                rulesFromServer = state.value.systemStatus.rulesFromServer,
+                listenerConnection = graph.runtime.connection.value,
+                lastConnectedAt = graph.runtime.lastConnectedAt,
             ),
         )
+        // The indicator follows the same computed state the screens show.
+        graph.reconcileProtectionStatus()
+
         viewModelScope.launch {
             val fromServer = graph.bundles.isServerBundle()
             holder.applySystemStatus(state.value.systemStatus.copy(rulesFromServer = fromServer))
@@ -141,7 +214,7 @@ class ChanViewModel @JvmOverloads constructor(
     fun onMicrophonePermissionDenied() = speech.onPermissionDenied()
     fun acknowledgeSpeech() = speech.acknowledge()
 
-    /** Called when the input screen is left or the app backgrounds (§C3). */
+    /** Called when the input screen is left or the app backgrounds (§A3). */
     fun releaseRecognizer() = speech.dispose()
 
     // Settings
@@ -156,6 +229,8 @@ class ChanViewModel @JvmOverloads constructor(
     }
 
     private fun appendDictatedText(dictated: String) {
+        // Anything already typed is kept: the microphone adds to the message,
+        // it does not take it over.
         val existing = state.value.messageText
         val combined = if (existing.isBlank()) dictated else "${existing.trimEnd()} $dictated"
         holder.updateMessageText(combined)

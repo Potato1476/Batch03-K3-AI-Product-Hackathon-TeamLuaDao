@@ -22,6 +22,16 @@ data class NotificationSnapshot(
     val messagingTexts: List<String> = emptyList(),
     val isOngoing: Boolean = false,
     val isGroupSummary: Boolean = false,
+    /**
+     * Occurrence metadata (§D2). Times only — no sender, no identity. They are
+     * what lets CHAN tell "Zalo re-posted the same notification" apart from
+     * "the same words arrived again as a new message".
+     */
+    val postTime: Long = 0L,
+    /** `MessagingStyle.Message.timestamp` for each message CHAN is shown. */
+    val messageTimestamps: List<Long> = emptyList(),
+    /** How many messages the notification says it carries, when it says. */
+    val messageCount: Int? = null,
 )
 
 /** What survived extraction. [content] is held only for the current analysis. */
@@ -30,6 +40,12 @@ data class ExtractedNotification(
     val key: String,
     val content: String,
     val truncated: Boolean,
+    /**
+     * When this message happened, as far as the notification admits. The newest
+     * messaging timestamp is preferred; `postTime` is the fallback for a Zalo
+     * build that exposes no messaging style at all.
+     */
+    val occurrenceToken: Long,
 )
 
 /**
@@ -84,7 +100,21 @@ class NotificationContentExtractor(
             key = snapshot.key,
             content = capped,
             truncated = truncated,
+            occurrenceToken = occurrenceTokenOf(snapshot),
         )
+    }
+
+    /**
+     * The newest messaging timestamp, or the post time when Zalo exposes none.
+     * A message count, when present, is folded in so that "3 tin nhắn mới"
+     * becoming "4 tin nhắn mới" without new timestamps is still a new
+     * occurrence rather than a repeat.
+     */
+    private fun occurrenceTokenOf(snapshot: NotificationSnapshot): Long {
+        val newestMessage = snapshot.messageTimestamps.filter { it > 0L }.maxOrNull()
+        val base = newestMessage ?: snapshot.postTime
+        val count = snapshot.messageCount?.takeIf { it > 0 } ?: return base
+        return base + count
     }
 
     /**

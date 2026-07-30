@@ -18,6 +18,12 @@ import java.util.concurrent.TimeUnit
  *
  * Timeouts are sized for a person waiting in front of the screen: a slow answer
  * is worse than an honest "máy chủ trả lời chậm".
+ *
+ * Transport-level retries are off (Sprint 03 §C1). OkHttp's
+ * `retryOnConnectionFailure` would silently re-send a `POST /v1/analyze` body —
+ * someone's message — over a second connection, which is exactly the hidden
+ * replay the notification contract forbids. The only retry CHAN performs is the
+ * explicit, single `401 → renew device token → retry once` in [ChanApi].
  */
 object ChanNetwork {
 
@@ -38,7 +44,7 @@ object ChanNetwork {
         .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .callTimeout(CALL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
+        .retryOnConnectionFailure(false)
         .build()
 
     fun service(baseUrl: String, client: OkHttpClient = client()): ChanApiService = Retrofit.Builder()

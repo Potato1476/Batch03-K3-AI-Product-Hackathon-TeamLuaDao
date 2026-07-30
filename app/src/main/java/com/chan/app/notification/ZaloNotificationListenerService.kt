@@ -6,46 +6,66 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import com.chan.app.data.ChanGraph
-import com.chan.app.domain.ChanOutcome
-import com.chan.app.domain.InputMode
-import com.chan.app.domain.Risk
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 /**
- * Passive Zalo intake (§B5).
+ * Passive Zalo intake (§B5, §D3).
  *
  * The system binds this only after the user grants Notification Access by hand.
  * Every callback is filtered before anything is read, and the pipeline is:
  *
  * ```
- * consent + package checks → safe extraction → dedupe → L0/L1 on device
+ * consent + package checks → safe extraction → occurrence dedupe → L0/L1
  *     → OTP        : local high, no network
  *     → below gate : stop silently
  *     → above gate : one POST /v1/analyze
- * → publish a generic warning for high/medium only
+ * → publish a fresh generic warning for high/medium only
  * ```
  *
- * Callbacks arrive on the main thread, so matching and any request are moved to
- * a scope this service owns and cancels in [onDestroy]. A failed request is
- * dropped: there is no retry loop and no queue, because queueing would mean
- * keeping someone's message on disk.
+ * The decision logic lives in [NotificationPipeline] so it can be tested
+ * without a device. This class is the Android adapter: it copies the framework
+ * object into a plain snapshot, keeps a usable coroutine scope across
+ * disconnect/reconnect, and reports listener liveness to
+ * [ProtectionRuntimeMonitor] — the callbacks below are the *only* thing in CHAN
+ * allowed to say the listener is connected.
  */
 class ZaloNotificationListenerService : NotificationListenerService() {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val dedupe = NotificationDedupeCache()
+    private val scope = RestartableScope()
+
+    private val occurrences = NotificationOccurrenceCache()
 
     @Volatile
     private var extractor: NotificationContentExtractor? = null
 
+    @Volatile
+    private var pipeline: NotificationPipeline? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        // Creation is not a connection: the monitor only learns that a bind is
+        // in progress. `onListenerConnected` is the callback that counts.
+        ChanGraph.of(this).runtime.onConnecting()
+    }
+
     override fun onListenerConnected() {
         super.onListenerConnected()
-        // A newly connected listener is a good moment to check for newer rules.
-        ChanGraph.of(this).refreshRulesInBackground()
+        val components = ChanGraph.of(this)
+        components.runtime.onConnected()
+        // A reconnected listener may be handed a cancelled scope. Rebuilding it
+        // here is what keeps the second evening's messages flowing after
+        // Android has unbound us once (§D3).
+        scope.active()
+        components.reconcileProtectionStatus()
+        components.refreshRulesInBackground()
+    }
+
+    override fun onListenerDisconnected() {
+        val components = ChanGraph.of(this)
+        components.runtime.onDisconnected(DisconnectReason.LISTENER_DISCONNECTED)
+        // The indicator must never outlive the thing it indicates.
+        components.protectionStatus.cancel()
+        super.onListenerDisconnected()
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -56,49 +76,41 @@ class ZaloNotificationListenerService : NotificationListenerService() {
 
         val snapshot = snapshotOf(posted)
         // The framework object is not captured by the coroutine below.
-        scope.launch { process(snapshot) }
+        scope.active().launch { pipelineFor().process(snapshot) }
     }
 
     override fun onDestroy() {
+        val components = ChanGraph.of(this)
+        components.runtime.onDisconnected(DisconnectReason.SERVICE_DESTROYED)
+        components.protectionStatus.cancel()
         scope.cancel()
-        dedupe.clear()
+        occurrences.clear()
         super.onDestroy()
     }
 
-    private suspend fun process(snapshot: NotificationSnapshot) {
+    private fun pipelineFor(): NotificationPipeline {
+        pipeline?.let { return it }
         val components = ChanGraph.of(this)
-        if (!components.protection.zaloScanningEnabled) return
-
-        val extracted = extractorFor().extract(snapshot) ?: return
-
-        val engine = runCatching { components.bundles.engine() }.getOrNull() ?: return
-        val digest = NotificationDedupeCache.digestOf(
-            packageName = extracted.packageName,
-            key = extracted.key,
-            normalizedContent = engine.normalize(extracted.content),
-        )
-        if (!dedupe.claim(digest)) return
-
-        // One bounded attempt. Whatever happens, the content is released here.
-        val outcome = components.repository.analyzeMessage(
-            message = extracted.content,
-            inputMode = InputMode.NOTIFICATION,
-            appPackage = ZALO_PACKAGE,
-            truncated = extracted.truncated,
-        )
-        if (outcome !is ChanOutcome.Success) return
-
-        val result = outcome.value
-        if (result.risk == Risk.UNKNOWN) return
-
-        components.pendingAlerts.put(result)
-        components.alerts.publish(result.risk)
+        return NotificationPipeline(
+            scanningEnabled = { components.protection.zaloScanningEnabled },
+            extract = { snapshot -> extractorFor().extract(snapshot) },
+            normalize = { content ->
+                runCatching { components.bundles.engine().normalize(content) }.getOrNull()
+            },
+            occurrences = occurrences,
+            repository = components.repository,
+            pendingAlerts = { result -> components.pendingAlerts.put(result) },
+            alerts = components.alerts,
+            telemetry = components.telemetry,
+        ).also { pipeline = it }
     }
 
+    /**
+     * Truncation markers come from the shared Rule Bundle so Web and Android
+     * agree on what "shortened" means. Built lazily and off the callback thread.
+     */
     private suspend fun extractorFor(): NotificationContentExtractor {
         extractor?.let { return it }
-        // Truncation markers come from the shared Rule Bundle so Web and Android
-        // agree on what "shortened" means.
         val markers = runCatching {
             ChanGraph.of(this).bundles.bundle()
                 .l1.localSignals[TRUNCATION_RULE]
@@ -115,18 +127,17 @@ class ZaloNotificationListenerService : NotificationListenerService() {
 
     /**
      * Copies the extras CHAN is allowed to look at into a plain object. Nothing
-     * read here is printed; the values go straight into extraction.
+     * read here is printed; the values go straight into extraction, and the
+     * only identity-adjacent fields taken are timestamps (§D2).
      */
     private fun snapshotOf(posted: StatusBarNotification): NotificationSnapshot {
         val notification = posted.notification
         val extras: Bundle = notification.extras
 
-        val messagingTexts = runCatching {
+        val messages = runCatching {
             NotificationCompat.MessagingStyle
                 .extractMessagingStyleFromNotification(notification)
                 ?.messages
-                // The sender is deliberately not read — only what was said.
-                ?.mapNotNull { message -> message.text?.toString() }
                 .orEmpty()
         }.getOrDefault(emptyList())
 
@@ -140,9 +151,14 @@ class ZaloNotificationListenerService : NotificationListenerService() {
             textLines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
                 ?.map { it.toString() }
                 .orEmpty(),
-            messagingTexts = messagingTexts,
+            // The sender is deliberately not read — only what was said, and when.
+            messagingTexts = messages.mapNotNull { message -> message.text?.toString() },
             isOngoing = posted.isOngoing,
             isGroupSummary = (notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0,
+            postTime = posted.postTime,
+            messageTimestamps = messages.map { message -> message.timestamp },
+            // The badge count, when Zalo sets one. A number, not a message.
+            messageCount = notification.number.takeIf { it > 0 },
         )
     }
 

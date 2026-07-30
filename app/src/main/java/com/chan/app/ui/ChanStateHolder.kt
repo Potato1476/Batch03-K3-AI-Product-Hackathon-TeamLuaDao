@@ -7,6 +7,10 @@ import com.chan.app.domain.FailureReason
 import com.chan.app.domain.InputMode
 import com.chan.app.domain.LookupResult
 import com.chan.app.domain.LookupType
+import com.chan.app.notification.EffectiveProtection
+import com.chan.app.notification.ListenerConnection
+import com.chan.app.notification.ProtectionActivity
+import com.chan.app.notification.ProtectionHealth
 import com.chan.app.ui.navigation.Screen
 import com.chan.app.ui.navigation.Tab
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,10 +26,15 @@ data class ShareIntake(
 )
 
 /**
- * Live state of the three system layers the protection screen reports on.
+ * Live state of the layers the protection screens report on.
  *
- * Green on any of these means "this Android layer is switched on" — never that
- * a message, caller, or account is safe.
+ * Green on any of these means "this layer is switched on" — never that a
+ * message, caller, or account is safe.
+ *
+ * [listenerConnection] is the Sprint 03 addition and the one that changes the
+ * story: a granted permission is a *setting*, while a connected listener is a
+ * fact about this process. They are reported separately because during physical
+ * testing they disagreed, and the app believed the setting.
  */
 data class SystemStatus(
     val notificationAccessGranted: Boolean = false,
@@ -34,12 +43,32 @@ data class SystemStatus(
     val microphoneGranted: Boolean = false,
     /** True once the rule layer is running a bundle fetched from the server. */
     val rulesFromServer: Boolean = false,
+    /** What CHAN's listener is actually doing right now (§B1). */
+    val listenerConnection: ListenerConnection = ListenerConnection.Unknown,
+    /** History for explanatory copy only. Never current health. */
+    val lastConnectedAt: Long? = null,
+    /** Content-free record of the last Zalo callback (§D3). */
+    val activity: ProtectionActivity = ProtectionActivity(),
 ) {
-    /** Passive scanning happens only when the system grant and the switch agree. */
-    val scanningActive: Boolean get() = notificationAccessGranted && zaloScanningEnabled
+    /** The single user-facing state, computed from every layer (§B2). */
+    val protectionHealth: ProtectionHealth
+        get() = EffectiveProtection.evaluate(
+            zaloScanningEnabled = zaloScanningEnabled,
+            notificationAccessGranted = notificationAccessGranted,
+            connection = listenerConnection,
+            warningsAllowed = warningsAllowed,
+        )
+
+    /** A real `onListenerConnected` happened in this process. */
+    val listenerConnected: Boolean get() = listenerConnection is ListenerConnection.Connected
 
     /** Scanning runs, but CHAN cannot show the warning it would produce. */
-    val scanningWithoutWarnings: Boolean get() = scanningActive && !warningsAllowed
+    val scanningWithoutWarnings: Boolean
+        get() = protectionHealth == ProtectionHealth.ACTIVE_WITHOUT_WARNINGS
+
+    /** The listener is configured but not bound: a rebind is worth offering. */
+    val canRequestReconnect: Boolean
+        get() = zaloScanningEnabled && notificationAccessGranted && !listenerConnected
 }
 
 /** Immutable UI state consumed by the Compose tree. */

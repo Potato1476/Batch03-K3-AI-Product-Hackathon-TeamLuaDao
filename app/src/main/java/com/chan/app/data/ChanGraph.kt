@@ -10,11 +10,22 @@ import com.chan.app.data.rules.FileBundleCache
 import com.chan.app.data.rules.RuleBundleStore
 import com.chan.app.data.token.KeystoreDeviceTokenStore
 import com.chan.app.domain.ChanRepository
+import com.chan.app.notification.AndroidListenerRebinder
+import com.chan.app.notification.AndroidProtectionStatusNotifier
 import com.chan.app.notification.AndroidSafeAlertPublisher
+import com.chan.app.notification.EffectiveProtection
+import com.chan.app.notification.NotificationAccess
 import com.chan.app.notification.PendingAlertStore
+import com.chan.app.notification.ProtectionHealth
 import com.chan.app.notification.ProtectionPreferences
+import com.chan.app.notification.ProtectionReconnectController
+import com.chan.app.notification.ProtectionRuntimeMonitor
+import com.chan.app.notification.ProtectionStatusNotifier
+import com.chan.app.notification.ProtectionStatusReconciler
+import com.chan.app.notification.ProtectionTelemetry
 import com.chan.app.notification.SafeAlertPublisher
 import com.chan.app.notification.SharedPreferencesAlertStorage
+import com.chan.app.notification.SharedPreferencesLastConnectedStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -67,6 +78,25 @@ object ChanGraph {
 
         val alerts: SafeAlertPublisher by lazy { AndroidSafeAlertPublisher(application) }
 
+        /**
+         * Process-scoped listener liveness (§B1). It starts `Unknown` because
+         * this object is built once per process and nothing here reads a
+         * "connected" flag back from disk.
+         */
+        val runtime: ProtectionRuntimeMonitor =
+            ProtectionRuntimeMonitor(SharedPreferencesLastConnectedStore(application))
+
+        /** Content-free record of what the last Zalo callback did (§D3). */
+        val telemetry: ProtectionTelemetry = ProtectionTelemetry()
+
+        val protectionStatus: ProtectionStatusNotifier by lazy {
+            AndroidProtectionStatusNotifier(application)
+        }
+
+        val reconnect: ProtectionReconnectController by lazy {
+            ProtectionReconnectController(runtime, AndroidListenerRebinder(application))
+        }
+
         private val backgroundScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         /**
@@ -76,6 +106,22 @@ object ChanGraph {
         fun refreshRulesInBackground() {
             backgroundScope.launch { bundles.refresh() }
         }
+
+        /** The layered truth behind the protection UI (§B2). */
+        fun protectionHealth(): ProtectionHealth = EffectiveProtection.evaluate(
+            zaloScanningEnabled = protection.zaloScanningEnabled,
+            notificationAccessGranted = NotificationAccess.isListenerEnabled(application),
+            connection = runtime.connection.value,
+            warningsAllowed = NotificationAccess.areWarningsAllowed(application),
+        )
+
+        /**
+         * Brings the ongoing indicator back in line with reality (§B4). Called
+         * at startup, so an indicator left behind by a killed process is
+         * removed before any screen reports a state.
+         */
+        fun reconcileProtectionStatus(): Boolean =
+            ProtectionStatusReconciler.reconcile(protectionHealth(), protectionStatus)
     }
 
     private const val BOOTSTRAP_ASSET = "rule_bundle_bootstrap.json"

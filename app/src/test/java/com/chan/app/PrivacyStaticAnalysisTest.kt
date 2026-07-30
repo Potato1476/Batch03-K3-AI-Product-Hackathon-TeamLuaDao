@@ -209,6 +209,147 @@ class PrivacyStaticAnalysisTest {
         }
     }
 
+    // --- Sprint 03 additions ------------------------------------------------
+
+    @Test
+    fun noContinuousAudioCaptureOrRecordingStorageExists() {
+        // Dictation is one utterance through the platform recognizer. A raw
+        // audio API or an audio file would be a different product.
+        val forbidden = listOf(
+            "AudioRecord",
+            "MediaRecorder",
+            "AudioTrack",
+            "createAudioRecord",
+            "setAudioSource",
+            ".wav",
+            ".3gp",
+            ".m4a",
+        )
+        mainSources.forEach { file ->
+            val text = file.readText()
+            forbidden.forEach { needle ->
+                assertFalse("${file.name} must not capture or store audio ($needle)", text.contains(needle))
+            }
+        }
+    }
+
+    @Test
+    fun noForegroundServiceIsIntroduced() {
+        // §B4/§11: the system-managed NotificationListenerService remains the
+        // intake. A foreground service to keep the process alive is out of
+        // scope and would need its own permission and disclosure.
+        assertFalse("No foreground service permission", manifest.contains("FOREGROUND_SERVICE"))
+        assertFalse("No foreground service type", manifest.contains("foregroundServiceType"))
+        mainSources.forEach { file ->
+            val text = file.readText()
+            assertFalse("${file.name} must not start a foreground service", text.contains("startForeground"))
+            assertFalse("${file.name} must not declare a foreground service", text.contains("ServiceCompat.startForeground"))
+        }
+    }
+
+    @Test
+    fun theCurrentListenerConnectionIsNeverPersistedAsATrustedFlag() {
+        // §B1: a stored `connected=true` becomes a lie the moment the process
+        // dies. Only a timestamp may be written, and only as history.
+        val connectionFlag = Regex(
+            """putBoolean\s*\(\s*[^)]*(?:connect|bound|listener_?active|listener_?live)""",
+            RegexOption.IGNORE_CASE,
+        )
+        mainSources.forEach { file ->
+            assertFalse(
+                "${file.name} persists a runtime connection flag",
+                connectionFlag.containsMatchIn(file.readText()),
+            )
+        }
+
+        val monitor = File(projectDir, "src/main/java/com/chan/app/notification/ProtectionRuntimeMonitor.kt")
+            .readText()
+        assertTrue(
+            "The monitor must start Unknown in every process",
+            monitor.contains("MutableStateFlow<ListenerConnection>(ListenerConnection.Unknown)"),
+        )
+        assertFalse("The monitor must not read a connection back from storage", monitor.contains("getBoolean"))
+    }
+
+    @Test
+    fun theStatusNotificationCannotAcceptSourceText() {
+        // §B4: the indicator's copy comes from string resources and its API
+        // takes no parameters, so no caller can put content into it.
+        val notifier = File(projectDir, "src/main/java/com/chan/app/notification/ProtectionStatusNotifier.kt")
+            .readText()
+        assertTrue("show() must take no arguments", notifier.contains("fun show(): Boolean"))
+        assertTrue("cancel() must take no arguments", notifier.contains("fun cancel()"))
+        assertTrue(
+            "The title must come from a string resource",
+            notifier.contains("R.string.status_notification_title"),
+        )
+        assertTrue(
+            "The body must come from a string resource",
+            notifier.contains("R.string.status_notification_body"),
+        )
+        // No format placeholder that a caller could fill with a message.
+        val statusStrings = File(projectDir, "src/main/res/values/strings.xml").readText()
+        val statusCopy = Regex("""<string name="status_notification_[a-z]+">([^<]*)</string>""")
+            .findAll(statusStrings)
+            .map { it.groupValues[1] }
+            .toList()
+        assertEquals("Both status strings must exist", 2, statusCopy.size)
+        statusCopy.forEach { copy ->
+            assertFalse("The indicator must not interpolate anything: $copy", copy.contains("%"))
+        }
+    }
+
+    @Test
+    fun analyzeRequestsHaveNoHiddenTransportReplay() {
+        // §C1: OkHttp would otherwise re-send a POST body on a new connection.
+        val network = File(projectDir, "src/main/java/com/chan/app/data/net/ChanNetwork.kt").readText()
+        assertTrue(
+            "retryOnConnectionFailure must be disabled",
+            network.contains("retryOnConnectionFailure(false)"),
+        )
+        assertFalse(
+            "Transport retries must not be re-enabled",
+            network.contains("retryOnConnectionFailure(true)"),
+        )
+        // The only retry left is the explicit, single 401 recovery.
+        val api = File(projectDir, "src/main/java/com/chan/app/data/net/ChanApi.kt").readText()
+        assertTrue("The one-shot 401 recovery must remain", api.contains("Exactly one recovery attempt"))
+    }
+
+    @Test
+    fun theBaseUrlDocumentationMatchesTheBuild() {
+        // §C2: the README may only describe forms the build actually reads.
+        assertTrue(
+            "The build must read local.properties for the debug base URL",
+            buildScript.contains("localProperty(\"CHAN_API_BASE_URL\")") &&
+                buildScript.contains("rootProject.file(\"local.properties\")"),
+        )
+        assertTrue(
+            "The -P form must keep working",
+            buildScript.contains("providers.gradleProperty(\"CHAN_API_BASE_URL\")"),
+        )
+
+        val readme = File(projectDir.parentFile, "README.md").readText()
+        assertTrue("README must document the -P form", readme.contains("-PCHAN_API_BASE_URL="))
+        assertTrue(
+            "README must document the local.properties form the build implements",
+            readme.contains("CHAN_API_BASE_URL=http://"),
+        )
+        // No machine LAN address may be committed anywhere.
+        val lanAddress = Regex("""\b(?:10\.(?!0\.2\.2)\d{1,3}|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b""")
+        mainSources.forEach { file ->
+            assertFalse("${file.name} must not contain a LAN address", lanAddress.containsMatchIn(file.readText()))
+        }
+        readme.lineSequence().forEach { line ->
+            if (lanAddress.containsMatchIn(line)) {
+                assertTrue(
+                    "A LAN address in the README must be the documented example: $line",
+                    line.contains("192.168.1.42"),
+                )
+            }
+        }
+    }
+
     @Test
     fun ruleLogicIsNotHardcodedInKotlin() {
         // The Rule Bundle is the source of truth; a scam regex in Kotlin would

@@ -26,17 +26,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.chan.app.R
+import com.chan.app.notification.ProtectionHealth
 import com.chan.app.ui.components.ChanCard
 import com.chan.app.ui.components.Eyebrow
 import com.chan.app.ui.components.PrimaryCta
+import com.chan.app.ui.components.ProtectionStatusRow
 import com.chan.app.ui.components.SecondaryButton
-import com.chan.app.ui.components.SystemStatusCard
 import com.chan.app.ui.components.screenContentPadding
 import com.chan.app.ui.theme.ChanTheme
 
 @Composable
 fun HomeScreen(
-    zaloProtectionActive: Boolean,
+    protectionHealth: ProtectionHealth,
     onOpenMessage: () -> Unit,
     onOpenLookup: () -> Unit,
     onOpenProtection: () -> Unit,
@@ -62,8 +63,10 @@ fun HomeScreen(
         )
         Spacer(Modifier.height(20.dp))
 
-        // Green here means SYSTEM protection status, not a message-safety result.
-        SystemStatusCard(text = stringResource(R.string.home_status_protecting), icon = Icons.Filled.Shield)
+        // The live protection state, understandable without opening settings
+        // (§B5). Green here means "the listener is connected", never that a
+        // message is safe.
+        ProtectionStatusRow(health = protectionHealth, onOpenProtection = onOpenProtection)
         Spacer(Modifier.height(22.dp))
 
         PrimaryCta(
@@ -82,19 +85,25 @@ fun HomeScreen(
         // state of passive Zalo protection instead of a list of past messages.
         Eyebrow(text = stringResource(R.string.home_recent_heading))
         Spacer(Modifier.height(10.dp))
-        ChanCard(borderColor = if (zaloProtectionActive) colors.border else colors.warningBorder) {
+        ChanCard(
+            borderColor = if (protectionHealth.listenerLive) colors.border else colors.warningBorder,
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    if (zaloProtectionActive) Icons.Filled.Shield else Icons.Filled.Warning,
+                    if (protectionHealth.listenerLive) Icons.Filled.Shield else Icons.Filled.Warning,
                     contentDescription = null,
-                    tint = if (zaloProtectionActive) colors.success else colors.warning,
+                    tint = if (protectionHealth.listenerLive) colors.success else colors.warning,
                     modifier = Modifier.size(28.dp),
                 )
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = stringResource(
-                            if (zaloProtectionActive) R.string.home_zalo_on_title else R.string.home_zalo_off_title,
+                            if (protectionHealth.listenerLive) {
+                                R.string.home_zalo_on_title
+                            } else {
+                                R.string.home_zalo_off_title
+                            },
                         ),
                         style = ChanTheme.type.cardTitle,
                         color = colors.secondaryHeading,
@@ -102,7 +111,11 @@ fun HomeScreen(
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = stringResource(
-                            if (zaloProtectionActive) R.string.home_zalo_on_desc else R.string.home_zalo_off_desc,
+                            if (protectionHealth.listenerLive) {
+                                R.string.home_zalo_on_desc
+                            } else {
+                                R.string.home_zalo_off_desc
+                            },
                         ),
                         style = ChanTheme.type.caption,
                         color = colors.mutedText,

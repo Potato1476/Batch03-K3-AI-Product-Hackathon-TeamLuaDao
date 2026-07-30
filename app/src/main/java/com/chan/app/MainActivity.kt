@@ -33,8 +33,9 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // Notification access, warning permission, and the microphone can all be
         // changed in Android settings while CHAN is in the background. The
-        // platform's answer is re-read here rather than assumed.
-        viewModel.refreshSystemStatus()
+        // platform's answer is re-read here rather than assumed, and one bounded
+        // rebind is attempted if the listener is configured but not bound (§B3).
+        viewModel.onForeground()
     }
 
     override fun onStop() {
@@ -45,11 +46,18 @@ class MainActivity : ComponentActivity() {
 
     private fun handleIntent(intent: Intent?) {
         if (intent == null) return
-        if (intent.action == ACTION_OPEN_ALERT) {
-            // Opens the redacted result behind a CHAN warning. No source content
-            // travels in the intent.
-            viewModel.openPendingAlert()
-            return
+        when (intent.action) {
+            ACTION_OPEN_ALERT -> {
+                // Opens the redacted result behind a CHAN warning. No source
+                // content travels in the intent.
+                viewModel.openPendingAlert()
+                return
+            }
+            ACTION_OPEN_PROTECTION -> {
+                // From the ongoing status indicator. Carries nothing at all.
+                viewModel.openProtection()
+                return
+            }
         }
         handleShareIntent(intent)
     }
@@ -76,5 +84,8 @@ class MainActivity : ComponentActivity() {
     companion object {
         /** Sent by a CHAN warning notification; carries no content of its own. */
         const val ACTION_OPEN_ALERT = "com.chan.app.action.OPEN_ALERT"
+
+        /** Sent by the ongoing protection-status indicator (§B4). */
+        const val ACTION_OPEN_PROTECTION = "com.chan.app.action.OPEN_PROTECTION"
     }
 }

@@ -121,6 +121,11 @@ private fun ScreenContent(
         runCatching { context.startActivity(NotificationAccess.appNotificationSettingsIntent(context)) }
     }
 
+    /** Zalo's own notification settings. CHAN cannot read them, only open them. */
+    fun openZaloNotificationSettings() {
+        runCatching { context.startActivity(NotificationAccess.watchedAppNotificationSettingsIntent()) }
+    }
+
     fun enableZaloProtection() {
         viewModel.setZaloScanning(true)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -131,7 +136,7 @@ private fun ScreenContent(
 
     when (state.current) {
         Screen.Home -> HomeScreen(
-            zaloProtectionActive = state.systemStatus.scanningActive,
+            protectionHealth = state.systemStatus.protectionHealth,
             onOpenMessage = viewModel::openMessageInput,
             onOpenLookup = viewModel::openCommunityLookup,
             onOpenProtection = { viewModel.selectTab(Tab.PROTECT) },
@@ -147,13 +152,14 @@ private fun ScreenContent(
             selectedImageUri = state.selectedImageUri,
             canAnalyze = state.canAnalyze,
             speechState = speechState,
-            usingOnDeviceRecognizer = viewModel.speech.usingOnDeviceRecognizer,
             onMessageChange = viewModel::updateMessageText,
             onImageSelected = viewModel::selectImage,
             onClearImage = viewModel::clearSelectedImage,
             onAnalyze = viewModel::analyze,
             onStartDictation = viewModel::startDictation,
             onStopDictation = viewModel::stopDictation,
+            onCancelDictation = viewModel::cancelDictation,
+            onDismissSpeech = viewModel::acknowledgeSpeech,
             onMicrophoneDenied = viewModel::onMicrophonePermissionDenied,
             onReleaseRecognizer = viewModel::releaseRecognizer,
             onBack = { viewModel.back() },
@@ -194,6 +200,8 @@ private fun ScreenContent(
             onDisableZaloProtection = { viewModel.setZaloScanning(false) },
             onOpenNotificationAccessSettings = { openNotificationAccessSettings() },
             onOpenWarningSettings = { openWarningSettings() },
+            onOpenZaloNotificationSettings = { openZaloNotificationSettings() },
+            onReconnect = { viewModel.reconnectNow() },
             onStopSharing = { viewModel.setGuardianSharing(false) },
         )
 
