@@ -178,6 +178,7 @@ class PhishingSignalModel:
         *,
         similarity_scores: Sequence[float] | None = None,
         similarity_beta: float = 0.0,
+        blocklist_matches: Sequence[bool] | None = None,
     ) -> list[dict[str, object]]:
         self._check_fitted()
         probabilities = self.predict_probabilities(texts)
@@ -185,12 +186,17 @@ class PhishingSignalModel:
             similarity_scores = [0.0] * len(texts)
         if len(similarity_scores) != len(texts):
             raise ValueError("similarity_scores must match texts")
+        if blocklist_matches is None:
+            blocklist_matches = [False] * len(texts)
+        if len(blocklist_matches) != len(texts):
+            raise ValueError("blocklist_matches must match texts")
         return [
             self._format_prediction(
                 text,
                 probabilities[index],
                 similarity_max=float(similarity_scores[index]),
                 similarity_beta=similarity_beta,
+                blocklist_match=bool(blocklist_matches[index]),
             )
             for index, text in enumerate(texts)
         ]
@@ -201,11 +207,15 @@ class PhishingSignalModel:
         *,
         similarity_max: float = 0.0,
         similarity_beta: float = 0.0,
+        blocklist_match: bool = False,
     ) -> dict[str, object]:
+        """Score one text. ``blocklist_match`` is the §6 hard override for a
+        recipient account already reported to the Lookup Service."""
         return self.predict_many(
             [text],
             similarity_scores=[similarity_max],
             similarity_beta=similarity_beta,
+            blocklist_matches=[blocklist_match],
         )[0]
 
     def _format_prediction(
@@ -215,6 +225,7 @@ class PhishingSignalModel:
         *,
         similarity_max: float,
         similarity_beta: float,
+        blocklist_match: bool = False,
     ) -> dict[str, object]:
         confidence_map = {
             code: float(probabilities[index])
@@ -224,6 +235,7 @@ class PhishingSignalModel:
             confidence_map,
             similarity_max=similarity_max,
             similarity_beta=similarity_beta,
+            blocklist_match=blocklist_match,
         )
         selected = [
             {

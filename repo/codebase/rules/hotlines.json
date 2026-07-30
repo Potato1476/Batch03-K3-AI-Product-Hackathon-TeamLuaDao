@@ -1,0 +1,61 @@
+{
+  "notice": "Số điện thoại chính thức để người dùng TỰ gọi kiểm tra. Đây là cách phá kịch bản mạo danh: thay vì tin số gọi đến, gọi lại số công khai. Cần rà soát định kỳ.",
+  "updated_at": "2026-07-30",
+  "default": { "name": "Tổng đài Cảnh báo an toàn thông tin (NCSC)", "number": "156" },
+  "entries": [
+    {
+      "id": "thue",
+      "name": "Tổng cục Thuế",
+      "number": "19008888",
+      "keywords": ["thuế", "thue", "cục thuế", "cuc thue", "chi cục thuế", "quyết toán thuế", "hoàn thuế", "nợ thuế", "ma so thue", "mã số thuế"]
+    },
+    {
+      "id": "cong_an",
+      "name": "Trực ban Công an — gọi 113 hoặc công an phường nơi cư trú",
+      "number": "113",
+      "keywords": ["công an", "cong an", "cảnh sát", "canh sat", "viện kiểm sát", "vien kiem sat", "toà án", "toa an", "lệnh bắt", "khởi tố", "điều tra", "dieu tra", "triệu tập"]
+    },
+    {
+      "id": "dien_luc",
+      "name": "Tổng đài Điện lực Việt Nam (EVN)",
+      "number": "19009000",
+      "keywords": ["điện lực", "dien luc", "evn", "tiền điện", "tien dien", "cắt điện", "cat dien", "hoá đơn điện"]
+    },
+    {
+      "id": "bhxh",
+      "name": "Bảo hiểm Xã hội Việt Nam",
+      "number": "19009068",
+      "keywords": ["bảo hiểm xã hội", "bao hiem xa hoi", "bhxh", "bhyt", "bảo hiểm y tế", "sổ bảo hiểm", "lương hưu", "luong huu"]
+    },
+    {
+      "id": "ngan_hang",
+      "name": "Gọi số in trên mặt sau thẻ hoặc trên app ngân hàng chính thức",
+      "number": "",
+      "keywords": ["ngân hàng", "ngan hang", "vietcombank", "vietinbank", "bidv", "agribank", "techcombank", "mbbank", "vpbank", "acb", "sacombank", "tpbank", "thẻ tín dụng", "the tin dung", "khoá thẻ", "khoa the", "tài khoản bị khoá"]
+    },
+    {
+      "id": "buu_chinh",
+      "name": "Tổng đài Bưu điện Việt Nam (VNPost)",
+      "number": "19005454",
+      "keywords": ["bưu điện", "buu dien", "vnpost", "bưu phẩm", "buu pham", "kiện hàng", "kien hang", "chuyển phát", "hải quan", "hai quan"]
+    },
+    {
+      "id": "vien_thong",
+      "name": "Tổng đài nhà mạng — gọi số ghi trên hợp đồng thuê bao",
+      "number": "",
+      "keywords": ["viettel", "vinaphone", "mobifone", "sim", "thuê bao", "thue bao", "khoá sim", "khoa sim", "chuẩn hoá thông tin", "chuan hoa thong tin"]
+    },
+    {
+      "id": "nha_truong",
+      "name": "Gọi trực tiếp văn phòng nhà trường theo số đã lưu",
+      "number": "",
+      "keywords": ["nhà trường", "nha truong", "giáo viên", "giao vien", "học phí", "hoc phi", "cô chủ nhiệm", "hiệu trưởng", "hoc sinh", "học sinh"]
+    },
+    {
+      "id": "y_te",
+      "name": "Gọi bệnh viện theo số công khai trên website chính thức",
+      "number": "",
+      "keywords": ["bệnh viện", "benh vien", "cấp cứu", "cap cuu", "viện phí", "vien phi", "bác sĩ", "bac si", "tai nạn", "tai nan"]
+    }
+  ]
+}

@@ -170,6 +170,19 @@ Ghi đè cứng (bỏ qua score):
 
 Output cho `unknown` **phải** là "Chưa phát hiện dấu hiệu", không bao giờ là "An toàn". Lý do: trấn an sai chuyển trách nhiệm phán đoán từ người dùng sang hệ thống trong đúng tình huống hệ thống có thể sai.
 
+> **Phát hiện khi hiện thực (2026-07-30) — cần hiệu chỉnh trọng số.**
+> Với bộ trọng số ở Phụ lục A, một số tổ hợp dấu hiệu **không thể** đạt ngưỡng `medium` dù cả hai dấu hiệu đạt confidence 1.0:
+>
+> | Tổ hợp | Điểm tối đa | Kết luận |
+> |---|---|---|
+> | `loi_ich_bat_thuong` + `chuyen_kenh` | 0.08 + 0.07 = **0.15** | `unknown` |
+> | + thêm `cai_app_ngoai` | **0.30** | `unknown` |
+> | `loi_ich_bat_thuong` + `ap_luc_thoi_gian` | **0.23** | `unknown` |
+>
+> Nghĩa là kịch bản **trúng thưởng → chuyển sang Zalo riêng** — một dạng lừa đảo phổ biến — luôn trả về `unknown` theo đúng thiết kế hiện tại. Đã kiểm chứng bằng `aggregate_risk` thật.
+>
+> Phụ lục A đã nói trọng số là "giá trị khởi tạo, cần hiệu chỉnh trên bộ dữ liệu vàng", nên **không tự ý sửa** trong lần hiện thực này. Cần quyết định khi có golden set: nâng trọng số hai dấu hiệu này, hạ ngưỡng `medium`, hoặc thêm luật ghi đè cho tổ hợp "lợi ích bất thường + chuyển kênh".
+
 Văn phong `explanation` và `questions`: viết cho người 60 tuổi đọc trên điện thoại. Câu ngắn. **Cấm** dùng "phishing", "xác thực hai lớp", "social engineering", "malware".
 
 ---
@@ -223,12 +236,14 @@ Mặt phẳng bảo đảm tương đương. Mọi client gọi cùng tập endp
   ],
   "verified_hotline": { "name": "Tổng cục Thuế", "number": "19008888" },
   "actions": ["report", "share_to_guardian", "lookup_account"],
-  "engine_version": "de-1.4.0",
-  "rule_bundle_version": "rb-2026-07-28"
+  "engine_version": "ml-20260730-101500-a1b2c3d4",
+  "rule_bundle_version": "rb-2026-07-30"
 }
 ```
 
 `engine_version` + `rule_bundle_version` phục vụ parity test: hai client cùng phiên bản phải cho cùng kết quả trên cùng input.
+
+> **Đính chính (2026-07-30).** Bản 1.0 của tài liệu ghi ví dụ `"engine_version": "de-1.4.0"`. Giá trị thực tế là phiên bản của model đang active, do `chan_ml.constants.ENGINE_VERSION` và `daily_training` sinh ra, dạng `ml-*` (ví dụ `ml-0.2.0`, `ml-20260730-101500-a1b2c3d4`). Không có thành phần nào phát ra chuỗi `de-*`. Tên trường giữ nguyên.
 
 ### GET /v1/lookup/account — k-anonymity
 
