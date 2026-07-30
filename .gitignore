@@ -22,3 +22,4 @@ repo/codebase/ml/data/generated/*
 # Project-provided raw data stays local/object-storage only. The reproducible
 # redacted adapter output belongs under codebase/ml/data/generated/.
 repo/CHAN-Dataset/
+.gstack/
