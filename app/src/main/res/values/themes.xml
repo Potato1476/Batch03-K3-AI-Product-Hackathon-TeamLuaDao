@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base window theme; the app UI is themed in Compose (ChanTheme). -->
+    <style name="Theme.CHAN" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/screen_background_light</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

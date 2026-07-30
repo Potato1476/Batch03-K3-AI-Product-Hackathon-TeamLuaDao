@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CHAN</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_check">Kiểm tra</string>
+    <string name="nav_protect">Bảo vệ</string>
+    <string name="nav_settings">Cài đặt</string>
+
+    <!-- Shared -->
+    <string name="cd_back">Quay lại</string>
+    <string name="action_cancel">Huỷ</string>
+    <string name="action_retry">Thử lại</string>
+    <string name="action_open_settings">Mở Cài đặt</string>
+    <string name="pill_caution">CẦN CẨN TRỌNG</string>
+    <string name="pill_high_risk">NGUY CƠ CAO</string>
+    <string name="pill_unknown">CHƯA THẤY DẤU HIỆU</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Chào bác Lý, mình cùng kiểm tra nhé.</string>
+    <string name="home_status_protecting">Đang bảo vệ bác</string>
+    <string name="home_action_suspicious_message">Tin nhắn đáng ngờ</string>
+    <string name="home_action_lookup">Tài khoản, số điện thoại</string>
+    <string name="home_recent_heading">BẢO VỆ THÔNG BÁO</string>
+    <string name="home_zalo_off_title">Chưa kiểm tra thông báo Zalo</string>
+    <string name="home_zalo_off_desc">Bật để CHAN xem giúp bác các tin nhắn Zalo có dấu hiệu thúc ép.</string>
+    <string name="home_zalo_on_title">Đang kiểm tra thông báo Zalo</string>
+    <string name="home_zalo_on_desc">CHAN chỉ tìm dấu hiệu thúc ép và không lưu nội dung.</string>
+    <string name="home_open_protection">Mở phần Bảo vệ</string>
+    <string name="home_not_stored_note">CHAN không lưu lại nội dung tin nhắn trên máy.</string>
+
+    <!-- Message input -->
+    <string name="input_title">Dán tin nhắn cần kiểm tra</string>
+    <string name="input_mode_text">Dán chữ</string>
+    <string name="input_mode_image">Chọn ảnh</string>
+    <string name="input_placeholder">Dán nội dung tin nhắn vào đây…</string>
+    <string name="input_image_hint">Chọn ảnh chụp màn hình tin nhắn cần kiểm tra.</string>
+    <string name="input_pick_image">Chọn ảnh từ máy</string>
+    <string name="input_image_selected">Đã chọn ảnh</string>
+    <string name="input_image_note">CHAN chưa đọc được chữ trong ảnh. Bác dán chữ hoặc đọc bằng micro giúp cháu nhé.</string>
+    <string name="input_pick_another">Chọn ảnh khác</string>
+    <string name="input_privacy_box">CHAN không lưu nội dung bác nhập. Mã OTP sẽ không bao giờ rời khỏi máy.</string>
+    <string name="input_analyze_now">Kiểm tra ngay</string>
+
+    <!-- Speech to text -->
+    <string name="speech_button_start">Đọc bằng micro</string>
+    <string name="speech_button_stop">Dừng nghe</string>
+    <string name="speech_explanation">Micro chỉ nghe khi bác bấm nút. CHAN không lưu bản ghi âm.</string>
+    <string name="speech_listening">Đang nghe…</string>
+    <string name="speech_requesting_permission">Đang xin phép dùng micro…</string>
+    <string name="speech_final">Đã ghi xong. Bác đọc lại rồi bấm Kiểm tra ngay.</string>
+    <string name="speech_no_speech">Chưa nghe rõ. Bác thử đọc lại hoặc dán chữ.</string>
+    <string name="speech_busy">Micro đang bận. Bác đợi một chút rồi thử lại.</string>
+    <string name="speech_provider_unavailable">Máy chưa dùng được giọng nói lúc này. Bác dán chữ giúp cháu.</string>
+    <string name="speech_permission_denied">Bác có thể dán chữ hoặc mở quyền micro trong Cài đặt.</string>
+    <string name="speech_on_device_unavailable">Máy này chưa có nhận giọng nói trên thiết bị. Bác có thể dán chữ, hoặc đồng ý dùng dịch vụ giọng nói của máy.</string>
+    <string name="speech_use_device_service">Đồng ý dùng dịch vụ giọng nói của máy</string>
+    <string name="speech_on_device_note">Giọng nói được xử lý ngay trên máy của bác.</string>
+    <string name="cd_speech_status">Trạng thái micro</string>
+
+    <!-- Loading -->
+    <string name="loading_title">Đang đọc tin nhắn…</string>
+    <string name="loading_subtitle">Máy đang tìm các câu thúc ép bác.</string>
+
+    <!-- Analysis result -->
+    <string name="result_high_title">Nhiều dấu hiệu lừa đảo</string>
+    <string name="result_medium_title">Cần kiểm tra thêm</string>
+    <string name="result_unknown_title">Chưa phát hiện dấu hiệu</string>
+    <string name="result_high_instruction">Đừng chuyển tiền. Đừng đọc mã OTP.</string>
+    <string name="result_medium_instruction">Hãy dừng lại và hỏi người thân trước khi làm theo.</string>
+    <string name="result_unknown_instruction">Chưa thấy dấu hiệu không có nghĩa là an toàn. Bác vẫn nên hỏi lại người thân.</string>
+    <string name="result_source_eyebrow">NGUỒN</string>
+    <string name="result_source_manual">Tin nhắn bác vừa kiểm tra.</string>
+    <string name="result_source_notification">Thông báo Zalo trên máy của bác.</string>
+    <string name="result_on_device_note">Máy tự kết luận, không gửi nội dung đi đâu cả.</string>
+    <string name="result_truncated_note">Thông báo có thể chưa đủ nội dung. Bác mở Zalo và chia sẻ cả tin nhắn để kiểm tra kỹ hơn.</string>
+    <string name="result_signals_heading">Trúng %1$d/%2$d dấu hiệu thao túng</string>
+    <string name="result_explanation_heading">CHAN thấy gì</string>
+    <string name="result_questions_heading">Bác hãy hỏi lại họ</string>
+    <string name="result_hotline_verified">Số chính thức bác tự gọi: %1$s</string>
+
+    <string name="signal_mao_danh_tham_quyen">Mạo danh cơ quan chức năng</string>
+    <string name="signal_yeu_cau_bi_mat">Yêu cầu giữ bí mật</string>
+    <string name="signal_ap_luc_thoi_gian">Ép gấp về thời gian</string>
+    <string name="signal_tk_ca_nhan">Chuyển tiền vào tài khoản cá nhân</string>
+    <string name="signal_cai_app_ngoai">Cài ứng dụng ngoài cửa hàng</string>
+    <string name="signal_loi_ich_bat_thuong">Hứa lợi ích bất thường</string>
+    <string name="signal_chuyen_kenh">Đề nghị chuyển kênh liên lạc</string>
+    <string name="signal_yeu_cau_otp">Đòi mã OTP</string>
+    <string name="signal_de_doa">Doạ hậu quả pháp lý</string>
+    <string name="signal_link_gia">Đường link giả mạo</string>
+    <string name="signal_unknown_code">Dấu hiệu khác</string>
+
+    <string name="signal_state_hit">Có dấu hiệu này</string>
+    <string name="signal_state_miss">Không thấy dấu hiệu này</string>
+
+    <string name="result_recommendation_heading">Bác nên làm gì</string>
+    <string name="result_recommendation_body">Hãy gọi cho con cháu hoặc tổng đài 156 trước khi làm bất cứ điều gì.</string>
+    <string name="result_hotline_title">Tổng đài chống lừa đảo</string>
+    <string name="result_hotline_subtitle">Bấm để gọi, không mất phí.</string>
+    <string name="result_check_another">Kiểm tra tin khác</string>
+
+    <!-- User-safe backend states -->
+    <string name="error_heading">Chưa kiểm tra xong được</string>
+    <string name="error_offline">CHAN vẫn kiểm tra quy tắc trên máy, nhưng chưa kết nối được danh sách báo cáo.</string>
+    <string name="error_timeout">Máy chủ trả lời chậm. Bác thử lại hoặc hỏi người thân trước khi làm tiếp.</string>
+    <string name="error_rate_limited">Bác đã kiểm tra nhiều lần liên tiếp. Xin đợi một chút rồi thử lại.</string>
+    <string name="error_backend_unavailable">Dịch vụ phân tích đang tạm nghỉ. Bác đừng chuyển tiền nếu vẫn còn nghi ngờ.</string>
+    <string name="error_bundle_mismatch">CHAN vừa cập nhật bộ quy tắc. Bác bấm thử lại giúp cháu.</string>
+    <string name="error_invalid_input">Nội dung này chưa đúng dạng để kiểm tra. Bác xem lại giúp cháu.</string>
+    <string name="error_unexpected">Chưa kiểm tra được lúc này. Bác thử lại sau một chút.</string>
+
+    <!-- Community lookup -->
+    <string name="lookup_title">Tra cứu trước khi chuyển</string>
+    <string name="lookup_type_account">Tài khoản</string>
+    <string name="lookup_type_phone">Điện thoại</string>
+    <string name="lookup_type_url">Đường link</string>
+    <string name="lookup_placeholder_account">Nhập số tài khoản</string>
+    <string name="lookup_placeholder_phone">Nhập số điện thoại</string>
+    <string name="lookup_placeholder_url">Dán đường link</string>
+    <string name="lookup_privacy_box">Máy biến thông tin thành mã rút gọn. Hệ thống không nhận giá trị gốc bác nhập.</string>
+    <string name="lookup_action">Tra cứu báo cáo</string>
+    <string name="lookup_searching">Đang tra cứu…</string>
+
+    <!-- Lookup result -->
+    <string name="caution_title">Đã có người báo cáo</string>
+    <string name="caution_instruction">Hãy dừng lại và gọi cho người thân trước khi chuyển tiền.</string>
+    <string name="caution_stat_reports">%1$d lượt báo cáo</string>
+    <string name="caution_stat_recent">%1$d ngày lần gần nhất</string>
+    <string name="caution_stat_recent_unknown">Chưa rõ thời điểm báo cáo gần nhất</string>
+    <string name="lookup_no_match_title">Chưa có báo cáo</string>
+    <string name="lookup_no_match_instruction">Chưa có báo cáo không có nghĩa là an toàn. Bác vẫn nên hỏi lại người thân.</string>
+    <string name="caution_recommendation_heading">Bác nên làm gì</string>
+    <string name="caution_recommendation_body">Gọi cho con cháu hoặc tổng đài 156 để kiểm tra thêm trước khi chuyển.</string>
+    <string name="lookup_caution_disclaimer">Đây là báo cáo của người dùng, không phải kết luận chính thức. Không có báo cáo không có nghĩa là an toàn.</string>
+    <string name="caution_lookup_different">Tra cứu thông tin khác</string>
+
+    <!-- Protection and privacy -->
+    <string name="protection_title">Bảo vệ &amp; riêng tư</string>
+    <string name="protection_layers_heading">CÁC LỚP BẢO VỆ</string>
+    <string name="protection_layer_rules_title">Quy tắc trên máy</string>
+    <string name="protection_layer_rules_on">Đang chạy, có bộ quy tắc mới nhất</string>
+    <string name="protection_layer_rules_offline">Đang chạy bằng bộ quy tắc sẵn trong máy</string>
+    <string name="protection_layer_zalo_title">Kiểm tra thông báo Zalo</string>
+    <string name="protection_layer_warning_title">Cảnh báo của CHAN</string>
+    <string name="protection_layer_warning_on">Được phép hiện cảnh báo</string>
+    <string name="protection_layer_warning_off">Chưa được phép hiện cảnh báo</string>
+    <string name="protection_layers_note">Màu xanh chỉ nói các lớp trên máy đang bật. Nó không nói tin nhắn nào là an toàn.</string>
+
+    <string name="protection_zalo_status_off">Chưa bật</string>
+    <string name="protection_zalo_status_on">Đang bảo vệ</string>
+    <string name="protection_zalo_status_system_off">Đã tắt trong cài đặt máy</string>
+    <string name="protection_zalo_status_paused">Đã tạm dừng trong CHAN</string>
+    <string name="protection_zalo_explanation">Khi bác bật, CHAN chỉ đọc thông báo từ Zalo để tìm dấu hiệu thúc ép. Nội dung không được lưu.</string>
+    <string name="protection_zalo_open_settings">Mở cài đặt quyền đọc thông báo</string>
+    <string name="protection_zalo_turn_off">Tắt bảo vệ Zalo</string>
+    <string name="protection_zalo_scanning_no_warning">Đang kiểm tra nhưng chưa thể hiện cảnh báo</string>
+    <string name="protection_zalo_only_note">CHAN chỉ đọc thông báo của Zalo. Không đọc tin nhắn SMS, danh bạ hay nhật ký cuộc gọi.</string>
+
+    <string name="protection_commitments_heading">CAM KẾT</string>
+    <string name="protection_commit_1">Không lưu nội dung tin nhắn.</string>
+    <string name="protection_commit_2">Không gửi mã OTP khỏi thiết bị.</string>
+    <string name="protection_commit_3">Không âm thầm báo cho người khác.</string>
+    <string name="protection_commit_4">Bác luôn có thể dừng chia sẻ.</string>
+    <string name="protection_guardian_heading">NGƯỜI THÂN</string>
+    <string name="protection_guardian_name">Độ · Con Trai</string>
+    <string name="protection_guardian_desc">Chỉ nhận cảnh báo nguy cơ cao, không nhận nội dung.</string>
+    <string name="protection_stop_sharing">Ngừng chia sẻ</string>
+    <string name="protection_sharing_stopped">Đã ngừng chia sẻ với người thân.</string>
+    <string name="protection_stop_confirm_title">Ngừng chia sẻ?</string>
+    <string name="protection_stop_confirm_body">Người thân sẽ không còn nhận cảnh báo nguy cơ cao.</string>
+    <string name="protection_stop_confirm_ok">Ngừng chia sẻ</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_dark_mode">Chế độ tối</string>
+    <string name="settings_dark_mode_desc">Nền tối, chữ sáng, dễ nhìn hơn vào buổi tối.</string>
+    <string name="settings_permissions_heading">QUYỀN TRUY CẬP</string>
+    <string name="settings_perm_notification_access">Đọc thông báo Zalo</string>
+    <string name="settings_perm_warnings">Cảnh báo của CHAN</string>
+    <string name="settings_perm_mic">Micro</string>
+    <string name="settings_perm_granted">Đã bật</string>
+    <string name="settings_perm_not_granted">Chưa cấp</string>
+    <string name="settings_perm_open">Mở</string>
+    <string name="settings_privacy_box">CHAN không giám sát bí mật. Mọi quyền đều cần bác chủ động đồng ý.</string>
+    <string name="settings_no_permission_at_launch">CHAN không xin quyền nào khi vừa mở lần đầu.</string>
+
+    <!-- Check hub -->
+    <string name="check_hub_title">Kiểm tra</string>
+    <string name="check_hub_subtitle">Bác muốn kiểm tra điều gì?</string>
+
+    <!-- Android share confirmation -->
+    <string name="share_eyebrow">CHIA SẺ TỪ ỨNG DỤNG KHÁC</string>
+    <string name="share_title">Kiểm tra nội dung này?</string>
+    <string name="share_explanation">CHAN sẽ tìm các dấu hiệu thúc ép, thao túng và không lưu lại nội dung này.</string>
+    <string name="share_explanation_image">CHAN sẽ xem ảnh này để tìm dấu hiệu thúc ép, thao túng và không lưu lại ảnh.</string>
+    <string name="share_open_in_chan">Mở trong CHAN</string>
+
+    <!-- Notification listener + CHAN warning channels -->
+    <string name="notification_access_service_label">CHAN — kiểm tra thông báo Zalo</string>
+    <string name="channel_high_risk_name">Cảnh báo nguy cơ cao</string>
+    <string name="channel_high_risk_description">Báo ngay khi thấy dấu hiệu lừa đảo rõ ràng.</string>
+    <string name="channel_caution_name">Nhắc cẩn trọng</string>
+    <string name="channel_caution_description">Nhắc bác kiểm tra lại trước khi làm theo.</string>
+</resources>

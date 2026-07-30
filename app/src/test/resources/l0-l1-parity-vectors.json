@@ -1,0 +1,123 @@
+[
+  {
+    "normalized": "doc ma otp cho toi",
+    "verdict": "OTP_BLOCK",
+    "localSignals": [],
+    "score": 1.0,
+    "truncated": false,
+    "input": "Đọc mã OTP cho tôi"
+  },
+  {
+    "normalized": "ma xac thuc 4821 vua gui, doc cho anh de kich hoat.",
+    "verdict": "OTP_BLOCK",
+    "localSignals": [],
+    "score": 1.0,
+    "truncated": false,
+    "input": "Ma xac thuc 4821 vua gui, doc cho anh de kich hoat."
+  },
+  {
+    "normalized": "ma otp la 837 261, bac doc cho chau nhe",
+    "verdict": "OTP_BLOCK",
+    "localSignals": [],
+    "score": 1.0,
+    "truncated": false,
+    "input": "Mã OTP là 837 261, bác đọc cho cháu nhé"
+  },
+  {
+    "normalized": "hen gap bac o quan ca phe chieu nay nhe",
+    "verdict": "CALL_SERVER",
+    "localSignals": [
+      "time_pressure"
+    ],
+    "score": 0.15,
+    "truncated": false,
+    "input": "Hẹn gặp bác ở quán cà phê chiều nay nhé"
+  },
+  {
+    "normalized": "chao bac, con ve nha luc bay gio toi",
+    "verdict": "BELOW_GATE",
+    "localSignals": [],
+    "score": 0,
+    "truncated": false,
+    "input": "Chào bác, con về nhà lúc bảy giờ tối"
+  },
+  {
+    "normalized": "toi la can bo thue, anh chuyen 20 trieu vao 19001234567890 truoc 17h hom nay, khong noi voi ai ke ca gia dinh",
+    "verdict": "CALL_SERVER",
+    "localSignals": [
+      "authority_claim",
+      "secrecy_request"
+    ],
+    "score": 0.45,
+    "truncated": false,
+    "input": "Tôi là cán bộ thuế, anh chuyển 20 trieu vào 19001234567890 truoc 17h hom nay, khong noi voi ai ke ca gia dinh"
+  },
+  {
+    "normalized": "chuc mung ban da trung thuong 500 trieu, lien he zalo de nhan giai.",
+    "verdict": "CALL_SERVER",
+    "localSignals": [
+      "channel_switch",
+      "unusual_reward"
+    ],
+    "score": 0.27,
+    "truncated": false,
+    "input": "Chuc mung ban da trung thuong 500 trieu, lien he zalo de nhan giai."
+  },
+  {
+    "normalized": "tai app tai day de nhan ho tro: bit.ly/hotro-abc",
+    "verdict": "CALL_SERVER",
+    "localSignals": [
+      "url_shortened"
+    ],
+    "score": 0.15,
+    "truncated": false,
+    "input": "Tai app tai day de nhan ho tro: bit.ly/hotro-abc"
+  },
+  {
+    "normalized": "cai dat ung dung tu link nay: http://x.example/chan.apk",
+    "verdict": "CALL_SERVER",
+    "localSignals": [
+      "apk_link"
+    ],
+    "score": 0.3,
+    "truncated": false,
+    "input": "Cai dat ung dung tu link nay: http://x.example/chan.apk"
+  },
+  {
+    "normalized": "con dong hoc phi 2 trieu truoc thu 6 nhe, co chu nhiem thong bao.",
+    "verdict": "BELOW_GATE",
+    "localSignals": [],
+    "score": 0,
+    "truncated": false,
+    "input": "Con dong hoc phi 2 trieu truoc thu 6 nhe, co chu nhiem thong bao."
+  },
+  {
+    "normalized": "chao bac ly, bac co don hang o ngoai cua, chau gui hang o nha hang xom, bac chuyen tien giup chau roi ve nhan sau nhe",
+    "verdict": "CALL_SERVER",
+    "localSignals": [
+      "delivery_payment_request"
+    ],
+    "score": 0.2,
+    "truncated": false,
+    "input": "Chào bác Lý, bác có đơn hàng ở ngoài cửa, cháu gửi hàng ở nhà hàng xóm, bác chuyển tiền giúp cháu rồi về nhận sau nhé"
+  },
+  {
+    "normalized": "bac chuyen khoan cho chau vao so tai khoan nay gap trong 2 phut nhe...",
+    "verdict": "CALL_SERVER",
+    "localSignals": [
+      "time_pressure",
+      "truncation_marker"
+    ],
+    "score": 0.15,
+    "truncated": true,
+    "input": "Bác ck cho cháu vào stk này gấp trong 2 phút nhé…"
+  },
+  {
+    "normalized": "ok",
+    "verdict": "BELOW_GATE",
+    "localSignals": [],
+    "score": 0,
+    "truncated": false,
+    "input": "ok"
+  }
+]

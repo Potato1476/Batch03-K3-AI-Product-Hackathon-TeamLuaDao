@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG ONLY. Overrides the HTTPS-only main configuration so the debug build can
+  talk to a development gateway over the emulator loopback alias or a LAN
+  address. Release keeps `cleartextTrafficPermitted="false"`, and a privacy unit
+  test fails the build if that ever changes.
+
+  User-installed certificates are deliberately NOT trusted even here: a local
+  Docker gateway needs cleartext, not a proxy CA.
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config
+        cleartextTrafficPermitted="true"
+        tools:ignore="InsecureBaseConfiguration">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

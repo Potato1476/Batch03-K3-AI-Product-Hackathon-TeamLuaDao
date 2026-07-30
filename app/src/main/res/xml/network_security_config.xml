@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Release/default policy: HTTPS only. The debug source set overrides this exact
+  resource with a cleartext-permitting variant so a developer can reach a local
+  Docker gateway; that override never reaches a release artifact.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
