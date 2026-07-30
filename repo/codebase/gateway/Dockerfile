@@ -6,7 +6,8 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_DEFAULT_TIMEOUT=300 \
+    PIP_RETRIES=10
 
 WORKDIR /app
 
@@ -16,7 +17,8 @@ COPY codebase/gateway /app/gateway
 # its version is pinned to the build.
 COPY codebase/rules /app/rules
 
-RUN pip install /app/ml /app/gateway
+RUN --mount=type=cache,id=chan-pip,target=/root/.cache/pip \
+    pip install /app/ml /app/gateway
 
 ENV CHAN_RULES_DIR=/app/rules
 

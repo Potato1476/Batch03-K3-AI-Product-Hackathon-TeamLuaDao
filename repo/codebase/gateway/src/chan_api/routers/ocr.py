@@ -14,7 +14,7 @@ from ..auth import Caller, require_device
 from ..config import AppConfig, get_config
 from ..deps import get_rate_limiter
 from ..logging_safe import log_event
-from ..ocr.base import OcrError, OcrUnavailable
+from ..ocr.base import OcrEngine, OcrError, OcrUnavailable
 from ..ratelimit import RateLimiter
 from ..schemas import OcrResponse
 
@@ -22,7 +22,7 @@ router = APIRouter(tags=["ocr"])
 
 _ALLOWED_TYPES = {"image/png", "image/jpeg", "image/webp"}
 
-_engine = None
+_engine: OcrEngine | None = None
 
 
 def _get_engine(config: AppConfig):  # noqa: ANN202

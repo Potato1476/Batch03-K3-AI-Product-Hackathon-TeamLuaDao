@@ -16,8 +16,21 @@ npm ci
 npm run dev
 ```
 
-Mở URL Vite in ra ở terminal. Route `/share` mô phỏng điểm vào từ Android
+Vite chạy tại `http://localhost:5173` và proxy `/api` tới Gateway
+`http://127.0.0.1:8000`. Có thể đổi đích bằng
+`CHAN_GATEWAY_DEV_PROXY_TARGET`. Route `/share` mô phỏng điểm vào từ Android
 Share Sheet.
+
+Frontend tự:
+
+1. tải Rule Bundle và chạy L0/L1;
+2. chặn OTP hoàn toàn trên thiết bị;
+3. xin device token lần đầu và lưu token trên thiết bị;
+4. gọi Gateway với Bearer token;
+5. nếu token hết hạn, xin lại một lần rồi retry;
+6. chuẩn hóa + SHA-256 chỉ báo trước lookup và chỉ gửi prefix 5 hex.
+
+Không gọi trực tiếp Detection `:8003`, Intel `:8002` hoặc Training `:8001`.
 
 ## Kiểm tra chất lượng
 
@@ -32,23 +45,26 @@ npm run build
   và lời hứa riêng tư của tính năng tra cứu.
 - `npm run build` chạy TypeScript trước khi tạo production bundle.
 
+## Chạy toàn stack bằng Docker
+
+Từ `repo/codebase/`:
+
+```bash
+docker compose up --build
+```
+
+Mở `http://localhost:3000`. Nginx phục vụ PWA và reverse-proxy `/api` tới
+Gateway trong cùng Compose network.
+
 ## Phạm vi tích hợp
 
-Đây là frontend prototype có đủ 9 trạng thái trong giao kèo thiết kế, chế độ
-tối, các trạng thái lỗi có đường thoát và PWA
-shell (manifest, service worker, share target). Kết quả phân tích và tra cứu
-hiện là **dữ liệu demo**, không phải kết quả thật từ server. Không có nội dung
-người dùng nào được lưu hoặc gửi đi.
+Luồng nhập text, kết quả phân tích và lookup đã dùng API thật. OCR, guardian,
+voice input và các công tắc mô phỏng lỗi vẫn là prototype.
 
 Icon dự án do nhóm cung cấp nằm tại [`public/image.png`](public/image.png) và
 được dùng cho favicon cùng PWA manifest. Logo ngang
 [`public/chan-logo-horizontal.svg`](public/chan-logo-horizontal.svg) được dùng
 cho phần nhận diện trên website.
 
-Khi nối backend:
-
-1. Thay dữ liệu demo bằng `POST /v1/analyze` và các endpoint lookup đã mô tả
-   trong architecture.
-2. Sinh L0/L1 từ Rule Bundle dùng chung; không hardcode regex trong app web.
-3. Chặn OTP trên thiết bị trước mọi network call.
-4. Giữ nguyên enum rủi ro `high | medium | unknown`; không thêm nhãn “safe”.
+Giữ nguyên enum rủi ro `high | medium | unknown`; `unknown` không phải là
+“an toàn”.

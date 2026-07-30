@@ -11,7 +11,7 @@ by the type, not by a comment.
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, get_args, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -39,7 +39,7 @@ Action = Literal["report", "share_to_guardian", "lookup_account"]
 HashPrefix = Annotated[str, Field(pattern=r"^[0-9a-f]{5}$")]
 Sha256Hex = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 
-assert set(SIGNAL_CODES) == set(SignalCode.__args__), (
+assert set(SIGNAL_CODES) == set(get_args(SignalCode)), (
     "SignalCode must mirror chan_ml.constants.SIGNAL_CODES"
 )
 

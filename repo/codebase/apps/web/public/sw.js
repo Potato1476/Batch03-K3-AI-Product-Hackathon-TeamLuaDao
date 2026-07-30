@@ -19,6 +19,12 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  // API responses may contain analysis metadata and must never enter the
+  // offline shell cache. Cross-origin assets are outside this SW's scope.
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) {
+    return;
+  }
   event.respondWith(
     fetch(event.request)
       .then((response) => {

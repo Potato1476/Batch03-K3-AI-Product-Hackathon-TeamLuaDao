@@ -154,3 +154,34 @@ def test_runtime_provider_loads_registry_metadata_and_keeps_last_good_model(
         ),
     )
     assert provider.current() is runtime
+
+
+def test_runtime_provider_uses_bootstrap_until_registry_has_active_model(
+    monkeypatch,
+) -> None:
+    config = DetectionConfig(
+        training_api_url="http://training.test",
+        training_api_key="training-key",
+        intel_api_url="http://intel.test",
+        detection_api_key="detection-key",
+        model_poll_seconds=5,
+        bootstrap_model_path="/app/ml/artifacts/baseline.joblib",
+        bootstrap_model_sha256="b" * 64,
+        bootstrap_model_version="baseline-v1",
+    )
+    provider = RuntimeProvider(config)
+    bootstrap = FakeRuntime()
+    monkeypatch.setattr(
+        provider,
+        "_fetch_metadata",
+        lambda: (_ for _ in ()).throw(
+            httpx.ConnectError("registry has no active model")
+        ),
+    )
+    monkeypatch.setattr(
+        ModelRuntime,
+        "load",
+        classmethod(lambda cls, **_kwargs: bootstrap),
+    )
+
+    assert provider.current() is bootstrap

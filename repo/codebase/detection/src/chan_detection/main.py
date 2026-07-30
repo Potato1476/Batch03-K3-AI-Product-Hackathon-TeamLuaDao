@@ -15,7 +15,7 @@ from chan_ml.redact import RedactionError, redact_l2
 
 from .config import DetectionConfig
 from .intel import IntelLookupClient
-from .runtime import ModelRuntime, RuntimeProvider
+from .runtime import ModelPrediction, ModelRuntime, RuntimeProvider
 from .schemas import AnalyzeRequest, AnalyzeResponse, Risk, SignalResult
 from .security import require_gateway
 
@@ -108,7 +108,7 @@ def create_app() -> FastAPI:
             ) from error
         blocklist_match = intel.contains(redaction)
         if redaction.otp_found:
-            prediction = {
+            prediction: ModelPrediction = {
                 "risk": "high",
                 "score": 1.0,
                 "scam_confidence": 1.0,

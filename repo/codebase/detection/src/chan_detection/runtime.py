@@ -85,6 +85,7 @@ class RuntimeProvider:
                 or now - self._checked_at >= self._config.model_poll_seconds
             )
             if not refresh_due:
+                assert runtime is not None
                 return runtime
             try:
                 metadata = self._fetch_metadata()
@@ -103,8 +104,26 @@ class RuntimeProvider:
                 # A registry outage must not evict an already validated model.
                 self._checked_at = now
                 if runtime is None:
-                    raise RuntimeError("model_unavailable") from None
+                    runtime = self._load_bootstrap()
+                    self._runtime = runtime
             return runtime
+
+    def _load_bootstrap(self) -> ModelRuntime:
+        """Start a fresh local stack before the registry has a promoted row."""
+        if (
+            not self._config.bootstrap_model_path
+            or not self._config.bootstrap_model_sha256
+            or not self._config.bootstrap_model_version
+        ):
+            raise RuntimeError("model_unavailable")
+        try:
+            return ModelRuntime.load(
+                artifact_uri=self._config.bootstrap_model_path,
+                artifact_sha256=self._config.bootstrap_model_sha256,
+                model_version=self._config.bootstrap_model_version,
+            )
+        except (OSError, TypeError, ValueError) as error:
+            raise RuntimeError("model_unavailable") from error
 
     def _fetch_metadata(self) -> dict[str, object]:
         with httpx.Client(timeout=self._config.request_timeout_seconds) as client:

@@ -63,7 +63,9 @@ class PostgresGatewayRepository:
     def __init__(self, dsn: str, *, min_size: int = 1, max_size: int = 8) -> None:
         if not dsn:
             raise RuntimeError("CHAN_DATABASE_URL is required")
-        self._pool = ConnectionPool(
+        self._pool: ConnectionPool[
+            psycopg.Connection[dict[str, Any]]
+        ] = ConnectionPool(
             dsn,
             min_size=min_size,
             max_size=max_size,
@@ -202,7 +204,7 @@ class PostgresGatewayRepository:
                 """,
                 (bucket, window_seconds, window_seconds),
             ).fetchone()
-        return bool(row) and int(row["hits"]) > limit
+        return row is not None and int(row["hits"]) > limit
 
     # --- retention (§7.2) -------------------------------------------------
 

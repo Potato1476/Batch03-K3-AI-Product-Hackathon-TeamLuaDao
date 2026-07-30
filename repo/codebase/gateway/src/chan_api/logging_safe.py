@@ -106,10 +106,11 @@ class SafeExtraFilter(logging.Filter):
                 raise ContentLeakError(
                     f"forbidden log fields: {sorted(offending)}"
                 )
-            record.chan_fields = {
+            safe_fields = {
                 key: value for key, value in fields.items() if key not in offending
             }
-            record.chan_fields["error_code"] = "log_fields_dropped"
+            safe_fields["error_code"] = "log_fields_dropped"
+            setattr(record, "chan_fields", safe_fields)
         return True
 
 

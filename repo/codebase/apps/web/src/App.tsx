@@ -1,24 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Icon } from "./components/Icon";
+import {
+  lookupIndicator,
+  type AnalyzeResponse,
+  type LookupKind,
+  type LookupResult as LookupApiResult,
+} from "./api";
+import { analyzeMessage } from "./engine";
 
-type Screen = "home" | "input" | "loading" | "result" | "check" | "checkResult" | "checkClear" | "checkVerified" | "shield" | "settings";
-type LookupKind = "account" | "phone" | "url";
-type ErrorKey = "mic" | "micMissing" | "ocr" | "offline";
-type Simulations = Record<ErrorKey, boolean>;
+type Screen = "home" | "input" | "loading" | "result" | "check" | "checkResult" | "checkClear" | "shield" | "settings";
+type SimulationKey = "mic" | "micMissing" | "ocr" | "offline";
+type ErrorKey = SimulationKey | "backend" | "lookupInvalid";
+type Simulations = Record<SimulationKey, boolean>;
 
 const sampleMessage =
   "Tôi là cán bộ công an. Bác phải chuyển tiền xác minh trước 17h hôm nay và không được nói với người nhà.";
-
-const signals = [
-  { label: "Mạo danh cơ quan chức năng", hit: true, evidence: "Tôi là cán bộ công an" },
-  { label: "Doạ hậu quả pháp lý", hit: false },
-  { label: "Ép gấp về thời gian", hit: true, evidence: "trước 17h hôm nay" },
-  { label: "Yêu cầu giữ bí mật", hit: true, evidence: "không được nói với người nhà" },
-  { label: "Đòi mã OTP", hit: false },
-  { label: "Yêu cầu chuyển tiền", hit: true, evidence: "chuyển tiền xác minh" },
-  { label: "Đường link giả mạo", hit: false },
-  { label: "Hứa lợi ích bất thường", hit: false },
-] as const;
 
 export function App() {
   const [screen, setScreen] = useState<Screen>("home");
@@ -28,6 +24,8 @@ export function App() {
   const [shareOpen, setShareOpen] = useState(window.location.pathname === "/share");
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [error, setError] = useState<ErrorKey | null>(null);
+  const [analysis, setAnalysis] = useState<AnalyzeResponse | null>(null);
+  const [lookupResult, setLookupResult] = useState<LookupApiResult | null>(null);
   const [simulations, setSimulations] = useState<Simulations>({
     mic: false,
     micMissing: false,
@@ -35,17 +33,48 @@ export function App() {
     offline: false,
   });
 
-  useEffect(() => {
-    if (screen !== "loading") return;
-    const timer = window.setTimeout(() => setScreen("result"), 700);
-    return () => window.clearTimeout(timer);
-  }, [screen]);
-
   const go = (next: Screen) => {
     setScreen(next);
     const main = document.querySelector("main");
     if (main && "scrollTo" in main) {
       main.scrollTo({ top: 0 });
+    }
+  };
+
+  const runAnalysis = async () => {
+    if (simulations.offline) {
+      setError("offline");
+      return;
+    }
+    setError(null);
+    go("loading");
+    try {
+      const result = await analyzeMessage(message);
+      setAnalysis(result);
+      go("result");
+    } catch {
+      setError("backend");
+      go("input");
+    }
+  };
+
+  const runLookup = async () => {
+    if (simulations.offline) {
+      setError("offline");
+      return;
+    }
+    setError(null);
+    try {
+      const result = await lookupIndicator(lookupKind, lookupValue);
+      setLookupResult(result);
+      go(result.matched ? "checkResult" : "checkClear");
+    } catch (lookupError) {
+      setError(
+        lookupError instanceof Error &&
+          lookupError.message.startsWith("invalid_")
+          ? "lookupInvalid"
+          : "backend",
+      );
     }
   };
 
@@ -68,14 +97,14 @@ export function App() {
               message={message}
               onMessage={setMessage}
               onBack={() => go("home")}
-              onAnalyze={() => go("loading")}
+              onAnalyze={() => void runAnalysis()}
               error={error}
               onError={setError}
               simulations={simulations}
             />
           )}
           {screen === "loading" && <Loading />}
-          {screen === "result" && <Result onBack={() => go("input")} />}
+          {screen === "result" && analysis && <Result analysis={analysis} onBack={() => go("input")} />}
           {screen === "check" && (
             <Lookup
               kind={lookupKind}
@@ -83,25 +112,13 @@ export function App() {
               onKind={setLookupKind}
               onValue={setLookupValue}
               onBack={() => go("home")}
-              onLookup={() => {
-                if (simulations.offline) {
-                  setError("offline");
-                  return;
-                }
-                const normalized = lookupValue.replace(/\D/g, "");
-                if (lookupKind === "phone" && normalized === "0393066063") {
-                  go("checkVerified");
-                  return;
-                }
-                go(lookupKind === "phone" && normalized === "0982558619" ? "checkClear" : "checkResult");
-              }}
+              onLookup={() => void runLookup()}
               error={error}
               onDismissError={() => setError(null)}
             />
           )}
-          {screen === "checkResult" && <LookupResult onBack={() => go("check")} />}
-          {screen === "checkClear" && <ClearLookupResult onBack={() => go("check")} />}
-          {screen === "checkVerified" && <VerifiedLookupResult onBack={() => go("check")} />}
+          {screen === "checkResult" && lookupResult && <LookupResult result={lookupResult} onBack={() => go("check")} />}
+          {screen === "checkClear" && lookupResult && <ClearLookupResult result={lookupResult} onBack={() => go("check")} />}
           {screen === "shield" && <Shield />}
           {screen === "settings" && (
             <Settings
@@ -212,33 +229,76 @@ function Loading() {
   return <section className="loading-page" aria-live="polite"><span className="loading-dot">!</span><h1>Đang đọc tin nhắn…</h1><p>Máy đang tìm các câu thúc ép bác.</p></section>;
 }
 
-function Result({ onBack }: { onBack: () => void }) {
+const signalLabels: Record<string, string> = {
+  mao_danh_tham_quyen: "Mạo danh cơ quan chức năng",
+  yeu_cau_bi_mat: "Yêu cầu giữ bí mật",
+  ap_luc_thoi_gian: "Ép gấp về thời gian",
+  tk_ca_nhan: "Yêu cầu chuyển vào tài khoản cá nhân",
+  cai_app_ngoai: "Yêu cầu cài ứng dụng ngoài cửa hàng",
+  loi_ich_bat_thuong: "Hứa lợi ích bất thường",
+  chuyen_kenh: "Yêu cầu chuyển kênh liên lạc",
+  yeu_cau_otp: "Đòi mã OTP hoặc mã xác nhận",
+};
+
+const riskCopy = {
+  high: {
+    hero: "danger-hero",
+    pill: "NGUY CƠ CAO",
+    title: "Nhiều dấu hiệu lừa đảo",
+    guidance: "Đừng chuyển tiền. Đừng đọc mã OTP.",
+  },
+  medium: {
+    hero: "warning-hero",
+    pill: "CẦN KIỂM TRA",
+    title: "Cần kiểm tra thêm",
+    guidance: "Hãy dừng lại và tự gọi kênh chính thức.",
+  },
+  unknown: {
+    hero: "neutral-hero",
+    pill: "CHƯA ĐỦ DẤU HIỆU",
+    title: "Chưa phát hiện dấu hiệu",
+    guidance: "Kết quả này không có nghĩa là an toàn.",
+  },
+} as const;
+
+function Result({ analysis, onBack }: { analysis: AnalyzeResponse; onBack: () => void }) {
+  const copy = riskCopy[analysis.risk];
+  const hits = new Map(analysis.signals.map((signal) => [signal.code, signal]));
   return (
     <section>
-      <div className="risk-hero danger-hero">
+      <div className={`risk-hero ${copy.hero}`}>
         <BackButton onClick={onBack} label="Quay lại" />
-        <span className="hero-pill">NGUY CƠ CAO</span>
-        <h1>Nhiều dấu hiệu lừa đảo</h1>
-        <p><strong>Đừng chuyển tiền. Đừng đọc mã OTP.</strong></p>
+        <span className="hero-pill">{copy.pill}</span>
+        <h1>{copy.title}</h1>
+        <p><strong>{copy.guidance}</strong></p>
       </div>
       <div className="page result-body">
-        <div className="source-card"><span>ZALO</span><p>Tin nhắn bác vừa gửi để kiểm tra</p></div>
-        <h2>Trúng 4/8 dấu hiệu thao túng</h2>
+        <div className="source-card"><span>WEB</span><p>Kết quả từ CHAN · {analysis.engine_version}</p></div>
+        <h2>Trúng {analysis.signals.length}/8 dấu hiệu thao túng</h2>
         <div className="signal-list">
-          {signals.map((signal) => (
-            <article className={signal.hit ? "signal hit" : "signal miss"} key={signal.label}>
-              <span className="signal-mark">{signal.hit ? "!" : "–"}</span>
-              <div><h3>{signal.label}</h3>{signal.hit && <blockquote>“{signal.evidence}”</blockquote>}</div>
+          {Object.entries(signalLabels).map(([code, label]) => {
+            const signal = hits.get(code);
+            return (
+            <article className={signal ? "signal hit" : "signal miss"} key={code}>
+              <span className="signal-mark">{signal ? "!" : "–"}</span>
+              <div><h3>{label}</h3>{signal?.evidence && <blockquote>“{signal.evidence}”</blockquote>}</div>
             </article>
-          ))}
+            );
+          })}
         </div>
         <div className="recommendation">
-          <h2>Bác hãy hỏi lại họ</h2>
-          <p>Tại sao tiền lại chuyển vào tài khoản cá nhân?</p>
-          <p>Cho tôi số cơ quan để tôi tự gọi lại.</p>
-          <small>Họ né trả lời và hối thúc — lúc đó nên cúp máy.</small>
+          <h2>{analysis.questions.length ? "Bác hãy hỏi lại họ" : "Kết luận"}</h2>
+          {analysis.questions.map((question) => <p key={question}>{question}</p>)}
+          {!analysis.questions.length && <p>{analysis.explanation}</p>}
+          <small>{analysis.explanation}</small>
         </div>
-        <a className="hotline" href="tel:156"><Icon name="phone" /><span><strong>Tổng đài chống lừa đảo</strong><small>Gọi miễn phí</small></span><b>156</b></a>
+        {analysis.verified_hotline && (
+          <a className="hotline" href={`tel:${analysis.verified_hotline.number}`}>
+            <Icon name="phone" />
+            <span><strong>{analysis.verified_hotline.name}</strong><small>Tự gọi số chính thức để kiểm tra</small></span>
+            <b>{analysis.verified_hotline.number}</b>
+          </a>
+        )}
         <button className="secondary-button" onClick={onBack}>Kiểm tra tin khác</button>
       </div>
     </section>
@@ -270,19 +330,25 @@ function Lookup({
       <BackButton onClick={onBack} />
       <h1>Tra cứu trước khi chuyển</h1>
       <p className="page-lead">Xem cộng đồng đã từng báo cáo thông tin này chưa.</p>
-      {error === "offline" && <ErrorBox error="offline" onClose={onDismissError} onAction={onDismissError} />}
+      {(error === "offline" || error === "backend" || error === "lookupInvalid") && (
+        <ErrorBox error={error} onClose={onDismissError} onAction={onDismissError} />
+      )}
       <div className="pills">
         {(Object.keys(labels) as LookupKind[]).map((item) => <button key={item} className={kind === item ? "pill active" : "pill"} onClick={() => onKind(item)}>{labels[item]}</button>)}
       </div>
       <label className="field-label" htmlFor="lookup">{labels[kind]} cần tra</label>
       <input id="lookup" value={value} onChange={(event) => onValue(event.target.value)} placeholder={kind === "account" ? "Nhập số tài khoản" : "Nhập thông tin"} />
       <button className="cta" disabled={!value.trim()} onClick={onLookup}>Tra cứu báo cáo</button>
-      <InfoBox>Máy biến thông tin thành mã rút gọn và chỉ gửi 2 ký tự đầu. Hệ thống không biết bác đang tra cứu gì.</InfoBox>
+      <InfoBox>Máy biến thông tin thành mã băm và chỉ gửi 5 ký tự đầu. Hệ thống không biết bác đang tra cứu gì.</InfoBox>
     </section>
   );
 }
 
-function LookupResult({ onBack }: { onBack: () => void }) {
+function LookupResult({ result, onBack }: { result: LookupApiResult; onBack: () => void }) {
+  const reportCount = result.match?.report_cnt ?? 0;
+  const lastSeen = result.match?.last_seen
+    ? new Date(result.match.last_seen).toLocaleDateString("vi-VN")
+    : "Chưa rõ";
   return (
     <section>
       <div className="risk-hero warning-hero">
@@ -292,7 +358,7 @@ function LookupResult({ onBack }: { onBack: () => void }) {
         <p>Hãy dừng lại và gọi người thân trước khi chuyển tiền.</p>
       </div>
       <div className="page result-body">
-        <div className="stats"><div><b>12</b><span>lượt báo cáo</span></div><div><b>3 ngày</b><span>lần gần nhất</span></div></div>
+        <div className="stats"><div><b>{reportCount}</b><span>lượt báo cáo</span></div><div><b>{lastSeen}</b><span>lần gần nhất</span></div></div>
         <div className="recommendation"><h2>Bác nên làm gì?</h2><p>Dừng giao dịch và gọi ngân hàng bằng số trên thẻ.</p><p>Hỏi người thân trước khi làm tiếp.</p></div>
         <div className="disclaimer">Đây là báo cáo của người dùng, không phải kết luận chính thức. Không có báo cáo <strong>không có nghĩa là an toàn</strong>.</div>
         <button className="secondary-button" onClick={onBack}>Tra cứu thông tin khác</button>
@@ -301,19 +367,20 @@ function LookupResult({ onBack }: { onBack: () => void }) {
   );
 }
 
-function ClearLookupResult({ onBack }: { onBack: () => void }) {
+function ClearLookupResult({ result, onBack }: { result: LookupApiResult; onBack: () => void }) {
+  const kindLabel = result.kind === "phone" ? "SỐ ĐIỆN THOẠI" : result.kind === "account" ? "TÀI KHOẢN" : "ĐƯỜNG LINK";
   return (
     <section className="page clear-result">
       <BackButton onClick={onBack} label="Tra cứu lại" />
       <div className="neutral-status" aria-hidden="true">–</div>
-      <p className="eyebrow">KẾT QUẢ TRA CỨU SỐ ĐIỆN THOẠI</p>
-      <h1>Chưa có báo cáo về số này</h1>
-      <p className="clear-number">0982 558 619</p>
+      <p className="eyebrow">KẾT QUẢ TRA CỨU {kindLabel}</p>
+      <h1>{result.noMatchMessage}</h1>
+      <p className="clear-number">{result.displayValue}</p>
       <div className="validity-card">
         <span className="validity-mark">✓</span>
         <div>
-          <h2>Đúng định dạng số điện thoại</h2>
-          <p>CHAN chưa tìm thấy báo cáo lừa đảo nào gắn với số này trong dữ liệu demo.</p>
+          <h2>Thông tin đúng định dạng</h2>
+          <p>CHAN chưa tìm thấy báo cáo nào khớp trong dữ liệu hiện có.</p>
         </div>
       </div>
       <div className="recommendation">
@@ -324,30 +391,6 @@ function ClearLookupResult({ onBack }: { onBack: () => void }) {
       <div className="disclaimer">
         Không có báo cáo <strong>không có nghĩa là an toàn tuyệt đối</strong>.
         Kẻ xấu có thể dùng một số điện thoại chưa từng bị báo cáo.
-      </div>
-      <button className="secondary-button" onClick={onBack}>Tra cứu số khác</button>
-    </section>
-  );
-}
-
-function VerifiedLookupResult({ onBack }: { onBack: () => void }) {
-  return (
-    <section className="page verified-result">
-      <BackButton onClick={onBack} label="Tra cứu lại" />
-      <div className="verified-status" aria-label="Đã xác thực">✓</div>
-      <p className="eyebrow">KẾT QUẢ TRA CỨU SỐ ĐIỆN THOẠI</p>
-      <h1>Số điện thoại đã xác thực</h1>
-      <p className="verified-number">0393 066 063</p>
-      <div className="verified-card">
-        <span className="verified-mark">✓</span>
-        <div>
-          <h2>Không phát hiện vấn đề</h2>
-          <p>Số này được đánh dấu xác thực và chưa có báo cáo lừa đảo trong dữ liệu demo.</p>
-        </div>
-      </div>
-      <div className="info-box verified-note">
-        <Icon name="shield" />
-        <p>Dấu tích xác nhận thông tin của số điện thoại. Nếu nội dung cuộc gọi đòi tiền hoặc mã OTP, bác vẫn nên dừng lại để kiểm tra.</p>
       </div>
       <button className="secondary-button" onClick={onBack}>Tra cứu số khác</button>
     </section>
@@ -380,9 +423,9 @@ function Settings({
   theme: "light" | "dark";
   onTheme: (theme: "light" | "dark") => void;
   simulations: Simulations;
-  onSimulation: (key: ErrorKey, enabled: boolean) => void;
+  onSimulation: (key: SimulationKey, enabled: boolean) => void;
 }) {
-  const labels: Record<ErrorKey, string> = {
+  const labels: Record<SimulationKey, string> = {
     offline: "Mất mạng",
     mic: "Chặn quyền micro",
     micMissing: "Máy không có micro",
@@ -403,7 +446,7 @@ function Settings({
       <h2>Thử tình huống lỗi</h2>
       <p className="settings-note">Các công tắc này chỉ dùng trong prototype để demo.</p>
       <div className="simulation-list">
-        {(Object.keys(labels) as ErrorKey[]).map((key) => (
+        {(Object.keys(labels) as SimulationKey[]).map((key) => (
           <div className="setting-row compact" key={key}>
             <strong>{labels[key]}</strong>
             <Switch checked={simulations[key]} label={labels[key]} onChange={(checked) => onSimulation(key, checked)} />
@@ -424,6 +467,8 @@ const errorCopy: Record<ErrorKey, { title: string; body: string; action: string 
   micMissing: { title: "Không tìm thấy micro", body: "Bác vẫn có thể gửi ảnh chụp hoặc dán nội dung tin nhắn.", action: "Gửi ảnh thay" },
   ocr: { title: "Không đọc được chữ trong ảnh", body: "Bác thử chụp lại cho rõ, hoặc dán chữ vào ô bên dưới.", action: "Chụp lại" },
   offline: { title: "Mất mạng", body: "CHAN vẫn quét được quy tắc trên máy, nhưng chưa tra được danh sách tài khoản.", action: "Thử lại" },
+  backend: { title: "Chưa kết nối được hệ thống", body: "Máy chủ CHAN chưa sẵn sàng. Bác thử lại sau ít phút.", action: "Thử lại" },
+  lookupInvalid: { title: "Thông tin chưa đúng định dạng", body: "Bác kiểm tra lại số tài khoản, số điện thoại hoặc đường link.", action: "Sửa lại" },
 };
 
 function ErrorBox({ error, onAction, onClose }: { error: ErrorKey; onAction: () => void; onClose: () => void }) {

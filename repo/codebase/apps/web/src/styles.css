@@ -138,8 +138,10 @@ textarea:focus, input:focus { outline: 3px solid var(--ink-200); border-color: v
 .risk-hero p { font-size: 19px; line-height: 1.45; margin: 0; }
 .danger-hero { background: var(--danger); }
 .warning-hero { background: var(--warn); }
+.neutral-hero { background: var(--brand); }
 .hero-pill { display: inline-block; padding: 8px 16px; border-radius: 999px; color: var(--on-color); background: var(--danger-pill); font-size: 15px; font-weight: 800; letter-spacing: 0.6px; }
 .warning-hero .hero-pill { background: var(--warn-pill); }
+.neutral-hero .hero-pill { background: var(--brand-raised); }
 .result-body h2 { margin-top: 22px; margin-bottom: 12px; }
 .source-card { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--ink-300); border-radius: 14px; background: var(--white); }
 .source-card span { padding: 7px 9px; border-radius: 8px; color: var(--on-color); background: var(--brand); font-size: 12px; font-weight: 800; }

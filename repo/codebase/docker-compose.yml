@@ -70,6 +70,9 @@ services:
       CHAN_INTEL_API_URL: http://intel:8002
       CHAN_DETECTION_API_KEY: local-dev-detection-secret
       CHAN_MODEL_POLL_SECONDS: "60"
+      CHAN_BOOTSTRAP_MODEL_PATH: /app/ml/artifacts/chan-signal-model.joblib
+      CHAN_BOOTSTRAP_MODEL_SHA256: 44a885db58d96d3b9dcd378504f9b329643fbfbd05518c8b146542fbd07e8445
+      CHAN_BOOTSTRAP_MODEL_VERSION: chan-signal-20260730
     expose: ["8003"]
     volumes:
       - model-registry:/var/lib/chan/model-registry:ro
@@ -86,7 +89,7 @@ services:
       CHAN_REDIS_URL: redis://redis:6379/0
       CHAN_RULES_DIR: /app/rules
       CHAN_OCR_PROVIDER: stub
-      CHAN_CORS_ORIGINS: http://localhost:3000
+      CHAN_CORS_ORIGINS: http://localhost:3000,http://localhost:5173
       CHAN_DETECTION_API_URL: http://detection:8003
       CHAN_DETECTION_API_KEY: local-dev-detection-secret
       CHAN_INTEL_API_URL: http://intel:8002
@@ -98,6 +101,14 @@ services:
       - detection
       - redis
       - postgres
+
+  web:
+    build:
+      <<: *repo-build
+      dockerfile: codebase/apps/web/Dockerfile
+    ports: ["3000:80"]
+    depends_on:
+      - gateway
 
 volumes:
   postgres-data:

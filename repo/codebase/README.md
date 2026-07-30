@@ -43,6 +43,19 @@ promotion service is in [`api/`](api/README.md).
 
 ## Chạy thế nào
 
+Nhanh nhất, chạy toàn bộ Web + Gateway + Detection + Intel + Training API:
+
+```bash
+cd repo/codebase
+docker compose up --build -d
+```
+
+Mở `http://localhost:3000`. Web chỉ gọi `/api`; Nginx chuyển tiếp tới Gateway,
+Gateway tự gọi các service nội bộ. Kiểm tra trạng thái bằng
+`curl http://localhost:3000/api/readyz`.
+
+Để phát triển từng service:
+
 ```bash
 cd repo
 python3.12 -m venv .venv
@@ -91,15 +104,17 @@ Biến môi trường cần thiết: xem
 | LLM L3 / pgvector similarity | MOCK / chưa nối | giữ đúng giới hạn hackathon trong architecture |
 | Gateway `/v1/analyze` | THẬT | public edge gọi Detection nội bộ |
 | Detection `/internal/v1/analyze` | THẬT | L2, Intel lookup và model inference |
-| Web PWA | THẬT (UI), MOCK (API data) | `apps/web/`; sẵn sàng nối Gateway `/v1/analyze` |
+| Web PWA | THẬT | L0/L1 on-device, device token, `/v1/analyze` và hash-only lookup đã nối Gateway |
 | Android client | Chưa có trong nhánh này | sẽ gọi chung `/v1/analyze` |
 
 ## Lời gọi AI thật ở quyết định trung tâm
 
-- Model: TODO
-- Nơi gọi: `TODO/path.ts`
-- Prompt: `prompts/`
-- Log/trace commit trong repo: `logs/` *(bắt buộc cho R5 — không hardcode output)*
+- Model: bộ phân loại n-gram + Logistic Regression đa nhãn trong artifact
+  `ml/artifacts/chan-signal-model.joblib`.
+- Nơi gọi: `detection/src/chan_detection/runtime.py`; client chỉ gọi Gateway.
+- Prompt: không áp dụng cho baseline ML; `prompts/` dành cho tầng LLM tương lai.
+- Bằng chứng đánh giá/version/checksum: `eval/`, `ml/artifacts/` và
+  `ml/ARTIFACTS.json`.
 
 ## Cấu trúc
 
@@ -119,8 +134,10 @@ codebase/
 
 ## Flow end-to-end theo lát cắt
 
-1. TODO
-2. TODO
-3. TODO
+1. Web tải Rule Bundle, chạy L0/L1; nội dung OTP dừng hoàn toàn trên thiết bị.
+2. Tin đáng ngờ được gửi có Bearer device token tới Gateway `/v1/analyze`;
+   Gateway chuyển qua mạng nội bộ tới Detection.
+3. Detection chạy L2 redact, model + L4 policy rồi trả kết quả về Web; Gateway
+   chỉ lưu hash, score, signal và version, không lưu nội dung thô.
 
 *(Phải chạy hết được không can thiệp tay giữa chừng — R5, 3 điểm.)*

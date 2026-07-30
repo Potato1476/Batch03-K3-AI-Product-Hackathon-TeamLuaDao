@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 
 from .config import get_config
 from .logging_safe import configure_logging, log_event
@@ -45,4 +44,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    sys.exit(main())
+    main()
