@@ -1,0 +1,130 @@
+{
+  "counted_at": "2026-07-30",
+  "dataset_root": "CHAN-Dataset",
+  "counting_rules": {
+    "conversation": "mỗi file conv_*.json có khoá 'messages' là một hội thoại",
+    "scam_vs_negative": "source_type in {seed, synthetic} là lừa đảo; thiếu source_type là hội thoại hợp lệ trong 02_Negative",
+    "account_takeover": [
+      "Hacked_FB",
+      "Hacked_Zalo",
+      "Relative_Borrow"
+    ],
+    "loss_outcome": "victim_transferred_money",
+    "money_ask": "tin của sender=scammer có chứa một trong: chuyen/chuyển/tien/tiền/stk/tài khoản"
+  },
+  "summary": {
+    "total_conversations": 15840,
+    "total_messages": 181943,
+    "median_messages_per_conversation": 11,
+    "by_source_type": {
+      "synthetic": 7220,
+      "seed": 6391,
+      "negative": 2229
+    },
+    "by_source": {
+      "synthetic_llm": 7220,
+      "negative": 2229,
+      "seed_phishvn": 1710,
+      "seed_chongluadao": 1704,
+      "seed_sms_spam": 1702,
+      "seed_conscambench": 427,
+      "seed_scc": 425,
+      "seed_emscad": 423
+    },
+    "by_scenario": {
+      "negative": 2229,
+      "Police": 857,
+      "Bank": 851,
+      "Sextortion": 428,
+      "Hacked_Zalo": 428,
+      "School": 428,
+      "Refund": 427,
+      "Court": 427,
+      "Tax": 427,
+      "Stock": 427,
+      "Deepfake": 427,
+      "Sugar": 427,
+      "Hacked_FB": 427,
+      "Relative_Borrow": 427,
+      "Sick_Urgent": 426,
+      "Customs": 426,
+      "AI_Bot": 426,
+      "Telegram_Redirect": 425,
+      "VideoCall": 425,
+      "DatingApp": 425,
+      "Prize": 424,
+      "Forex": 424,
+      "MLM": 424,
+      "Facebook": 424,
+      "Telegram": 424,
+      "Task": 423,
+      "Charity": 422,
+      "Tinder": 422,
+      "Package_Foreign": 421,
+      "Electricity": 421,
+      "Crypto": 421
+    },
+    "by_outcome": {
+      "victim_transferred_money": 4539,
+      "victim_suspicious_refused": 4539,
+      "victim_detected_and_blocked": 4533,
+      "legitimate_resolved": 2229
+    },
+    "scam_conversations": 13611,
+    "scam_ending_in_money_transferred": 4539,
+    "scam_with_explicit_money_ask": 13571,
+    "account_takeover_conversations": 1282,
+    "account_takeover_from_real_seed_sources": 1282,
+    "account_takeover_ending_in_money_transferred": 427
+  },
+  "verbatim_examples": [
+    {
+      "conversation_id": "conv_social_hacked_fb_001",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "message_id": "msg_conv_social_hacked_fb_001_003",
+      "path": "01_Scenarios/Social/Hacked_FB/conversations/conv_social_hacked_fb_001.json",
+      "text": "App ngân hàng của mình bị khóa chuyển tiền do nhập sai OTP, mà mình đang cần thanh toán hóa đơn ngay."
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_002",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "message_id": "msg_conv_social_hacked_fb_002_003",
+      "path": "01_Scenarios/Social/Hacked_FB/conversations/conv_social_hacked_fb_002.json",
+      "text": "Tài khoản ngân hàng của mình đang bị lỗi bảo trì đột xuất, mà mình cần chuyển tiền thanh toán tiền hàng gấp cho khách."
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_003",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "message_id": "msg_conv_social_hacked_fb_003_003",
+      "path": "01_Scenarios/Social/Hacked_FB/conversations/conv_social_hacked_fb_003.json",
+      "text": "Tài khoản ngân hàng của mình đang bị lỗi bảo trì đột xuất, mà mình cần chuyển tiền thanh toán tiền hàng gấp cho khách."
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_004",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "message_id": "msg_conv_social_hacked_fb_004_003",
+      "path": "01_Scenarios/Social/Hacked_FB/conversations/conv_social_hacked_fb_004.json",
+      "text": "Tài khoản ngân hàng của mình đang bị lỗi bảo trì đột xuất, mà mình cần chuyển tiền thanh toán tiền hàng gấp cho khách."
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_005",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "message_id": "msg_conv_social_hacked_fb_005_003",
+      "path": "01_Scenarios/Social/Hacked_FB/conversations/conv_social_hacked_fb_005.json",
+      "text": "Tài khoản ngân hàng của mình đang bị lỗi bảo trì đột xuất, mà mình cần chuyển tiền thanh toán tiền hàng gấp cho khách."
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_006",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "message_id": "msg_conv_social_hacked_fb_006_003",
+      "path": "01_Scenarios/Social/Hacked_FB/conversations/conv_social_hacked_fb_006.json",
+      "text": "Tài khoản ngân hàng của mình đang bị lỗi bảo trì đột xuất, mà mình cần chuyển tiền thanh toán tiền hàng gấp cho khách."
+    }
+  ]
+}

@@ -72,6 +72,66 @@ Tức 8 tin lừa đảo bị trả về `unknown` — người dùng sẽ thấ
 
 ---
 
+## Lượt 3 — L5 phân tích hội thoại (2026-07-30 22:20)
+
+Tầng L5 phát hiện chiếm tài khoản người quen (`ml/src/chan_ml/thread.py`) đo trên
+chính `CHAN-Dataset`, không phải trên case tự soạn.
+Raw log: [`l5-thread-results.json`](l5-thread-results.json) ·
+chạy lại: `.venv/bin/python -m chan_ml.evaluate_thread --dataset CHAN-Dataset --output eval/l5-thread-results.json`
+
+| Chỉ số | Giá trị |
+|---|---|
+| Hội thoại chiếm tài khoản (positive) | 1.282 |
+| Hội thoại hợp lệ (negative) | 2.229 |
+| **Recall** | **0,0%** |
+| **False positive** | **0,0%** |
+| Positive không đủ lịch sử để so | **912 / 1.282** |
+
+### Vì sao recall bằng 0 — và vì sao con số này vẫn được ghi nguyên
+
+L5 so cách nhắn tin của một liên hệ **với chính họ trước đó**. Corpus không có
+phần "trước đó":
+
+- **1.132 / 1.282** hội thoại, kẻ gian hỏi tiền ngay **sau đúng 1 tin nhắn**;
+  150 hội thoại còn lại hỏi tiền ngay từ tin đầu tiên. L5 cần tối thiểu 3 tin cũ
+  → 912 hội thoại rơi thẳng vào `insufficient_history`.
+- **0 / 1.282** hội thoại có nạn nhân đề nghị gọi điện hoặc gọi video, nên tín
+  hiệu `ne_goi_thoai` không có cơ hội kích hoạt lần nào.
+- Tín hiệu duy nhất từng bắt được là `yeu_cau_tien_dot_ngot` (370 lần).
+
+**Kết luận trung thực: corpus này không kiểm được tính năng này.** Các hội thoại
+bắt đầu *sau khi* tài khoản đã bị chiếm, trong khi tiền đề của L5 là luồng chat
+có lịch sử từ *trước* lúc bị chiếm. Đây là giới hạn của dữ liệu, không phải bằng
+chứng L5 đúng hay sai — và cũng không được trình bày như thể L5 đã được kiểm.
+
+### Một quyết định đã đổi vì phép đo này
+
+Lần đo đầu (trước khi sửa) cho recall 28,9% nhưng **false positive 19,4%** trên
+2.229 hội thoại hợp lệ — vượt bar <15%. Nguyên nhân: chỉ cần "lần đầu người này
+hỏi tiền" là đã cảnh báo `medium`, mà phần lớn hội thoại hợp lệ bị bắt là người
+thân hỏi vay tiền thật.
+
+Đã sửa: một mình `yeu_cau_tien_dot_ngot` không còn đủ để gắn nhãn cảnh báo, chỉ
+còn hiện **các câu hỏi xác minh**. Đổi lại recall trên corpus này về 0 — đúng
+như phân tích trên, vì corpus vốn không kích hoạt được hai tín hiệu mạnh. Lý do
+chọn theo cost-of-error đã ghi trong spec §4: báo nhầm phá thứ sản phẩm không
+xây lại được là **được tin**.
+
+### L5 làm được gì trên case có lịch sử thật
+
+Kiểm bằng test và bằng lời gọi thật lên production:
+
+- Đoạn chat có lịch sử → đổi giọng văn + né gọi video: `high`, `doi_giong_van`
+  0,91 + `ne_goi_thoai` 0,90.
+- Cùng đoạn đó nhưng bạn thật hỏi vay tiền, giọng văn không đổi, nhận gọi video:
+  **không** `high` (`test_the_same_request_from_the_real_friend_is_not_flagged_high`).
+
+Hai case này là do nhóm dựng, nên chúng chứng minh *cơ chế chạy đúng*, **không**
+chứng minh *tính năng hiệu quả ngoài đời*. Muốn kết luận được cần luồng chat có
+lịch sử trước lúc bị chiếm — nhóm chưa có dữ liệu đó.
+
+---
+
 ## Phân tích nguyên nhân *(bar đã đạt — ba vấn đề dưới đây vẫn phải ghi nhận)*
 
 **1. Golden set 100% không chứng minh được bộ này đủ khó.**

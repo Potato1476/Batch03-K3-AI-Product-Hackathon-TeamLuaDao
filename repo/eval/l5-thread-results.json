@@ -1,0 +1,414 @@
+{
+  "positives": 1282,
+  "negatives": 2229,
+  "takeover_recall": 0.0,
+  "legitimate_false_positive_rate": 0.0,
+  "positives_without_enough_history": 912,
+  "signal_hit_counts": {
+    "yeu_cau_tien_dot_ngot": 370
+  },
+  "false_alarm_samples": [],
+  "positive_rows": [
+    {
+      "conversation_id": "conv_social_hacked_fb_001",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_002",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_003",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_004",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_005",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_006",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_007",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_008",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_009",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_010",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_011",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_012",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_013",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_014",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_015",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_016",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_017",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_018",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_019",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_020",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_021",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_022",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_023",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_024",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_025",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_026",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_027",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_028",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_029",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_030",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_031",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_032",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_033",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_034",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_035",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_036",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_037",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_038",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_039",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_040",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_041",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_042",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_043",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_044",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_045",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_046",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_047",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_048",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_049",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    },
+    {
+      "conversation_id": "conv_social_hacked_fb_050",
+      "scenario": "Hacked_FB",
+      "source": "seed_chongluadao",
+      "risk": "unknown",
+      "signals": [],
+      "insufficient_history": true
+    }
+  ],
+  "evaluated_at": "2026-07-30"
+}

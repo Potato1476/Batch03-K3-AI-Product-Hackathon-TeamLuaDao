@@ -17,54 +17,103 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
 
 ## §1. User & Job
 
-> **CHƯA CÓ — cần cả nhóm làm trước 23:59 N1.** Đây là khối điểm lớn nhất còn bỏ ngỏ
-> (R1 = 15/75 điểm). Thư mục `evidence/` hiện chỉ có README, không có một dòng
-> bằng chứng nào.
+- **Job executor:** người 55+ dùng điện thoại thông minh nhưng ít kinh nghiệm số,
+  **đang cầm máy đọc một tin nhắn vừa đến** và phải quyết định trong vài phút có
+  làm theo hay không. Không phải "người dùng nói chung", cũng không phải người
+  con đang cài app hộ — người con là *người bảo hộ*, một vai khác.
 
-- **Job executor + workflow** (đính kèm worksheet JTBD / ảnh sơ đồ): TODO
-- **Core JTBD** (không tên sản phẩm/AI trong câu): TODO
-- **Problem statement** (KHÔNG chữ AI): TODO
-- **Evidence** — chuẩn A (khảo sát ≥20 người ngoài nhóm, ≥50% xác nhận) và/hoặc chuẩn B (số mining đếm được + phương pháp đếm kiểm lại được). Log đầy đủ trong repo:
-  - Số liệu mining / kết quả khảo sát (n = ?, % xác nhận): TODO
-  - Phương pháp đếm (ai đếm, đếm trên tập nào, tiêu chí gán nhãn): TODO
-  - Log đầy đủ: `evidence/` — **hiện đang trống**
+- **Core JTBD** (không có tên sản phẩm/AI trong câu):
+  > Khi nhận được một tin nhắn đòi tiền hoặc đòi thông tin, tôi muốn **biết chắc
+  > nó thật hay giả trước khi làm theo**, để không mất tiền và cũng không phải
+  > làm phiền con cháu mỗi lần nghi ngờ.
+
+  Tự kiểm: bỏ AI đi thì việc này còn tồn tại không? Còn — hôm nay họ đang làm nó
+  bằng cách gọi con cháu hoặc đoán.
+
+- **Cách giải quyết hôm nay và chỗ nó hỏng:** gọi cho con/cháu (phải chờ, ngại
+  phiền, ban đêm không gọi được) · tự tìm trên mạng (không biết tìm gì) · hỏi
+  ngân hàng (tổng đài chờ lâu) · đoán rồi làm liều. **Chưa ai bỏ các cách này vì
+  chưa có cách nào khác.**
+
+- **Problem statement** (KHÔNG chữ AI):
+  > Người lớn tuổi có 2-3 phút giữa lúc đọc tin nhắn mạo danh và lúc bấm chuyển
+  > tiền. Trong 2-3 phút đó họ không có cách nào tự kiểm chứng, nên hoặc làm theo,
+  > hoặc phải phiền người khác.
+
+- **Evidence:**
+
+  **Chuẩn B — mining, ĐÃ CÓ.** 15.840 hội thoại · 181.943 tin nhắn trong
+  `CHAN-Dataset`, 6.391 hội thoại từ 6 nguồn public dẫn tên được (PhishVN
+  Mendeley · ChongLuaDao.vn · Vietnamese SMS Spam VNCERT · ConScamBench-278 ·
+  Scam Conversation Corpus Zenodo · EMSCAD). Trong đó 1.282 hội thoại thuộc kịch
+  bản chiếm tài khoản người quen.
+  - Phương pháp đếm: [`evidence/mining-method.md`](evidence/mining-method.md)
+  - Số máy sinh: [`evidence/mining-results.json`](evidence/mining-results.json)
+  - Script: [`evidence/scripts/mine_chan_dataset.py`](evidence/scripts/mine_chan_dataset.py)
+
+  > **Giới hạn phải nói ra:** corpus này **cân bằng nhân tạo** — mỗi kịch bản gần
+  > đúng 427 hội thoại, và tỉ lệ "nạn nhân mất tiền" đúng 33,3% ở mọi nhóm, ở cả
+  > nguồn seed lẫn synthetic. Nó chứng minh **các mẫu lừa đảo này tồn tại và
+  > trông như thế nào**, **không** chứng minh được tần suất hay thiệt hại ngoài
+  > đời. Dùng nó để nói "kịch bản X phổ biến nhất" sẽ là số bịa mang hình dạng số
+  > thật.
+
+  **Chuẩn A — khảo sát: CHƯA CÓ.** Bộ câu hỏi và định nghĩa "xác nhận pain" đã
+  chốt trước khi đi hỏi ([`evidence/survey-questions.md`](evidence/survey-questions.md)),
+  ô log nguyên văn cho 20 người đã sẵn
+  ([`evidence/survey-responses.md`](evidence/survey-responses.md)). **Còn thiếu
+  đúng một thứ: người đi hỏi.** Đây là phần còn hổng lớn nhất của R1.
 
   **≥5 quote/ví dụ nguyên văn + nguồn:**
 
-  | # | Quote nguyên văn | Nguồn (file/dòng hoặc người + vai) |
+  | # | Quote nguyên văn | Nguồn |
   |---|---|---|
-  | 1 | | |
-  | 2 | | |
-  | 3 | | |
-  | 4 | | |
-  | 5 | | |
+  | 1 | "App ngân hàng của mình bị khóa chuyển tiền do nhập sai OTP, mà mình đang cần thanh toán hóa đơn ngay." | `CHAN-Dataset/01_Scenarios/Social/Hacked_FB/conversations/conv_social_hacked_fb_001.json` · seed_chongluadao |
+  | 2 | "Tài khoản ngân hàng của mình đang bị lỗi bảo trì đột xuất, mà mình cần chuyển tiền thanh toán tiền hàng gấp cho khách." | `…/conv_social_hacked_fb_002.json` · seed_chongluadao |
+  | 3 | "Bạn chuyển giùm mình qua số tài khoản đối tác này, tối khoảng 8h xong việc mình gửi lại bạn." | `…/conv_social_hacked_fb_094.json` · seed_chongluadao |
+  | 4 | "Hi bạn! Bạn có đang rảnh không, cho mình nhờ tí việc quan trọng này!" | `…/conv_social_hacked_fb_094.json` · seed_chongluadao |
+  | 5 | "Anh/chị sẽ phải chịu trách nhiệm trước pháp luật nếu cố tình chống đối!" | lặp 229 lần trong nhóm chiếm tài khoản — bằng chứng corpus bị dán chéo kịch bản, xem `evidence/mining-results.md` |
 
 ## §2. Impact & quyết định chọn
 
-> **CHƯA CÓ — cần cả nhóm.** Bảng này phải có con số lấy từ §1.
+**Bảng impact — 4 nhóm kịch bản, đếm trên corpus:**
 
-**Bảng impact ≥3 ứng viên:**
-
-| Ứng viên | Bao nhiêu người | Tần suất | Tốn gì mỗi lần | Khả thi trong 1,5 ngày | Chọn/Loại |
+| Ứng viên | Bao nhiêu người | Tần suất | Tốn gì mỗi lần | Khả thi 1,5 ngày | Chọn/Loại |
 |---|---|---|---|---|---|
-| A | | | | | |
-| B | | | | | |
-| C | | | | | |
+| **A. Mạo danh cơ quan chức năng** (công an, toà án, thuế, hải quan) | *chưa đo được* | 2.137 hội thoại trong corpus (nhiều nhất) | tiền chuyển đi + hoảng loạn kéo dài | Cao — chấm được trên một tin nhắn | **CHỌN** |
+| **B. Chiếm tài khoản người quen** (Hacked FB/Zalo, mạo danh họ hàng) | *chưa đo được* | 1.282 hội thoại | tiền + rạn nứt quan hệ vì nghi nhau | Trung bình — cần đọc cả luồng, không chấm được một tin | **CHỌN SAU** (L5, làm thêm cuối N1) |
+| **C. Mạo danh ngân hàng** (khoá tài khoản, link giả) | *chưa đo được* | 851 hội thoại | tiền + lộ thông tin đăng nhập | Cao | Gộp vào A — cùng cơ chế mạo danh thẩm quyền |
+| **D. Dụ đầu tư / việc nhẹ lương cao** | *chưa đo được* | 854 hội thoại | tiền, thường nhiều lần liên tiếp | Thấp — cần theo dõi nhiều phiên, ngoài tầm 1,5 ngày | **LOẠI** |
 
-- **Ứng viên ĐÃ LOẠI + vì sao** (giữ lại, không xoá): TODO
-- **Ứng viên CHỌN + vì sao (bằng số)**: TODO
+> **Cột "bao nhiêu người" bỏ trống có chủ ý.** Corpus không phải mẫu của dân số
+> (xem §1), nên điền số vào đây sẽ là bịa. Cột này chỉ điền được sau khảo sát
+> chuẩn A.
+
+- **Ứng viên ĐÃ LOẠI + vì sao:** **D — dụ đầu tư.** Không phải vì ít gặp (854 hội
+  thoại, xấp xỉ C) mà vì **cost-of-error và tầm build**: kịch bản này diễn ra qua
+  nhiều ngày và nhiều phiên, một lát cắt 1,5 ngày chỉ chạm được phần ngọn. Đo
+  thực tế xác nhận: model hiện tại trả `unknown` cho *"đầu tư sàn này lợi nhuận
+  30%/tháng, đảm bảo không lỗ"* — trọng số `loi_ich_bat_thuong` chỉ 0,08, cộng
+  tối đa vẫn không chạm ngưỡng `medium` 0,35 (`eval/results.md`). Loại có ghi
+  nhận, không giấu.
+
+- **Ứng viên CHỌN + vì sao:** **A** — nhiều nhất trong corpus (2.137, gấp 2,5 lần
+  D), gộp được C vì cùng cơ chế, và **quyết định gọn trong một tin nhắn** nên
+  demo được trong 5 phút. **B được thêm vào cuối ngày 1** sau khi nhận ra nó
+  không thể giải bằng cách chấm từng tin — dẫn tới tầng L5 (§4).
 
 ## §3. Giải pháp tương tự đã nghiên cứu
 
-> **CHƯA CÓ.** Guide §2.2: chia người, 15'/người. Gợi ý ứng viên để tra: nút "Báo
-> cáo lừa đảo" trong app ngân hàng VN · tinnhiemmang.vn · checkscam.vn ·
-> Google Messages spam protection · Truecaller. Phải tự mở ra xem rồi ghi, không
-> chép mô tả.
+> **⚠️ Bảng này chưa được kiểm chứng bằng cách tự mở sản phẩm ra dùng.** Guide
+> §2.2 yêu cầu chia người, 15'/người, tự mở ra xem rồi ghi. Dưới đây là khung để
+> điền, cùng ứng viên nên tra. **Ai điền phải mở thật ra dùng** — người chấm hỏi
+> "flow của họ bước 1 là gì" mà không trả lời được thì mất điểm.
 
 | Sản phẩm | Flow của họ | Đáng học | Đáng né | Mình khác gì |
 |---|---|---|---|---|
-| [Sản phẩm 1] | | | | |
-| [Sản phẩm 2] | | | | |
+| tinnhiemmang.vn (NCSC) | TODO — tự mở ra tra thử một số điện thoại | | | |
+| ChongLuaDao.vn | TODO — nhóm đã dùng làm nguồn seed, mở phần tra cứu ra xem | | | |
+| Google Messages spam protection | TODO — bật trên máy Android, gửi thử một tin | | | |
 
 ## §4. Thiết kế
 
@@ -79,14 +128,11 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
   màn kết quả), quyết định AI ở
   [`detection/src/chan_detection/main.py`](codebase/detection/src/chan_detection/main.py).
 
-  > **⚠️ Cần nhóm quyết trước 23:59 N1.** Bản build hiện có **hai** đường quyết
-  > định: chấm một tin nhắn (trên), và chấm **cả một đoạn hội thoại** để phát
-  > hiện tài khoản người quen bị chiếm (L5 — `ml/src/chan_ml/thread.py`,
-  > `/v1/analyze-thread`). Rubric R2 cho 3 điểm mục "lát cắt đúng format MỘT CÂU,
-  > khớp bản build". Hai lựa chọn:
-  > **(a)** giữ lát cắt một tin nhắn như trên và khai L5 là phần mở rộng ngoài
-  > lát cắt; **(b)** đổi lát cắt sang hội thoại. Không chọn thì người chấm sẽ tự
-  > kết luận là lát cắt không khớp bản build.
+  **Tầng L5 (phân tích cả đoạn hội thoại) nằm NGOÀI lát cắt này.** Nó được thêm
+  cuối ngày 1 cho ứng viên B ở §2, và được khai là **phần mở rộng chưa validate**
+  chứ không phải một phần của lát cắt đã chốt — vì đo trên 1.282 hội thoại thật
+  nó **chưa phát hiện được case nào** (§7). Giữ lát cắt ở một tin nhắn để phần
+  được chấm là phần thực sự có số đo đứng sau.
 
 - **Non-goals (≥3 thứ KHÔNG build):**
   1. **Không chặn giao dịch.** CHẮN không dừng được lệnh chuyển tiền, không gọi

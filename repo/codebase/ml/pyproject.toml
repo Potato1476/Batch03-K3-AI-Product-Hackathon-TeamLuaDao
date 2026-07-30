@@ -24,6 +24,7 @@ chan-audit-dataset = "chan_ml.audit_dataset:main"
 chan-train = "chan_ml.train:main"
 chan-evaluate = "chan_ml.evaluate:main"
 chan-evaluate-product = "chan_ml.evaluate_product:main"
+chan-evaluate-thread = "chan_ml.evaluate_thread:main"
 chan-evaluate-workbook = "chan_ml.evaluate_workbook:main"
 chan-predict = "chan_ml.predict:main"
 
