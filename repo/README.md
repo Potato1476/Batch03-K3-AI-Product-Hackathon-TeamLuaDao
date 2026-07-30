@@ -17,6 +17,8 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
   L4 policy và evaluation.
 - [`codebase/api/`](codebase/api/README.md): PostgreSQL ingestion, quarantine,
   review, daily retraining, model registry và hot reload.
+- [`codebase/intel/`](codebase/intel/README.md): PhishTank/PhishVN ingestion,
+  hash-only blocklists, k-anonymous lookup và community report consensus.
 - [`eval/`](eval/README.md): golden set, kết quả đo và synthetic baseline.
 
 ## Thành viên

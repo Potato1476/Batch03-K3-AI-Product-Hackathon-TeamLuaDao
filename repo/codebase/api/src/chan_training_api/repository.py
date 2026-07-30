@@ -6,7 +6,7 @@ import hashlib
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol, Sequence
+from typing import Any, Protocol, Sequence
 
 import psycopg
 from fastapi import Depends
@@ -125,7 +125,7 @@ class PostgresTrainingRepository:
             raise RuntimeError("CHAN_DATABASE_URL is required")
         self.dsn = dsn
 
-    def _connect(self) -> psycopg.Connection:
+    def _connect(self) -> psycopg.Connection[dict[str, Any]]:
         return psycopg.connect(self.dsn, row_factory=dict_row)
 
     def submit_scenarios(

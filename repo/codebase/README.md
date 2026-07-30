@@ -33,12 +33,17 @@ cd repo
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -e 'codebase/ml[dev]'
 .venv/bin/python -m pip install -e 'codebase/api[dev]'
+.venv/bin/python -m pip install -e 'codebase/intel[dev]'
 
-# Test toàn bộ ML + training platform
-.venv/bin/pytest -q codebase/ml/tests codebase/api/tests
+# Test toàn bộ ML + training + threat-intel platform
+.venv/bin/pytest -q codebase/ml/tests codebase/api/tests codebase/intel/tests
 
 # Chạy private training API sau khi cấu hình PostgreSQL/.env
 .venv/bin/chan-training-api
+
+# Chạy lookup service; feed sync chạy bằng job riêng
+.venv/bin/chan-intel-api
+.venv/bin/chan-intel-sync phishtank
 ```
 
 Biến môi trường cần thiết: xem
@@ -53,6 +58,8 @@ Biến môi trường cần thiết: xem
 | Bộ phân loại 8 tín hiệu | THẬT | `ml/src/chan_ml/model.py` |
 | L4 risk policy | THẬT | `ml/src/chan_ml/policy.py` |
 | Ingestion + daily retraining | THẬT | cần PostgreSQL và artifact storage |
+| PhishTank connector + hash-only lookup | THẬT | cần PostgreSQL; PhishTank key được khuyến nghị |
+| OpenPhish connector | THẬT nhưng khóa mặc định | chỉ bật sau khi có quyền bằng văn bản |
 | LLM L3 / pgvector similarity | MOCK / chưa nối | giữ đúng giới hạn hackathon trong architecture |
 | Web / Android clients | Chưa có trong nhánh này | dùng chung `/v1/analyze` khi được tích hợp |
 
@@ -70,6 +77,8 @@ codebase/
 ├── README.md
 ├── ml/             ← dataset generator + classifier + evaluation
 ├── api/            ← private ingestion + review + daily training
+├── intel/          ← licensed feeds + hash-only lookup service
+├── packages/rules/ ← normalization parity vectors cho Web/Android/API
 ├── prompts/        ← prompt của quyết định AI trung tâm
 ├── logs/           ← trace lời gọi AI thật (bằng chứng cho R5)
 └── demo-backup/    ← screenshot/video dự phòng cho CP6

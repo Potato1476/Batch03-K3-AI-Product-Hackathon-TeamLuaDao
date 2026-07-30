@@ -233,9 +233,9 @@ Mặt phẳng bảo đảm tương đương. Mọi client gọi cùng tập endp
 ### GET /v1/lookup/account — k-anonymity
 
 ```
-1. client: h = SHA256(normalize(so_tai_khoan))
-2. client: GET /v1/lookup/account?prefix=<5 hex đầu của h>
-3. server: trả toàn bộ cụm hash cùng prefix (20–200 phần tử)
+1. client: h = SHA256("chan:account:v1:" + normalize(so_tai_khoan))
+2. client: GET /v1/lookup/account?prefix=<2 hex đầu của h>
+3. server: trả toàn bộ cụm hash cùng prefix (mục tiêu 20–500 phần tử)
 4. client: tự đối chiếu h trong cụm, tại chỗ
 ```
 → server không bao giờ biết người dùng tra số nào (I4).
@@ -272,8 +272,8 @@ CREATE TABLE scenarios (               -- kho kịch bản đã gán nhãn
 );
 
 CREATE TABLE blocklist_accounts (
-  hash        bytea PRIMARY KEY,       -- SHA256(normalize(số TK))
-  prefix      char(5) NOT NULL,        -- 5 hex đầu, index cho k-anon
+  hash        bytea PRIMARY KEY,       -- SHA256("chan:account:v1:" + normalize(số TK))
+  prefix      char(2) NOT NULL,        -- 2 hex đầu, index cho k-anon v1
   report_cnt  int DEFAULT 1,
   first_seen  timestamptz DEFAULT now(),
   last_seen   timestamptz DEFAULT now(),
