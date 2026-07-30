@@ -10,6 +10,8 @@ import psycopg
 from fastapi import Depends
 from psycopg.rows import dict_row
 
+from chan_ml.indicators import PREFIX_LENGTH
+
 from .config import IntelConfig, get_config
 from .models import (
     FetchResult,
@@ -241,7 +243,12 @@ class PostgresIntelRepository:
                        END AS confidence
                 FROM threat_indicators
                 WHERE kind = %s
-                  AND prefix = substring(%s FROM 1 FOR 2)
+                  -- Left-anchored LIKE narrows on the indexed char(5) column and
+                  -- stays correct for any configured prefix length. The former
+                  -- `prefix = substring(%%s FROM 1 FOR 2)` was left over from the
+                  -- two-hex contract: after migration 002 widened the column to
+                  -- char(5) it could never match, so every lookup returned empty.
+                  AND prefix LIKE %s
                   AND substring(
                       encode(hash, 'hex') FROM 1 FOR %s
                   ) = %s
@@ -250,7 +257,7 @@ class PostgresIntelRepository:
                 ORDER BY hash
                 LIMIT 500
                 """,
-                (kind, prefix, len(prefix), prefix),
+                (kind, prefix + "%", len(prefix), prefix),
             ).fetchall()
             return [
                 LookupRecord(
@@ -292,7 +299,11 @@ class PostgresIntelRepository:
                             report_id,
                             item.kind,
                             digest,
-                            item.indicator_hash[:2],
+                            # Must equal the first PREFIX_LENGTH hex characters of
+                            # the hash: migration 002 enforces that with a CHECK.
+                            # A hardcoded [:2] here made every community report
+                            # fail with a constraint violation.
+                            item.indicator_hash[:PREFIX_LENGTH],
                             reporter_hash,
                             evidence_hash,
                             actor,

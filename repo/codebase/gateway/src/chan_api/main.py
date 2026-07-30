@@ -7,6 +7,7 @@ and retrain endpoints one routing mistake away from the internet.
 
 from __future__ import annotations
 
+import os
 import secrets
 import time
 from contextlib import asynccontextmanager
@@ -137,7 +138,10 @@ def run() -> None:
     uvicorn.run(
         "chan_api.main:app",
         host="0.0.0.0",
-        port=8001,
+        # 8000 is the public edge. 8001 belongs to the private training API, and
+        # binding it here made `chan-gateway` fail to start whenever the control
+        # plane was already running.
+        port=int(os.environ.get("CHAN_GATEWAY_PORT", "8000")),
         # Access logging is handled by the safe logger; uvicorn's own access log
         # would print the query string, which carries lookup prefixes (I4).
         access_log=False,
