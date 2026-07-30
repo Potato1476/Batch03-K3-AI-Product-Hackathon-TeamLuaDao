@@ -13,7 +13,7 @@ Research date: 2026-07-30. Re-check terms before changing a source from
 | Ngân hàng/NAPAS/SBV SIMO | suspicious payment accounts/wallets | **partnership pending** | high-quality restricted ecosystem data, not a public feed |
 | Hiya | phone reputation | **coverage/licence evaluation pending** | commercial partner access; Vietnam coverage must be measured before use |
 | Product community report | URL, phone, account hashes | **implemented + enabled** | explicit consent, quarantine, independent review, two-reporter activation |
-| Product scenario contribution | redacted message text | **already implemented in `codebase/api`** | explicit consent, L2 check, quarantine, separate reviewer, guarded promotion |
+| Product scenario contribution | redacted message text | **already implemented in `codebase/training_api`** | explicit consent, L2 check, quarantine, separate reviewer, guarded promotion |
 | Ministry of Public Security/NCSC warnings | new scam narratives | **reference only** | use to update taxonomy and commission reviewed examples; do not copy article text into training without confirmed rights |
 
 ## Static text datasets

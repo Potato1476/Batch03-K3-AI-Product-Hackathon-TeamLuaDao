@@ -13,7 +13,7 @@ services:
     ports: ["5432:5432"]
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./api/migrations/001_continuous_training.sql:/docker-entrypoint-initdb.d/001_continuous_training.sql:ro
+      - ./training_api/migrations/001_continuous_training.sql:/docker-entrypoint-initdb.d/001_continuous_training.sql:ro
       - ./gateway/migrations/002_public_v1.sql:/docker-entrypoint-initdb.d/002_public_v1.sql:ro
       - ./intel/migrations/001_threat_intel.sql:/docker-entrypoint-initdb.d/003_threat_intel.sql:ro
       - ./intel/migrations/002_prefix_v2.sql:/docker-entrypoint-initdb.d/004_intel_prefix_v2.sql:ro
@@ -31,7 +31,7 @@ services:
   training-api:
     build:
       <<: *repo-build
-      dockerfile: codebase/api/Dockerfile
+      dockerfile: codebase/training_api/Dockerfile
     environment:
       CHAN_DATABASE_URL: postgresql://chan:chan@postgres:5432/chan
       CHAN_TRAINING_API_KEYS: feed-ingest=local-dev-ingest-secret-value,ml-reviewer=local-dev-reviewer-secret

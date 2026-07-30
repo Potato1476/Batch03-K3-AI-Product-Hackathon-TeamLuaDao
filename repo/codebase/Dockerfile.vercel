@@ -45,7 +45,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ml /app/ml
-COPY api /app/api
+COPY training_api /app/training_api
 COPY intel /app/intel
 COPY detection /app/detection
 COPY gateway /app/gateway
@@ -54,7 +54,7 @@ COPY deploy/vercel /app/deploy/vercel
 COPY --from=web-build /build/web/dist /usr/share/nginx/html
 
 RUN --mount=type=cache,id=chan-vercel-pip,target=/root/.cache/pip \
-    python -m pip install /app/ml /app/api /app/intel /app/detection /app/gateway \
+    python -m pip install /app/ml /app/training_api /app/intel /app/detection /app/gateway \
     && chmod 0755 /app/deploy/vercel/start.sh /app/deploy/vercel/start-web.sh \
     && mkdir -p /tmp/chan/model-registry /tmp/nginx /var/lib/nginx /var/log/nginx
 

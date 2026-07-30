@@ -9,7 +9,7 @@ description = "CHẮN public /v1 API — gateway, detection engine, lookup servi
 requires-python = ">=3.11,<3.14"
 # chan-ml is a required import but is not listed here: it is a local path
 # package, not published. Install it first with `pip install -e codebase/ml`,
-# the same convention codebase/api follows.
+# the same convention codebase/training_api follows.
 dependencies = [
   "fastapi>=0.115,<1",
   "httpx>=0.28,<1",             # /v1/feedback bridge to the training plane

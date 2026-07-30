@@ -42,7 +42,7 @@ RULES_DIR = Path(__file__).resolve().parents[2] / "rules"
 
 @dataclass
 class FakeRepository:
-    """Dict-backed stand-in, mirroring the pattern in codebase/api/tests."""
+    """Dict-backed stand-in, mirroring the pattern in codebase/training_api/tests."""
 
     devices: dict[bytes, Device] = field(default_factory=dict)
     devices_by_id: dict[str, Device] = field(default_factory=dict)

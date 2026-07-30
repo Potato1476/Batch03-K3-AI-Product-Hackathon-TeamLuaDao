@@ -34,7 +34,6 @@ if [ -z "${CHAN_DATABASE_URL:-}" ]; then
   exit 1
 fi
 
-python /app/deploy/vercel/migrate.py
 envsubst '${PORT}' \
   < /app/deploy/vercel/nginx.conf.template \
   > /tmp/nginx.conf

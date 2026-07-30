@@ -27,8 +27,13 @@ Aurora). Container tự dùng `DATABASE_URL` do integration cấp. Nếu nhà cu
 dùng tên khác, cấu hình `CHAN_DATABASE_URL` bằng pooled connection string có
 SSL.
 
-Không commit connection string. Container tự chạy các migration idempotent
-trước khi nhận traffic.
+Không commit connection string. Container mở web server ngay để đáp ứng giới
+hạn cold start của Vercel, đồng thời chạy các migration idempotent dưới
+`supervisord`; `/api/readyz` chỉ báo sẵn sàng khi backend và database dùng được.
+
+Private training service nằm ở `training_api/` thay vì thư mục top-level
+`api/`, vì Vercel dành riêng `api/` để tự phát hiện Functions. Public path của
+Gateway vẫn giữ nguyên là `/api`.
 
 ## 2. Deploy
 

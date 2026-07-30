@@ -13,7 +13,7 @@ Use Python 3.11–3.13:
 cd repo
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -e 'codebase/ml[dev]'
-.venv/bin/python -m pip install -e 'codebase/api[dev]'
+.venv/bin/python -m pip install -e 'codebase/training_api[dev]'
 
 # Generate 250,000 deterministic, compressed examples.
 .venv/bin/chan-generate \
@@ -199,7 +199,7 @@ commit private messages.
 The synthetic corpus is a seed and regression fixture, not the live database.
 The product's private ingestion API, PostgreSQL migration, quarantine/review
 flow, daily trainer, and guarded model registry are documented in
-[`../api/README.md`](../api/README.md).
+[`../training_api/README.md`](../training_api/README.md).
 
 Daily training combines the stable base corpus with approved, L2-redacted
 scenarios from PostgreSQL. A candidate is evaluated against a separate frozen

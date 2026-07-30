@@ -36,7 +36,7 @@ listed in [`ml/ARTIFACTS.json`](ml/ARTIFACTS.json).
 
 New phishing scenarios are not limited to the committed synthetic generator.
 The database-backed ingestion, review, daily retraining, and guarded model
-promotion service is in [`api/`](api/README.md).
+promotion service is in [`training_api/`](training_api/README.md).
 
 **Mức prototype khai báo:** [ ] Sketch [ ] Mock [ ] Working
 *(Phải khớp thực tế và khớp `spec.md` §4 — rubric R5 chấm 2 điểm riêng cho việc khai đúng.)*
@@ -61,7 +61,7 @@ cd repo
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -e 'codebase/ml[dev]'
 .venv/bin/python -m pip install -e 'codebase/detection[dev]'
-.venv/bin/python -m pip install -e 'codebase/api[dev]'
+.venv/bin/python -m pip install -e 'codebase/training_api[dev]'
 .venv/bin/python -m pip install -e 'codebase/intel[dev]'
 .venv/bin/python -m pip install -e 'codebase/gateway[dev]'
 
@@ -69,7 +69,7 @@ python3.12 -m venv .venv
 .venv/bin/pytest -q \
   codebase/ml/tests \
   codebase/detection/tests \
-  codebase/api/tests \
+  codebase/training_api/tests \
   codebase/intel/tests
 
 # Chạy private training API sau khi cấu hình PostgreSQL/.env
@@ -85,7 +85,7 @@ python3.12 -m venv .venv
 ```
 
 Biến môi trường cần thiết: xem
-[`api/.env.example`](api/.env.example),
+[`training_api/.env.example`](training_api/.env.example),
 [`intel/.env.example`](intel/.env.example),
 [`detection/.env.example`](detection/.env.example), và
 [`gateway/.env.example`](gateway/.env.example).
@@ -125,7 +125,7 @@ codebase/
 ├── apps/web/       ← React + TypeScript PWA, lint và tests
 ├── ml/             ← dataset generator + classifier + evaluation
 ├── detection/      ← public inference API cho Web/Android/Zalo OA
-├── api/            ← private ingestion + review + daily training
+├── training_api/   ← private ingestion + review + daily training
 ├── intel/          ← licensed feeds + hash-only lookup service
 ├── packages/rules/ ← normalization parity vectors cho Web/Android/API
 ├── prompts/        ← prompt của quyết định AI trung tâm

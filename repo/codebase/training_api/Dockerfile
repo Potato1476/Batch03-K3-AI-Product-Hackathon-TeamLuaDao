@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY codebase/ml /app/ml
-COPY codebase/api /app/training-api
+COPY codebase/training_api /app/training-api
 
 RUN --mount=type=cache,id=chan-pip,target=/root/.cache/pip \
     python -m pip install /app/ml /app/training-api \

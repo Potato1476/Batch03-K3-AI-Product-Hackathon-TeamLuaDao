@@ -62,10 +62,10 @@ Use Python 3.11–3.13 and PostgreSQL:
 cd repo
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -e 'codebase/ml[dev]'
-.venv/bin/python -m pip install -e 'codebase/api[dev]'
+.venv/bin/python -m pip install -e 'codebase/training_api[dev]'
 
 createdb chan
-psql chan < codebase/api/migrations/001_continuous_training.sql
+psql chan < codebase/training_api/migrations/001_continuous_training.sql
 
 export CHAN_DATABASE_URL='postgresql://localhost/chan'
 export CHAN_TRAINING_API_KEYS='feed-ingest=first-long-random-secret,ml-reviewer=second-long-random-secret'
@@ -83,7 +83,7 @@ separate frozen, human-reviewed golden set—not the daily training rows.
 Build the service container from inside the `repo/` project root:
 
 ```bash
-docker build -f codebase/api/Dockerfile -t chan-training-api .
+docker build -f codebase/training_api/Dockerfile -t chan-training-api .
 ```
 
 Use the same image with the command `chan-training-worker --enqueue` for a

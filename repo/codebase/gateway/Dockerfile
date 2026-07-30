@@ -1,7 +1,7 @@
 # Build from the repo/ project root, not from this directory:
 #   docker build -f codebase/gateway/Dockerfile -t chan-gateway .
 #
-# Mirrors codebase/api/Dockerfile so both services are built the same way.
+# Mirrors codebase/training_api/Dockerfile so both services are built the same way.
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -36,5 +36,5 @@ USER chan
 EXPOSE 8000
 
 # The public service. The private training control plane is a separate image on
-# port 8001 — see codebase/api/Dockerfile.
+# port 8001 — see codebase/training_api/Dockerfile.
 CMD ["chan-gateway"]

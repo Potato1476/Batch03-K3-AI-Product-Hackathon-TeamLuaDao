@@ -8,7 +8,7 @@ from pathlib import Path
 import psycopg
 
 MIGRATIONS = (
-    Path("/app/api/migrations/001_continuous_training.sql"),
+    Path("/app/training_api/migrations/001_continuous_training.sql"),
     Path("/app/gateway/migrations/002_public_v1.sql"),
     Path("/app/intel/migrations/001_threat_intel.sql"),
     Path("/app/intel/migrations/002_prefix_v2.sql"),

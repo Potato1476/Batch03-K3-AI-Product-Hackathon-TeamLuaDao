@@ -1,7 +1,7 @@
 """The public CHẮN /v1 service.
 
 Runs on port 8000 and is separate from the private training control plane on
-8001 — see codebase/api. A single process serving both would put the quarantine
+8001 — see codebase/training_api. A single process serving both would put the quarantine
 and retrain endpoints one routing mistake away from the internet.
 """
 
