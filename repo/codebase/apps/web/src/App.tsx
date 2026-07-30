@@ -10,6 +10,7 @@ import {
 } from "./api";
 import { analyzeMessage } from "./engine";
 import {
+  isLocalSpeechSupported,
   SpeechInputError,
   startLocalSpeechRecognition,
   type SpeechController,
@@ -26,9 +27,13 @@ type ErrorKey =
   | "imageType"
   | "ocrUnavailable"
   | "speechLocal"
-  | "speechLanguage"
-  | "speechNoSpeech";
+  | "speechLanguage";
 type Simulations = Record<SimulationKey, boolean>;
+
+function formatDuration(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
+}
 
 const sampleMessage =
   "Tôi là cán bộ công an. Bác phải chuyển tiền xác minh trước 17h hôm nay và không được nói với người nhà.";
@@ -224,9 +229,19 @@ function InputScreen({
   const [speechState, setSpeechState] = useState<
     "idle" | "preparing" | "listening"
   >("idle");
+  const [soundActive, setSoundActive] = useState(false);
+  const [heardSeconds, setHeardSeconds] = useState(0);
+  const [heardSomething, setHeardSomething] = useState(false);
   const imageInput = useRef<HTMLInputElement>(null);
   const speechController = useRef<SpeechController | null>(null);
   const speechBase = useRef("");
+  const speechRun = useRef(0);
+  const [speechSupported] = useState(isLocalSpeechSupported);
+
+  const releaseMic = () => {
+    speechController.current = null;
+    setSoundActive(false);
+  };
 
   useEffect(
     () => () => {
@@ -234,6 +249,26 @@ function InputScreen({
     },
     [],
   );
+
+  useEffect(() => {
+    if (speechState !== "listening") return;
+    const startedAt = Date.now();
+    const timer = setInterval(
+      () => setHeardSeconds(Math.floor((Date.now() - startedAt) / 1000)),
+      1000,
+    );
+    return () => clearInterval(timer);
+  }, [speechState]);
+
+  // Some engines never fire a start event. Rather than leave the user staring
+  // at "đang chuẩn bị" forever, show the listening panel once the mic is live.
+  useEffect(() => {
+    if (speechState !== "preparing") return;
+    const timer = setTimeout(() => {
+      if (speechController.current) setSpeechState("listening");
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [speechState]);
 
   const mapSpeechError = (code: SpeechErrorCode): ErrorKey => {
     if (code === "speech_permission_denied") return "mic";
@@ -245,13 +280,23 @@ function InputScreen({
     ) {
       return "speechLanguage";
     }
-    if (code === "speech_no_speech") return "speechNoSpeech";
     return "mic";
   };
 
   const handleVoice = async () => {
-    if (speechState === "listening") {
+    // Also cancels while still waiting for permission, so the button is never
+    // a dead control.
+    if (speechState !== "idle") {
+      // Only retire the run when nothing is listening yet — a live recogniser
+      // still owes us the last words, which arrive just after stop().
+      if (!speechController.current) speechRun.current += 1;
       speechController.current?.stop();
+      releaseMic();
+      setSpeechState("idle");
+      return;
+    }
+    if (!speechSupported) {
+      onError("speechLocal");
       return;
     }
     if (simulations.micMissing) {
@@ -264,27 +309,52 @@ function InputScreen({
     }
     onError(null);
     speechBase.current = message.trim();
+    speechRun.current += 1;
+    const run = speechRun.current;
+    const isCurrent = () => speechRun.current === run;
+    setHeardSomething(false);
+    setHeardSeconds(0);
     setSpeechState("preparing");
     try {
-      speechController.current = await startLocalSpeechRecognition({
+      const controller = await startLocalSpeechRecognition({
         onTranscript: (transcript) => {
+          if (!isCurrent()) return;
+          setHeardSomething(true);
+          // `speechBase` is whatever was in the box when this run began, so a
+          // second run adds to the text instead of replacing it.
           onMessage(
             [speechBase.current, transcript].filter(Boolean).join(" ").trim(),
           );
         },
+        // Only now is the microphone truly open — before this the browser is
+        // still asking for permission, so claiming "đang nghe" would be a lie.
+        onStart: () => {
+          if (isCurrent()) setSpeechState("listening");
+        },
+        onSound: (active) => {
+          if (isCurrent()) setSoundActive(active);
+        },
         onError: (code) => {
-          speechController.current = null;
+          if (!isCurrent()) return;
+          releaseMic();
           setSpeechState("idle");
           onError(mapSpeechError(code));
         },
         onEnd: () => {
-          speechController.current = null;
+          if (!isCurrent()) return;
+          releaseMic();
           setSpeechState("idle");
         },
       });
-      setSpeechState("listening");
+      // The user cancelled while the permission prompt was still open.
+      if (!isCurrent()) {
+        controller.abort();
+        return;
+      }
+      speechController.current = controller;
     } catch (speechError) {
-      speechController.current = null;
+      if (!isCurrent()) return;
+      releaseMic();
       setSpeechState("idle");
       onError(
         speechError instanceof SpeechInputError
@@ -372,20 +442,70 @@ function InputScreen({
       )}
       <label className="field-label" htmlFor="message">Nội dung tin nhắn</label>
       <textarea id="message" value={message} onChange={(event) => onMessage(event.target.value)} placeholder="Bác dán tin nhắn vào đây…" />
+      {speechState !== "idle" && (
+        <div
+          className={`recording-panel${speechState === "listening" ? " live" : ""}`}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="recording-head">
+            <span className="recording-dot" aria-hidden="true" />
+            <strong>
+              {speechState === "preparing"
+                ? "Đang xin quyền dùng micro…"
+                : "Đang thu âm — bác cứ nói"}
+            </strong>
+            {speechState === "listening" && (
+              <span className="recording-time">{formatDuration(heardSeconds)}</span>
+            )}
+          </div>
+          {speechState === "listening" && (
+            <>
+              <div
+                className={`sound-bars${soundActive ? " active" : ""}`}
+                role="img"
+                aria-label={
+                  soundActive ? "Đang nghe thấy tiếng" : "Chưa nghe thấy tiếng"
+                }
+              >
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+              <p>
+                {heardSomething
+                  ? "CHAN đang ghi chữ vào ô “Nội dung tin nhắn” ngay phía trên. Bấm nút đỏ để dừng."
+                  : soundActive
+                    ? "Nghe thấy tiếng rồi, đang chuyển thành chữ…"
+                    : "Chưa nghe thấy tiếng. Bác nói to hơn hoặc lại gần micro."}
+              </p>
+            </>
+          )}
+        </div>
+      )}
       <button
         type="button"
         className={`voice-button${speechState === "listening" ? " listening" : ""}`}
-        disabled={speechState === "preparing"}
+        disabled={!speechSupported}
         aria-pressed={speechState === "listening"}
         onClick={() => void handleVoice()}
       >
         <Icon name="mic" />
         {speechState === "preparing"
-          ? "Đang chuẩn bị nhận giọng nói…"
+          ? "Huỷ, không dùng giọng nói nữa"
           : speechState === "listening"
-            ? "Đang nghe · bấm để dừng"
+            ? "Dừng thu âm"
             : "Đọc nội dung bằng giọng nói"}
       </button>
+      {!speechSupported && (
+        <p className="input-status muted" role="status">
+          Trình duyệt này chưa đọc được giọng nói ngay trên máy, nên CHAN tạm khoá
+          nút nói. Bác dùng Chrome hoặc Edge bản mới trên máy tính, hoặc gõ và gửi
+          ảnh như bình thường.
+        </p>
+      )}
       {ocrProvider && (
         <p className="input-status" role="status">
           Đã đọc ảnh bằng {ocrProvider}. Bác xem lại chữ trước khi kiểm tra.
@@ -643,7 +763,6 @@ const errorCopy: Record<ErrorKey, { title: string; body: string; action: string 
   ocrUnavailable: { title: "OCR chưa sẵn sàng", body: "Dịch vụ đọc ảnh chưa được cài trên máy chủ. Bác có thể dán chữ để kiểm tra.", action: "Dán chữ" },
   speechLocal: { title: "Trình duyệt chưa hỗ trợ đọc riêng tư", body: "CHAN chỉ bật giọng nói khi âm thanh được xử lý ngay trên máy. Bác hãy dùng Chrome mới hoặc gửi ảnh.", action: "Gửi ảnh thay" },
   speechLanguage: { title: "Chưa có gói giọng nói tiếng Việt", body: "Trình duyệt chưa tải xong dữ liệu tiếng Việt. Bác thử lại sau hoặc dán chữ.", action: "Thử lại" },
-  speechNoSpeech: { title: "Chưa nghe thấy nội dung", body: "Bác nói gần micro hơn rồi thử lại, hoặc dán chữ vào ô.", action: "Thử lại" },
   offline: { title: "Mất mạng", body: "CHAN vẫn quét được quy tắc trên máy, nhưng chưa tra được danh sách tài khoản.", action: "Thử lại" },
   backend: { title: "Chưa kết nối được hệ thống", body: "Máy chủ CHAN chưa sẵn sàng. Bác thử lại sau ít phút.", action: "Thử lại" },
   lookupInvalid: { title: "Thông tin chưa đúng định dạng", body: "Bác kiểm tra lại số tài khoản, số điện thoại hoặc đường link.", action: "Sửa lại" },
