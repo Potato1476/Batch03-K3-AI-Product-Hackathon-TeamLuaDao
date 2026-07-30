@@ -66,3 +66,4 @@ class AnalyzeResponse(BaseModel):
     verified_hotline: None = None
     rule_bundle_version: str | None = None
     truncated: bool
+    blocklist_match: bool = False

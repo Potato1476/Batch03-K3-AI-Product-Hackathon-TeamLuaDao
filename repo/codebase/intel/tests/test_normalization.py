@@ -26,7 +26,7 @@ def test_url_normalization_is_deterministic_and_removes_credentials_fragment():
         "HTTPS://User:secret@BÜCHER.example:443/path?a=1#private"
     )
     assert digest == indicator_digest("url", normalized)
-    assert prefix == digest.hex()[:2]
+    assert prefix == digest.hex()[:5]
 
 
 def test_hash_contract_uses_domain_separation():

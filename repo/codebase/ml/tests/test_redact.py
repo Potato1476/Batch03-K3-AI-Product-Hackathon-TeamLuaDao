@@ -92,10 +92,12 @@ def test_hashes_are_kept_for_lookup_but_text_is_not() -> None:
 
 def test_identifier_normalisation_collapses_equivalent_forms() -> None:
     assert normalize_account("1900 1234-567890") == "19001234567890"
-    assert normalize_phone("+84912345678") == "0912345678"
-    assert normalize_phone("0912 345 678") == "0912345678"
-    assert normalize_url("https://WWW.Scam-Site.xyz/login?a=1") == "scam-site.xyz"
-    assert normalize_url("http://scam-site.xyz") == "scam-site.xyz"
+    assert normalize_phone("+84912345678") == "84912345678"
+    assert normalize_phone("0912 345 678") == "84912345678"
+    assert normalize_url("https://WWW.Scam-Site.xyz/login?a=1") == (
+        "https://www.scam-site.xyz/login?a=1"
+    )
+    assert normalize_url("http://scam-site.xyz") == "http://scam-site.xyz/"
 
 
 def test_prefix_is_five_hex_characters() -> None:

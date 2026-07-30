@@ -1,36 +1,43 @@
-"""Environment configuration for the detection service."""
+"""Environment configuration for the internal Detection service."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 import os
-from pathlib import Path
-import re
-
-DEFAULT_MODEL_PATH = Path("codebase/ml/artifacts/chan-signal-model.joblib")
-DEFAULT_MODEL_SHA256 = (
-    "44a885db58d96d3b9dcd378504f9b329643fbfbd05518c8b146542fbd07e8445"
-)
-DEFAULT_MODEL_VERSION = "chan-signal-20260730"
-_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
 class DetectionConfig:
-    model_path: Path
-    model_sha256: str
-    model_version: str
+    training_api_url: str
+    training_api_key: str
+    intel_api_url: str
+    detection_api_key: str
+    model_poll_seconds: int = 60
+    request_timeout_seconds: float = 5.0
 
     @classmethod
     def from_env(cls) -> "DetectionConfig":
-        digest = os.getenv("CHAN_MODEL_SHA256", DEFAULT_MODEL_SHA256).lower()
-        if not _SHA256.fullmatch(digest):
-            raise ValueError("invalid_model_sha256")
-        version = os.getenv("CHAN_MODEL_VERSION", DEFAULT_MODEL_VERSION).strip()
-        if not version:
-            raise ValueError("invalid_model_version")
+        url = os.getenv("CHAN_TRAINING_API_URL", "").strip().rstrip("/")
+        key = os.getenv("CHAN_TRAINING_API_KEY", "").strip()
+        intel_url = os.getenv("CHAN_INTEL_API_URL", "").strip().rstrip("/")
+        detection_key = os.getenv("CHAN_DETECTION_API_KEY", "").strip()
+        if not url:
+            raise ValueError("training_api_url_required")
+        if not key:
+            raise ValueError("training_api_key_required")
+        if not intel_url:
+            raise ValueError("intel_api_url_required")
+        if not detection_key:
+            raise ValueError("detection_api_key_required")
         return cls(
-            model_path=Path(os.getenv("CHAN_MODEL_PATH", str(DEFAULT_MODEL_PATH))),
-            model_sha256=digest,
-            model_version=version,
+            training_api_url=url,
+            training_api_key=key,
+            intel_api_url=intel_url,
+            detection_api_key=detection_key,
+            model_poll_seconds=max(
+                5, int(os.getenv("CHAN_MODEL_POLL_SECONDS", "60"))
+            ),
+            request_timeout_seconds=float(
+                os.getenv("CHAN_REQUEST_TIMEOUT_SECONDS", "5")
+            ),
         )

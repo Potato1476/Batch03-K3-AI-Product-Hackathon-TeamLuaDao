@@ -136,9 +136,9 @@ def test_allowlist_and_denylist_do_not_overlap() -> None:
 
 #: Operator CLIs print aggregate counts to stdout by design (an import summary is
 #: useless without them) and never touch message content. Every other module —
-#: routers, pipeline, L3 — must go through log_event, which enforces the
+#: routers and service clients must go through log_event, which enforces the
 #: allowlist. Keep this list as short as it is.
-_STDOUT_ALLOWED = {"ingest.py", "retention.py"}
+_STDOUT_ALLOWED = {"retention.py"}
 
 
 def test_no_module_logs_content_directly() -> None:

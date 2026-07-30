@@ -18,11 +18,17 @@ This module never logs and never returns an offending value in an error.
 
 from __future__ import annotations
 
-import hashlib
 import re
 from dataclasses import dataclass, field
 
-from .normalize import normalize_for_model
+from .indicators import (
+    PREFIX_LENGTH,
+    hash_identifier,
+    hash_prefix,
+    normalize_account,
+    normalize_phone,
+    normalize_url,
+)
 
 __all__ = [
     "RedactionError",
@@ -36,8 +42,6 @@ __all__ = [
     "normalize_url",
     "PREFIX_LENGTH",
 ]
-
-PREFIX_LENGTH = 5
 
 # --- L2 detection patterns -------------------------------------------------
 #
@@ -148,42 +152,6 @@ class RedactionResult:
         return self.account_hashes + self.phone_hashes + self.url_hashes
 
 
-# --- normalisation + hashing for the Lookup Service -------------------------
-
-
-def normalize_account(value: str) -> str:
-    """Digits only. A bank account differs from another only in its digits."""
-    return re.sub(r"\D", "", value)
-
-
-def normalize_phone(value: str) -> str:
-    """Canonical domestic form: strip +84/84 country code down to a leading 0."""
-    digits = re.sub(r"\D", "", value)
-    if digits.startswith("84") and len(digits) >= 11:
-        digits = "0" + digits[2:]
-    if not digits.startswith("0") and len(digits) == 9:
-        digits = "0" + digits
-    return digits
-
-
-def normalize_url(value: str) -> str:
-    """Reduce to a registrable host so two links to one scam site collide."""
-    host = re.sub(r"(?i)^https?://", "", value.strip())
-    host = host.split("/", 1)[0].split("?", 1)[0].split("#", 1)[0]
-    host = host.split("@")[-1].split(":")[0]
-    host = re.sub(r"(?i)^www\.", "", host)
-    return host.lower().rstrip(".")
-
-
-def hash_identifier(value: str) -> str:
-    """SHA256 of the normalised value, per §7 step 1 of the lookup protocol."""
-    return hashlib.sha256(normalize_for_model(value).encode("utf-8")).hexdigest()
-
-
-def hash_prefix(digest: str) -> str:
-    return digest[:PREFIX_LENGTH]
-
-
 # --- the redactor -----------------------------------------------------------
 
 
@@ -225,7 +193,7 @@ def redact_l2(text: str) -> RedactionResult:
     def _take_url(match: re.Match[str]) -> str:
         host = normalize_url(match.group(0))
         if host:
-            url_hashes.append(hash_identifier(host))
+            url_hashes.append(hash_identifier(host, kind="url"))
         return "<URL>"
 
     working = _URL.sub(_take_url, working)
@@ -250,7 +218,7 @@ def redact_l2(text: str) -> RedactionResult:
     def _take_phone(match: re.Match[str]) -> str:
         normalized = normalize_phone(match.group(1))
         if normalized:
-            phone_hashes.append(hash_identifier(normalized))
+            phone_hashes.append(hash_identifier(normalized, kind="phone"))
         return "<PHONE>"
 
     working = _PHONE.sub(_take_phone, working)

@@ -11,28 +11,12 @@ from __future__ import annotations
 import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterable, Protocol, Sequence
+from typing import Any, Protocol
 
 import psycopg
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 from psycopg_pool import ConnectionPool
-
-from chan_ml.redact import PREFIX_LENGTH
-
-_KIND_TABLES = {
-    "account": "blocklist_accounts",
-    "phone": "blocklist_phones",
-    "url": "blocklist_urls",
-}
-
-
-def _table_for(kind: str) -> str:
-    try:
-        return _KIND_TABLES[kind]
-    except KeyError as error:
-        raise ValueError(f"unknown blocklist kind: {kind}") from error
-
 
 @dataclass(frozen=True)
 class Device:
@@ -40,29 +24,6 @@ class Device:
     platform: str
     expires_at: datetime
     revoked_at: datetime | None = None
-
-
-@dataclass(frozen=True)
-class BlocklistEntry:
-    hash: str
-    report_cnt: int
-    first_seen: datetime
-    last_seen: datetime
-    origin: str
-
-
-@dataclass(frozen=True)
-class ActiveModel:
-    version: str
-    artifact_uri: str
-    artifact_sha256: str
-
-
-@dataclass(frozen=True)
-class SimilarScenario:
-    similarity: float
-    labels: tuple[str, ...]
-    risk: str | None
 
 
 class GatewayRepository(Protocol):
@@ -77,14 +38,6 @@ class GatewayRepository(Protocol):
 
     def touch_device(self, device_id: str) -> None: ...
 
-    def blocklist_cluster(self, kind: str, prefix: str) -> list[BlocklistEntry]: ...
-
-    def blocklist_contains(self, kind: str, digests: Sequence[str]) -> bool: ...
-
-    def report_identifier(self, kind: str, digest: str, origin: str) -> int: ...
-
-    def count_reports_today(self, device_id: str) -> int: ...
-
     def record_analysis(self, **fields: Any) -> None: ...
 
     def analysis_exists(self, analysis_id: str) -> bool: ...
@@ -96,12 +49,6 @@ class GatewayRepository(Protocol):
     def record_access(
         self, *, device_id: str | None, endpoint: str, status: int, latency_ms: int
     ) -> None: ...
-
-    def get_active_model(self) -> ActiveModel | None: ...
-
-    def similar_scenarios(
-        self, embedding: Sequence[float], *, limit: int = 5
-    ) -> list[SimilarScenario]: ...
 
     def hit_rate_limit(self, bucket: str, limit: int, window_seconds: int) -> bool: ...
 
@@ -176,62 +123,6 @@ class PostgresGatewayRepository:
                 "UPDATE devices SET last_seen_at = now() WHERE id = %s", (device_id,)
             )
 
-    # --- blocklist / lookup ----------------------------------------------
-
-    def blocklist_cluster(self, kind: str, prefix: str) -> list[BlocklistEntry]:
-        table = _table_for(kind)
-        with self._pool.connection() as connection:
-            rows = connection.execute(
-                f"""
-                SELECT encode(hash, 'hex') AS hash, report_cnt,
-                       first_seen, last_seen, origin
-                FROM {table}
-                WHERE prefix = %s
-                ORDER BY hash
-                """,
-                (prefix,),
-            ).fetchall()
-        return [BlocklistEntry(**row) for row in rows]
-
-    def blocklist_contains(self, kind: str, digests: Sequence[str]) -> bool:
-        if not digests:
-            return False
-        table = _table_for(kind)
-        with self._pool.connection() as connection:
-            row = connection.execute(
-                f"SELECT 1 FROM {table} WHERE hash = ANY(%s) LIMIT 1",
-                ([bytes.fromhex(digest) for digest in digests],),
-            ).fetchone()
-        return row is not None
-
-    def report_identifier(self, kind: str, digest: str, origin: str) -> int:
-        table = _table_for(kind)
-        with self._pool.connection() as connection:
-            row = connection.execute(
-                f"""
-                INSERT INTO {table} (hash, prefix, origin)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (hash) DO UPDATE
-                  SET report_cnt = {table}.report_cnt + 1, last_seen = now()
-                RETURNING report_cnt
-                """,
-                (bytes.fromhex(digest), digest[:PREFIX_LENGTH], origin),
-            ).fetchone()
-        assert row is not None
-        return int(row["report_cnt"])
-
-    def count_reports_today(self, device_id: str) -> int:
-        with self._pool.connection() as connection:
-            row = connection.execute(
-                """
-                SELECT count(*) AS count FROM access_log
-                WHERE device_id = %s AND endpoint = 'POST /v1/report'
-                  AND status < 400 AND created_at > now() - interval '1 day'
-                """,
-                (device_id,),
-            ).fetchone()
-        return int(row["count"]) if row else 0
-
     # --- analyses / feedback ---------------------------------------------
 
     def record_analysis(self, **fields: Any) -> None:
@@ -287,44 +178,6 @@ class PostgresGatewayRepository:
                 """,
                 (device_id, endpoint, status, latency_ms),
             )
-
-    # --- model registry (read-only) --------------------------------------
-
-    def get_active_model(self) -> ActiveModel | None:
-        with self._pool.connection() as connection:
-            row = connection.execute(
-                """
-                SELECT version, artifact_uri, artifact_sha256
-                FROM model_versions WHERE status = 'active'
-                """
-            ).fetchone()
-        return ActiveModel(**row) if row else None
-
-    # --- similarity -------------------------------------------------------
-
-    def similar_scenarios(
-        self, embedding: Sequence[float], *, limit: int = 5
-    ) -> list[SimilarScenario]:
-        vector = "[" + ",".join(f"{value:.6f}" for value in embedding) + "]"
-        with self._pool.connection() as connection:
-            rows = connection.execute(
-                """
-                SELECT 1 - (embedding <=> %s::vector) AS similarity, labels, risk
-                FROM scenarios
-                WHERE embedding IS NOT NULL AND consented
-                ORDER BY embedding <=> %s::vector
-                LIMIT %s
-                """,
-                (vector, vector, limit),
-            ).fetchall()
-        return [
-            SimilarScenario(
-                similarity=float(row["similarity"]),
-                labels=tuple(row["labels"] or ()),
-                risk=row["risk"],
-            )
-            for row in rows
-        ]
 
     # --- rate limiting fallback ------------------------------------------
 

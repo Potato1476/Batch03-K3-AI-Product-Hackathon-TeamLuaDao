@@ -5,9 +5,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+COPY codebase/ml /app/ml
 COPY codebase/intel /app/intel
 
-RUN python -m pip install --no-cache-dir /app/intel \
+RUN python -m pip install --no-cache-dir /app/ml /app/intel \
     && useradd --create-home --uid 10002 chan
 
 USER chan

@@ -13,28 +13,26 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 
-from chan_ml.model import ModelConfig, PhishingSignalModel
-from chan_ml.synthetic import generate_records
-
 from chan_api.auth import hash_token
 from chan_api.config import AppConfig
 from chan_api.deps import (
+    get_detection_client,
     get_hotlines,
-    get_model_registry,
+    get_intel_client,
     get_rate_limiter,
     get_repository,
     get_rule_store,
 )
 from chan_api.config import get_config
 from chan_api.main import create_app
-from chan_api.model_registry import ModelRegistry
 from chan_api.ratelimit import InProcessBackend, RateLimiter
-from chan_api.repository import ActiveModel, BlocklistEntry, Device, SimilarScenario
+from chan_api.repository import Device
+from chan_api.service_clients import ServiceUnavailableError
 
 RULES_DIR = Path(__file__).resolve().parents[2] / "rules"
 
@@ -54,9 +52,6 @@ class FakeRepository:
     analyses: list[dict[str, Any]] = field(default_factory=list)
     feedback: list[dict[str, Any]] = field(default_factory=list)
     access: list[dict[str, Any]] = field(default_factory=list)
-    active_model: ActiveModel | None = None
-    scenarios: list[SimilarScenario] = field(default_factory=list)
-    reports_today: int = 0
     _sequence: int = 0
 
     # devices
@@ -89,34 +84,6 @@ class FakeRepository:
     def touch_device(self, device_id: str) -> None:
         return None
 
-    # blocklist
-    def blocklist_cluster(self, kind: str, prefix: str) -> list[BlocklistEntry]:
-        now = datetime.now(timezone.utc)
-        return [
-            BlocklistEntry(
-                hash=digest,
-                report_cnt=int(row["report_cnt"]),
-                first_seen=now,
-                last_seen=now,
-                origin=str(row["origin"]),
-            )
-            for digest, row in sorted(self.blocklists[kind].items())
-            if digest.startswith(prefix)
-        ]
-
-    def blocklist_contains(self, kind: str, digests: Sequence[str]) -> bool:
-        return any(digest in self.blocklists[kind] for digest in digests)
-
-    def report_identifier(self, kind: str, digest: str, origin: str) -> int:
-        row = self.blocklists[kind].setdefault(
-            digest, {"report_cnt": 0, "origin": origin}
-        )
-        row["report_cnt"] = int(row["report_cnt"]) + 1
-        return int(row["report_cnt"])
-
-    def count_reports_today(self, device_id: str) -> int:
-        return self.reports_today
-
     # analyses / feedback
     def record_analysis(self, **fields: Any) -> None:
         self.analyses.append(fields)
@@ -139,15 +106,6 @@ class FakeRepository:
     def record_access(self, **fields: Any) -> None:
         self.access.append(fields)
 
-    # model registry / similarity
-    def get_active_model(self) -> ActiveModel | None:
-        return self.active_model
-
-    def similar_scenarios(
-        self, embedding: Sequence[float], *, limit: int = 5
-    ) -> list[SimilarScenario]:
-        return self.scenarios[:limit]
-
     def hit_rate_limit(self, bucket: str, limit: int, window_seconds: int) -> bool:
         return False
 
@@ -155,9 +113,6 @@ class FakeRepository:
         return {"analyses": 0, "access_log": 0}
 
     # helpers for tests
-    def add_blocklist(self, kind: str, digest: str, *, count: int = 3) -> None:
-        self.blocklists[kind][digest] = {"report_cnt": count, "origin": "user_report"}
-
     def issue_device(self, token: str, *, platform: str = "web") -> Device:
         return self.create_device(
             platform=platform, token_hash=hash_token(token), ttl_days=90
@@ -167,19 +122,102 @@ class FakeRepository:
 # ------------------------------------------------------------------ fixtures --
 
 
-@pytest.fixture(scope="session")
-def trained_model() -> PhishingSignalModel:
-    """A small but real model, so signal scores are genuine, not stubbed."""
-    records = list(generate_records(4_000, seed=4242))
-    train = [record for record in records if record.split == "train"]
-    model = PhishingSignalModel(
-        ModelConfig(word_features=8_000, char_features=12_000, min_df=1, max_iter=250)
-    )
-    model.fit(
-        [record.text for record in train],
-        [record.signals for record in train],
-    )
-    return model
+class FakeDetectionClient:
+    def __init__(self, intel) -> None:
+        self.intel = intel
+        self.available = True
+        self.sequence = 0
+
+    async def healthy(self) -> bool:
+        return self.available
+
+    async def analyze(self, body):
+        if not self.available:
+            raise ServiceUnavailableError("detection_service_unavailable")
+        self.sequence += 1
+        text = body["text"]
+        from chan_ml.redact import redact_l2
+
+        redaction = redact_l2(text)
+        blocklisted = any(
+            digest in self.intel.entries[kind]
+            for kind, digests in (
+                ("account", redaction.account_hashes),
+                ("phone", redaction.phone_hashes),
+                ("url", redaction.url_hashes),
+            )
+            for digest in digests
+        )
+        otp = redaction.otp_found
+        unknown = text.startswith("Nha truong")
+        signals = [] if unknown else [
+            {
+                "code": "yeu_cau_otp" if otp else "mao_danh_tham_quyen",
+                "confidence": 0.92,
+                "evidence": "" if otp else ("can bo thue" if "can bo thue" in text else ""),
+            }
+        ]
+        explanation = (
+            "Chưa phát hiện dấu hiệu."
+            if unknown
+            else (
+                "Số nhận tiền này đã bị người khác báo cáo là lừa đảo."
+                if blocklisted
+                else "Tin nhắn tự nhận là cơ quan có thẩm quyền."
+            )
+        )
+        if body.get("truncated") and not unknown:
+            explanation += " Nội dung có thể đã bị cắt ngắn."
+        return {
+            "analysis_id": f"an_fake{self.sequence:06d}",
+            "model_version": "ml-test-0001",
+            "engine_version": "ml-test-0001",
+            "risk": "unknown" if unknown else "high",
+            "score": 0.05 if unknown else (1.0 if blocklisted else 0.82),
+            "scam_confidence": 0.03 if unknown else 0.9,
+            "signals": signals,
+            "explanation": explanation,
+            "questions": [] if unknown else ["Tôi có thể gọi số chính thức không?"],
+            "actions": [] if unknown else (
+                ["report", "share_to_guardian", "lookup_account"]
+                if blocklisted
+                else ["report", "share_to_guardian"]
+            ),
+            "verified_hotline": None,
+            "rule_bundle_version": body["rule_bundle_version"],
+            "truncated": body.get("truncated", False),
+            "blocklist_match": blocklisted,
+        }
+
+
+class FakeIntelClient:
+    def __init__(self) -> None:
+        self.entries = {"account": {}, "phone": {}, "url": {}}
+        self.reports = []
+
+    async def lookup(self, kind, prefix):
+        now = "2026-07-30T00:00:00+00:00"
+        return {
+            "prefix": prefix,
+            "items": [
+                {
+                    "suffix": digest[len(prefix):],
+                    "report_count": row["count"],
+                    "first_seen": now,
+                    "last_seen": now,
+                    "confidence": "community_reviewed",
+                }
+                for digest, row in self.entries[kind].items()
+                if digest.startswith(prefix)
+            ],
+        }
+
+    async def report(self, *, kind, digest, device_id):
+        self.reports.append((kind, digest, device_id))
+        return {
+            "accepted": 1,
+            "items": [{"id": "report-test", "status": "quarantined", "duplicate": False}],
+        }
 
 
 @pytest.fixture
@@ -193,9 +231,10 @@ def config(tmp_path: Path) -> AppConfig:
         analyze_per_ip_per_minute=1_000,
         lookup_per_device_per_minute=1_000,
         report_per_device_per_day=30,
-        l3_provider="local",
-        similarity_beta=0.0,
-        similarity_enabled=False,
+        detection_api_url="http://detection.test",
+        detection_api_key="test-detection-key",
+        intel_api_url="http://intel.test",
+        intel_api_key="test-intel-key",
         ocr_provider="stub",
         training_api_url="",
         training_api_key="",
@@ -208,14 +247,22 @@ def repository() -> FakeRepository:
 
 
 @pytest.fixture
-def registry(trained_model: PhishingSignalModel) -> ModelRegistry:
-    provider = ModelRegistry()
-    provider.install(trained_model, "ml-test-0001")
-    return provider
+def intel() -> FakeIntelClient:
+    return FakeIntelClient()
 
 
 @pytest.fixture
-def app(config: AppConfig, repository: FakeRepository, registry: ModelRegistry):
+def detection(intel: FakeIntelClient) -> FakeDetectionClient:
+    return FakeDetectionClient(intel)
+
+
+@pytest.fixture
+def app(
+    config: AppConfig,
+    repository: FakeRepository,
+    detection: FakeDetectionClient,
+    intel: FakeIntelClient,
+):
     from chan_api.hotlines import HotlineDirectory
     from chan_api.rules import RuleBundleStore
 
@@ -223,7 +270,8 @@ def app(config: AppConfig, repository: FakeRepository, registry: ModelRegistry):
     limiter = RateLimiter(InProcessBackend())
     application.dependency_overrides[get_config] = lambda: config
     application.dependency_overrides[get_repository] = lambda: repository
-    application.dependency_overrides[get_model_registry] = lambda: registry
+    application.dependency_overrides[get_detection_client] = lambda: detection
+    application.dependency_overrides[get_intel_client] = lambda: intel
     application.dependency_overrides[get_rule_store] = lambda: RuleBundleStore(
         config.bundle_path
     )

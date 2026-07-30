@@ -18,7 +18,7 @@ from fastapi import Depends
 
 from .config import AppConfig, get_config
 from .hotlines import HotlineDirectory
-from .model_registry import ModelRegistry
+from .service_clients import DetectionClient, IntelClient
 from .ratelimit import RateLimiter, build_backend
 from .repository import GatewayRepository, PostgresGatewayRepository
 from .rules import RuleBundleStore
@@ -35,9 +35,30 @@ def get_repository(
     return _repository_singleton(config.database_url)
 
 
-@lru_cache
-def get_model_registry() -> ModelRegistry:
-    return ModelRegistry()
+@lru_cache(maxsize=8)
+def _detection_client(url: str, key: str, timeout: float) -> DetectionClient:
+    return DetectionClient(url, key, timeout_seconds=timeout)
+
+
+def get_detection_client(
+    config: AppConfig = Depends(get_config),
+) -> DetectionClient:
+    return _detection_client(
+        config.detection_api_url,
+        config.detection_api_key,
+        config.request_timeout_seconds,
+    )
+
+
+@lru_cache(maxsize=8)
+def _intel_client(url: str, key: str, timeout: float) -> IntelClient:
+    return IntelClient(url, key, timeout_seconds=timeout)
+
+
+def get_intel_client(config: AppConfig = Depends(get_config)) -> IntelClient:
+    return _intel_client(
+        config.intel_api_url, config.intel_api_key, config.request_timeout_seconds
+    )
 
 
 @lru_cache
@@ -77,8 +98,9 @@ def get_rate_limiter(
 def reset_caches() -> None:
     """Drop memoised singletons. Used by tests and by config reloads."""
     _repository_singleton.cache_clear()
-    get_model_registry.cache_clear()
+    _detection_client.cache_clear()
+    _intel_client.cache_clear()
     _rule_store.cache_clear()
     _hotline_directory.cache_clear()
-    _limiter.cache_clear()
+    _LIMITERS.clear()
     get_config.cache_clear()

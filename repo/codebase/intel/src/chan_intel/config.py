@@ -43,7 +43,7 @@ class IntelConfig:
     openphish_license_confirmed: bool = False
     maximum_feed_bytes: int = 32 * 1024 * 1024
     user_report_threshold: int = 2
-    lookup_prefix_length: int = 2
+    lookup_prefix_length: int = 5
 
     @classmethod
     def from_environment(cls) -> "IntelConfig":
@@ -58,7 +58,7 @@ class IntelConfig:
         threshold = int(os.environ.get("CHAN_USER_REPORT_THRESHOLD", "2"))
         if not 1 <= threshold <= 10:
             raise ValueError("CHAN_USER_REPORT_THRESHOLD must be between 1 and 10")
-        prefix_length = int(os.environ.get("CHAN_LOOKUP_PREFIX_LENGTH", "2"))
+        prefix_length = int(os.environ.get("CHAN_LOOKUP_PREFIX_LENGTH", "5"))
         if not 2 <= prefix_length <= 5:
             raise ValueError("CHAN_LOOKUP_PREFIX_LENGTH must be between 2 and 5")
         return cls(

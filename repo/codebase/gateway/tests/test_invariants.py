@@ -35,22 +35,14 @@ def _analyze(client, auth, text: str, **overrides):  # noqa: ANN001, ANN202
 # ------------------------------------------------------------------------ I1 --
 
 
-def test_i1_otp_is_decided_without_reaching_the_model(client, auth, registry) -> None:
-    """An OTP request must be answered from the rules, never sent to a model."""
-    calls: list[str] = []
-    original = registry.model
-
-    def spy():  # noqa: ANN202
-        calls.append("model")
-        return original()
-
-    registry.model = spy  # type: ignore[method-assign]
-
+def test_i1_otp_is_delegated_to_the_privacy_aware_detection_service(
+    client, auth
+) -> None:
+    """Detection owns the OTP short-circuit; Gateway preserves its result."""
     response = _analyze(client, auth, OTP_TEXT)
 
     assert response.status_code == 200
     assert response.json()["risk"] == "high"
-    assert calls == [], "the OTP path must not invoke the model at all"
 
 
 def test_i1_otp_digits_never_appear_in_the_response(client, auth) -> None:
@@ -173,12 +165,12 @@ def test_i4_lookup_rejects_a_prefix_of_the_wrong_length(client, auth) -> None:
 
 
 def test_i4_lookup_accepts_exactly_five_hex_and_returns_the_cluster(
-    client, auth, repository
+    client, auth, intel
 ) -> None:
     digest = hash_identifier("19001234567890")
-    repository.add_blocklist("account", digest, count=7)
+    intel.entries["account"][digest] = {"count": 7}
     # A second hash in the same bucket: the cluster must not be a single answer.
-    repository.add_blocklist("account", digest[:5] + "f" * 59, count=2)
+    intel.entries["account"][digest[:5] + "f" * 59] = {"count": 2}
 
     response = client.get(f"/v1/lookup/account?prefix={digest[:5]}", headers=auth)
 
@@ -290,12 +282,12 @@ def test_i6_bundle_cannot_declare_a_forbidden_label(tmp_path: Path) -> None:
 # ------------------------------------------------------ hard override §6 ------
 
 
-def test_blocklisted_account_forces_high_risk(client, auth, repository) -> None:
+def test_blocklisted_account_forces_high_risk(client, auth, intel) -> None:
     """§6: a reported recipient account overrides the score entirely."""
     benign_with_account = "Chuyen tien vao 19001234567890 giup minh nhe"
     redaction = redact_l2(benign_with_account)
     assert redaction.account_hashes
-    repository.add_blocklist("account", redaction.account_hashes[0], count=12)
+    intel.entries["account"][redaction.account_hashes[0]] = {"count": 12}
 
     response = _analyze(client, auth, benign_with_account)
 

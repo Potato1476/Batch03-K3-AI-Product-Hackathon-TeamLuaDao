@@ -11,11 +11,13 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from chan_ml.privacy import RedactionError, redact_l2
+from chan_ml.redact import RedactionError, redact_l2
 
 from .config import DetectionConfig
-from .runtime import ModelRuntime
+from .intel import IntelLookupClient
+from .runtime import ModelRuntime, RuntimeProvider
 from .schemas import AnalyzeRequest, AnalyzeResponse, Risk, SignalResult
+from .security import require_gateway
 
 _ACTIONS: dict[Risk, list[str]] = {
     "high": [
@@ -34,15 +36,24 @@ _ACTIONS: dict[Risk, list[str]] = {
 
 
 @lru_cache(maxsize=1)
+def get_runtime_provider() -> RuntimeProvider:
+    return RuntimeProvider(DetectionConfig.from_env())
+
+
 def get_runtime() -> ModelRuntime:
     try:
-        return ModelRuntime.load(DetectionConfig.from_env())
-    except (OSError, TypeError, ValueError) as error:
+        return get_runtime_provider().current()
+    except (OSError, RuntimeError, TypeError, ValueError) as error:
         # Do not return filesystem paths or deserialization details to clients.
         raise HTTPException(
             status_code=503,
             detail="model_unavailable",
         ) from error
+
+
+@lru_cache(maxsize=1)
+def get_intel_client() -> IntelLookupClient:
+    return IntelLookupClient(DetectionConfig.from_env())
 
 
 def create_app() -> FastAPI:
@@ -81,25 +92,60 @@ def create_app() -> FastAPI:
     def health(runtime: ModelRuntime = Depends(get_runtime)) -> dict[str, str]:
         return {"status": "ok", "model_version": runtime.model_version}
 
-    @application.post("/v1/analyze", response_model=AnalyzeResponse)
+    @application.post("/internal/v1/analyze", response_model=AnalyzeResponse)
     def analyze(
         payload: AnalyzeRequest,
+        _gateway: None = Depends(require_gateway),
         runtime: ModelRuntime = Depends(get_runtime),
+        intel: IntelLookupClient = Depends(get_intel_client),
     ) -> AnalyzeResponse:
         try:
-            redacted_text = redact_l2(payload.text)
+            redaction = redact_l2(payload.text)
         except RedactionError as error:
             raise HTTPException(
                 status_code=422,
                 detail="content_failed_redaction_check",
             ) from error
-        prediction = runtime.predict(redacted_text)
+        blocklist_match = intel.contains(redaction)
+        if redaction.otp_found:
+            prediction = {
+                "risk": "high",
+                "score": 1.0,
+                "scam_confidence": 1.0,
+                "signals": [
+                    {
+                        "code": "yeu_cau_otp",
+                        "confidence": 1.0,
+                        "evidence": "",
+                    }
+                ],
+                "explanation": (
+                    "Tin nhắn này đang hỏi mã xác nhận của bạn. "
+                    "Đừng đọc mã cho bất kỳ ai."
+                ),
+                "questions": ["Tại sao họ cần mã xác nhận của tôi?"],
+                "engine_version": runtime.model_version,
+            }
+        else:
+            prediction = runtime.predict(redaction.text)
+        if blocklist_match:
+            prediction = {
+                **prediction,
+                "risk": "high",
+                "score": 1.0,
+                "explanation": (
+                    "Số nhận tiền hoặc liên kết này đã bị người khác "
+                    "báo cáo là lừa đảo. Đừng tiếp tục giao dịch."
+                ),
+            }
         risk = cast(Risk, prediction["risk"])
         actions = list(_ACTIONS[risk])
         if any(
             signal["code"] == "tk_ca_nhan"
             for signal in prediction["signals"]
         ):
+            actions.append("lookup_account")
+        if blocklist_match and "lookup_account" not in actions:
             actions.append("lookup_account")
         return AnalyzeResponse(
             analysis_id=f"an_{uuid4().hex[:12]}",
@@ -116,6 +162,7 @@ def create_app() -> FastAPI:
             actions=actions,
             rule_bundle_version=payload.rule_bundle_version,
             truncated=payload.truncated,
+            blocklist_match=blocklist_match,
         )
 
     return application
@@ -129,6 +176,6 @@ def run() -> None:
     uvicorn.run(
         "chan_detection.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=8003,
         access_log=False,
     )

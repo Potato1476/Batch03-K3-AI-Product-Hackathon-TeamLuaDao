@@ -6,7 +6,6 @@ from uuid import uuid4
 
 from chan_ml.continuous import PromotionPolicy
 from chan_ml.synthetic import generate_records, write_dataset
-from chan_training_api.active_model import ActiveModelProvider
 from chan_training_api.config import AppConfig
 from chan_training_api.daily_training import train_claimed_run
 from chan_training_api.repository import ActiveModel, ApprovedScenario, TrainingRun
@@ -116,12 +115,3 @@ def test_daily_worker_builds_and_registers_candidate(tmp_path):
     artifact = Path(repository.completed["artifact_uri"])
     assert artifact.exists()
     assert len(repository.completed["artifact_sha256"]) == 64
-
-    provider = ActiveModelProvider()
-    assert provider.refresh(repository) is True
-    assert provider.version == repository.completed["candidate_version"]
-    prediction = provider.predict(
-        "Cơ quan thuế yêu cầu giữ bí mật và chuyển "
-        "<AMOUNT:trieu> vào <ACCOUNT> ngay."
-    )
-    assert prediction["risk"] in {"high", "medium"}

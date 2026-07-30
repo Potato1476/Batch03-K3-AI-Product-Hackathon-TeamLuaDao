@@ -214,11 +214,10 @@ def test_analyze_fails_cleanly_when_the_bundle_is_missing(
     assert response.json()["detail"] == "rule_bundle_unavailable"
 
 
-def test_analyze_fails_cleanly_when_no_model_is_loaded(client, auth, registry) -> None:
-    from chan_api.model_registry import ModelRegistry
-
-    empty = ModelRegistry()
-    registry.model = empty.model  # type: ignore[method-assign]
+def test_analyze_fails_cleanly_when_detection_is_unavailable(
+    client, auth, detection
+) -> None:
+    detection.available = False
     response = _analyze(client, auth)
     assert response.status_code == 503
     assert response.json()["detail"] == "detection_engine_unavailable"
@@ -249,13 +248,14 @@ def test_report_increments_the_count(client, auth) -> None:
     first = client.post(
         "/v1/report", json={"kind": "account", "value_sha256": digest}, headers=auth
     )
-    assert first.status_code == 201
-    assert first.json()["report_cnt"] == 1
+    assert first.status_code == 202
+    assert first.json()["report_cnt"] == 0
+    assert first.json()["accepted"] is True
 
     second = client.post(
         "/v1/report", json={"kind": "account", "value_sha256": digest}, headers=auth
     )
-    assert second.json()["report_cnt"] == 2
+    assert second.json()["report_cnt"] == 0
 
 
 def test_report_rejects_a_plaintext_value(client, auth) -> None:
@@ -268,25 +268,29 @@ def test_report_rejects_a_plaintext_value(client, auth) -> None:
     assert response.status_code == 422
 
 
-def test_report_is_capped_per_day(client, auth, repository) -> None:
-    repository.reports_today = 30
+def test_report_is_capped_per_day(client, auth, config) -> None:
+    for index in range(config.report_per_device_per_day):
+        client.post(
+            "/v1/report",
+            json={"kind": "account", "value_sha256": f"{index:064x}"},
+            headers=auth,
+        )
     response = client.post(
         "/v1/report",
-        json={"kind": "account", "value_sha256": hash_identifier("123")},
+        json={"kind": "account", "value_sha256": hash_identifier("123456")},
         headers=auth,
     )
     assert response.status_code == 429
     assert response.json()["detail"] == "daily_report_limit"
 
 
-def test_a_reported_account_becomes_findable_by_prefix(client, auth) -> None:
-    """Luồng C end to end: report, then find it through the k-anon lookup."""
+def test_a_reported_account_stays_quarantined_until_review(client, auth) -> None:
     digest = hash_identifier("19008888777766")
     client.post(
         "/v1/report", json={"kind": "account", "value_sha256": digest}, headers=auth
     )
     body = client.get(f"/v1/lookup/account?prefix={digest[:5]}", headers=auth).json()
-    assert digest in {item["hash"] for item in body["hashes"]}
+    assert digest not in {item["hash"] for item in body["hashes"]}
 
 
 # --- rules bundle -----------------------------------------------------------
@@ -433,4 +437,4 @@ def test_healthz_is_open(client) -> None:
 
 def test_readyz_reports_the_loaded_model(client) -> None:
     body = client.get("/readyz").json()
-    assert body["status"] in {"ready", "no_active_model"}
+    assert body["status"] == "ready"

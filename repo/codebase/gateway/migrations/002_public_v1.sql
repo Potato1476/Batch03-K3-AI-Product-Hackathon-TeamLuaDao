@@ -2,15 +2,13 @@
 --
 -- The invariants are enforced here, not only in application code:
 --   I2  no table has a column able to hold message content
---   I4  blocklists are addressable only by hash prefix
+--   I4  lookup prefixes never enter public access logs
 --   I5  a guardian pair cannot exist without consent from the protected device
 --   I6  every risk CHECK omits any reassuring label
 --
 -- Apply with:  psql "$CHAN_DATABASE_URL" < 002_public_v1.sql
 
 BEGIN;
-
-CREATE EXTENSION IF NOT EXISTS vector;
 
 -- ---------------------------------------------------------------- analyses --
 -- NO COLUMN MAY CONTAIN MESSAGE CONTENT (I2). Adding one is a design breach.
@@ -50,46 +48,6 @@ ALTER TABLE analyses ADD CONSTRAINT analyses_signals_have_no_evidence
 
 CREATE INDEX IF NOT EXISTS analyses_created_idx ON analyses (created_at);
 CREATE INDEX IF NOT EXISTS analyses_hash_idx ON analyses (text_sha256);
-
--- --------------------------------------------------------------- scenarios --
--- Labelled scenario store for pgvector similarity. Redacted text only, and
--- only when the user explicitly consented to contribute (§7.2).
-CREATE TABLE IF NOT EXISTS scenarios (
-  id          bigserial PRIMARY KEY,
-  redacted    text NOT NULL,
-  embedding   vector(1024),
-  labels      text[] NOT NULL DEFAULT '{}',
-  risk        text CHECK (risk IN ('high','medium','unknown')),
-  consented   boolean NOT NULL DEFAULT false,
-  origin      text,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT scenarios_require_consent CHECK (consented),
-  CONSTRAINT scenarios_labels_are_known CHECK (
-    labels <@ ARRAY[
-      'mao_danh_tham_quyen','yeu_cau_bi_mat','ap_luc_thoi_gian','tk_ca_nhan',
-      'cai_app_ngoai','loi_ich_bat_thuong','chuyen_kenh','yeu_cau_otp'
-    ]::text[]
-  )
-);
-
-CREATE INDEX IF NOT EXISTS scenarios_embedding_idx
-  ON scenarios USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
-
--- -------------------------------------------------------------- blocklists --
--- Addressable by 5-hex prefix so a lookup reveals a bucket, never a value (I4).
-CREATE TABLE IF NOT EXISTS blocklist_accounts (
-  hash        bytea PRIMARY KEY,
-  prefix      char(5) NOT NULL CHECK (prefix ~ '^[0-9a-f]{5}$'),
-  report_cnt  integer NOT NULL DEFAULT 1 CHECK (report_cnt > 0),
-  first_seen  timestamptz NOT NULL DEFAULT now(),
-  last_seen   timestamptz NOT NULL DEFAULT now(),
-  origin      text NOT NULL DEFAULT 'user_report'
-                CHECK (origin IN ('tinnhiemmang','checkscam','ncsc','bank','user_report'))
-);
-CREATE INDEX IF NOT EXISTS blocklist_accounts_prefix_idx ON blocklist_accounts (prefix);
-
-CREATE TABLE IF NOT EXISTS blocklist_phones (LIKE blocklist_accounts INCLUDING ALL);
-CREATE TABLE IF NOT EXISTS blocklist_urls   (LIKE blocklist_accounts INCLUDING ALL);
 
 -- ----------------------------------------------------------------- devices --
 -- Device token identity. §7.3: never a phone number, and it expires.

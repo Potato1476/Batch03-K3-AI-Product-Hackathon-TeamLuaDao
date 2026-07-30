@@ -4,7 +4,8 @@
 
 | Nhu cầu | Thành phần | Cách dùng |
 |---|---|---|
-| Phân tích tin nhắn | `detection/` | Gọi `POST /v1/analyze` qua HTTPS |
+| Public API | `gateway/` | Clients gọi `POST /v1/analyze` qua HTTPS |
+| Phân tích tin nhắn | `detection/` | Chỉ Gateway gọi `/internal/v1/analyze` |
 | Contract request/response | `detection/src/chan_detection/schemas.py` | Sinh type hoặc map sang TypeScript/Kotlin |
 | Model đã train | `ml/artifacts/chan-signal-model.joblib` | Chỉ Detection API Python nạp |
 | Dataset 250.000 dòng | `ml/data/generated/chan-synthetic.jsonl.gz` | ML/backend dùng để tái lập và đánh giá |

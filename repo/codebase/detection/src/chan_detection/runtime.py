@@ -1,12 +1,14 @@
-"""Checksum-verified model loading and inference."""
+"""Checksum-verified model runtime sourced from the Training API registry."""
 
 from __future__ import annotations
 
 import hashlib
 from pathlib import Path
 from threading import RLock
+import time
 from typing import cast, TypedDict
 
+import httpx
 import joblib
 
 from chan_ml.model import PhishingSignalModel
@@ -39,14 +41,7 @@ def file_sha256(path: Path) -> str:
 
 
 class ModelRuntime:
-    """Keep one validated artifact in memory for all inference requests."""
-
-    def __init__(
-        self,
-        model: PhishingSignalModel,
-        *,
-        model_version: str,
-    ) -> None:
+    def __init__(self, model: PhishingSignalModel, *, model_version: str) -> None:
         self._model = model
         self._model_version = model_version
         self._lock = RLock()
@@ -56,16 +51,74 @@ class ModelRuntime:
         return self._model_version
 
     @classmethod
-    def load(cls, config: DetectionConfig) -> "ModelRuntime":
-        if file_sha256(config.model_path) != config.model_sha256:
+    def load(
+        cls, *, artifact_uri: str, artifact_sha256: str, model_version: str
+    ) -> "ModelRuntime":
+        path = Path(artifact_uri)
+        if file_sha256(path) != artifact_sha256:
             raise ValueError("model_checksum_mismatch")
-        candidate = joblib.load(config.model_path)
+        candidate = joblib.load(path)
         if not isinstance(candidate, PhishingSignalModel):
             raise TypeError("unsupported_model_artifact")
-        return cls(candidate, model_version=config.model_version)
+        return cls(candidate, model_version=model_version)
 
     def predict(self, redacted_text: str) -> ModelPrediction:
-        # Scikit-learn inference is read-only, but the lock also protects us
-        # from future runtime swaps. Never log or persist redacted_text here.
         with self._lock:
             return cast(ModelPrediction, self._model.predict(redacted_text))
+
+
+class RuntimeProvider:
+    """Poll Training API metadata and atomically replace the active runtime."""
+
+    def __init__(self, config: DetectionConfig) -> None:
+        self._config = config
+        self._runtime: ModelRuntime | None = None
+        self._checked_at = 0.0
+        self._lock = RLock()
+
+    def current(self) -> ModelRuntime:
+        now = time.monotonic()
+        with self._lock:
+            runtime = self._runtime
+            refresh_due = (
+                runtime is None
+                or now - self._checked_at >= self._config.model_poll_seconds
+            )
+            if not refresh_due:
+                return runtime
+            try:
+                metadata = self._fetch_metadata()
+                if (
+                    runtime is None
+                    or runtime.model_version != str(metadata["version"])
+                ):
+                    runtime = ModelRuntime.load(
+                        artifact_uri=str(metadata["artifact_uri"]),
+                        artifact_sha256=str(metadata["artifact_sha256"]),
+                        model_version=str(metadata["version"]),
+                    )
+                    self._runtime = runtime
+                self._checked_at = now
+            except (httpx.HTTPError, KeyError, OSError, TypeError, ValueError):
+                # A registry outage must not evict an already validated model.
+                self._checked_at = now
+                if runtime is None:
+                    raise RuntimeError("model_unavailable") from None
+            return runtime
+
+    def _fetch_metadata(self) -> dict[str, object]:
+        with httpx.Client(timeout=self._config.request_timeout_seconds) as client:
+            response = client.get(
+                (
+                    f"{self._config.training_api_url}"
+                    "/internal/v1/training/models/active"
+                ),
+                headers={
+                    "X-CHAN-Training-Key": self._config.training_api_key
+                },
+            )
+        response.raise_for_status()
+        payload = response.json()
+        if not isinstance(payload, dict):
+            raise ValueError("invalid_model_metadata")
+        return payload

@@ -79,13 +79,11 @@ class AppConfig:
     lookup_per_device_per_minute: int = 120
     report_per_device_per_day: int = 30
 
-    # L3
-    l3_provider: str = "local"
-    similarity_beta: float = 0.0
-    similarity_enabled: bool = False
-    llm_model: str = "claude-sonnet-5"
-    llm_timeout_seconds: float = 8.0
-    llm_api_key: str = ""
+    # Internal service boundaries
+    detection_api_url: str = ""
+    detection_api_key: str = ""
+    intel_api_url: str = ""
+    intel_api_key: str = ""
 
     # OCR
     ocr_provider: str = "stub"
@@ -99,7 +97,6 @@ class AppConfig:
     analyses_retention_days: int = 90
     access_log_retention_days: int = 30
 
-    model_poll_seconds: int = 60
     request_timeout_seconds: float = 5.0
     forbidden_labels: tuple[str, ...] = field(
         default=("safe", "ok", "clean", "an toàn", "an toan")
@@ -115,16 +112,9 @@ class AppConfig:
 
     @classmethod
     def from_environment(cls) -> "AppConfig":
-        provider = os.environ.get("CHAN_L3_PROVIDER", "local").strip().lower()
-        if provider not in {"local", "llm", "ensemble"}:
-            raise ValueError("CHAN_L3_PROVIDER must be local, llm or ensemble")
         ocr_provider = os.environ.get("CHAN_OCR_PROVIDER", "stub").strip().lower()
         if ocr_provider not in {"stub", "paddle"}:
             raise ValueError("CHAN_OCR_PROVIDER must be stub or paddle")
-
-        similarity_beta = _env_float("CHAN_SIMILARITY_BETA", 0.0)
-        if similarity_beta < 0:
-            raise ValueError("CHAN_SIMILARITY_BETA cannot be negative")
 
         return cls(
             database_url=os.environ.get("CHAN_DATABASE_URL", ""),
@@ -140,19 +130,16 @@ class AppConfig:
                 "CHAN_LOOKUP_PER_DEVICE_PER_MINUTE", 120
             ),
             report_per_device_per_day=_env_int("CHAN_REPORT_PER_DEVICE_PER_DAY", 30),
-            l3_provider=provider,
-            similarity_beta=similarity_beta,
-            similarity_enabled=_env_bool("CHAN_SIMILARITY_ENABLED", False),
-            llm_model=os.environ.get("CHAN_LLM_MODEL", "claude-sonnet-5"),
-            llm_timeout_seconds=_env_float("CHAN_LLM_TIMEOUT_SECONDS", 8.0),
-            llm_api_key=os.environ.get("ANTHROPIC_API_KEY", ""),
+            detection_api_url=os.environ.get("CHAN_DETECTION_API_URL", ""),
+            detection_api_key=os.environ.get("CHAN_DETECTION_API_KEY", ""),
+            intel_api_url=os.environ.get("CHAN_INTEL_API_URL", ""),
+            intel_api_key=os.environ.get("CHAN_INTEL_API_KEY", ""),
             ocr_provider=ocr_provider,
             ocr_max_bytes=_env_int("CHAN_OCR_MAX_BYTES", 6 * 1024 * 1024),
             training_api_url=os.environ.get("CHAN_TRAINING_API_URL", ""),
             training_api_key=os.environ.get("CHAN_TRAINING_API_KEY", ""),
             analyses_retention_days=_env_int("CHAN_ANALYSES_RETENTION_DAYS", 90),
             access_log_retention_days=_env_int("CHAN_ACCESS_LOG_RETENTION_DAYS", 30),
-            model_poll_seconds=_env_int("CHAN_MODEL_POLL_SECONDS", 60),
             request_timeout_seconds=_env_float("CHAN_REQUEST_TIMEOUT_SECONDS", 5.0),
         )
 

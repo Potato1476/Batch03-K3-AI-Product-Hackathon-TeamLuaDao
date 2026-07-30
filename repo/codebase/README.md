@@ -50,6 +50,7 @@ python3.12 -m venv .venv
 .venv/bin/python -m pip install -e 'codebase/detection[dev]'
 .venv/bin/python -m pip install -e 'codebase/api[dev]'
 .venv/bin/python -m pip install -e 'codebase/intel[dev]'
+.venv/bin/python -m pip install -e 'codebase/gateway[dev]'
 
 # Test toàn bộ ML + training + threat-intel platform
 .venv/bin/pytest -q \
@@ -58,19 +59,23 @@ python3.12 -m venv .venv
   codebase/api/tests \
   codebase/intel/tests
 
-# API mà Web/Android/Zalo OA gọi
-.venv/bin/chan-detection-api
-
 # Chạy private training API sau khi cấu hình PostgreSQL/.env
 .venv/bin/chan-training-api
 
 # Chạy lookup service; feed sync chạy bằng job riêng
 .venv/bin/chan-intel-api
 .venv/bin/chan-intel-sync phishtank
+
+# Chạy inference nội bộ, sau đó public API mà clients gọi
+.venv/bin/chan-detection-api
+.venv/bin/chan-gateway
 ```
 
 Biến môi trường cần thiết: xem
-[`api/.env.example`](api/.env.example).
+[`api/.env.example`](api/.env.example),
+[`intel/.env.example`](intel/.env.example),
+[`detection/.env.example`](detection/.env.example), và
+[`gateway/.env.example`](gateway/.env.example).
 
 ## Phần THẬT vs phần MOCK
 
@@ -84,8 +89,9 @@ Biến môi trường cần thiết: xem
 | PhishTank connector + hash-only lookup | THẬT | cần PostgreSQL; PhishTank key được khuyến nghị |
 | OpenPhish connector | THẬT nhưng khóa mặc định | chỉ bật sau khi có quyền bằng văn bản |
 | LLM L3 / pgvector similarity | MOCK / chưa nối | giữ đúng giới hạn hackathon trong architecture |
-| Detection `/v1/analyze` | THẬT | model synthetic baseline; cần API Gateway khi deploy |
-| Web PWA | THẬT (UI), MOCK (API data) | `apps/web/`; sẵn sàng nối Detection `/v1/analyze` |
+| Gateway `/v1/analyze` | THẬT | public edge gọi Detection nội bộ |
+| Detection `/internal/v1/analyze` | THẬT | L2, Intel lookup và model inference |
+| Web PWA | THẬT (UI), MOCK (API data) | `apps/web/`; sẵn sàng nối Gateway `/v1/analyze` |
 | Android client | Chưa có trong nhánh này | sẽ gọi chung `/v1/analyze` |
 
 ## Lời gọi AI thật ở quyết định trung tâm

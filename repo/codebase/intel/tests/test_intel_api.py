@@ -113,6 +113,7 @@ def _client(tmp_path: Path) -> tuple[TestClient, FakeRepository]:
         },
         user_agent="chan-tests/test@example.org",
         user_report_threshold=2,
+        lookup_prefix_length=2,
     )
     app = create_app()
     app.dependency_overrides[get_repository] = lambda: repository

@@ -20,13 +20,11 @@ dependencies = [
 
 [project.optional-dependencies]
 redis = ["redis>=5.0,<7"]
-llm = ["anthropic>=0.40,<1"]
 ocr = ["paddleocr>=2.9,<3", "paddlepaddle>=2.6,<3"]
 dev = ["httpx>=0.28,<1", "pytest>=8,<9"]
 
 [project.scripts]
 chan-gateway = "chan_api.main:run"
-chan-blocklist-import = "chan_api.ingest:main"
 chan-retention = "chan_api.retention:main"
 
 [tool.setuptools.packages.find]

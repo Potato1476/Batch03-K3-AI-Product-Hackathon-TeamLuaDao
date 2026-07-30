@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS threat_indicators (
                            kind IN ('account', 'phone', 'url')
                        ),
     hash                bytea NOT NULL,
-    prefix              char(2) NOT NULL,
+    prefix              char(5) NOT NULL,
     origin              text NOT NULL REFERENCES intel_sources(name),
     source_item_hash    bytea NOT NULL,
     confidence          text NOT NULL CHECK (
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS threat_indicators (
     UNIQUE (origin, source_item_hash),
     CHECK (octet_length(hash) = 32),
     CHECK (octet_length(source_item_hash) = 32),
-    CHECK (prefix = substring(encode(hash, 'hex') FROM 1 FOR 2))
+    CHECK (prefix = substring(encode(hash, 'hex') FROM 1 FOR 5))
 );
 
 CREATE INDEX IF NOT EXISTS threat_indicators_lookup_idx
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS indicator_reports (
                               kind IN ('account', 'phone', 'url')
                           ),
     hash                  bytea NOT NULL,
-    prefix                char(2) NOT NULL,
+    prefix                char(5) NOT NULL,
     reporter_hash         bytea NOT NULL,
     evidence_hash         bytea,
     consented             boolean NOT NULL CHECK (consented),
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS indicator_reports (
     CHECK (octet_length(hash) = 32),
     CHECK (octet_length(reporter_hash) = 32),
     CHECK (evidence_hash IS NULL OR octet_length(evidence_hash) = 32),
-    CHECK (prefix = substring(encode(hash, 'hex') FROM 1 FOR 2)),
+    CHECK (prefix = substring(encode(hash, 'hex') FROM 1 FOR 5)),
     UNIQUE (kind, hash, reporter_hash)
 );
 

@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Privacy-preserving threat-intelligence and lookup service for CHAN"
 requires-python = ">=3.11,<3.14"
 dependencies = [
+  "chan-ml==0.1.0",
   "fastapi>=0.115,<1",
   "httpx>=0.28,<1",
   "psycopg[binary]>=3.2,<4",

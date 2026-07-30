@@ -1,30 +1,22 @@
-# Môi trường local theo §8.3: api + postgres + redis, LLM ở chế độ mô phỏng
-# (CHAN_L3_PROVIDER=local) để không tốn phí.
-#
-# Chạy từ trong repo/codebase:
-#   docker compose up -d postgres redis
-#   docker compose up --build gateway
-#
-# Hai service ứng dụng tách biệt có chủ ý: gateway (8000) là mặt công khai,
-# training-api (8001) là control plane nội bộ và không được expose ra ngoài.
-
 name: chan
+
+x-build: &repo-build
+  context: ..
 
 services:
   postgres:
-    # pgvector đã cài sẵn — §12 chốt PostgreSQL + pgvector.
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_USER: chan
       POSTGRES_PASSWORD: chan
       POSTGRES_DB: chan
-    ports:
-      - "5432:5432"
+    ports: ["5432:5432"]
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      # Migration tự chạy theo thứ tự tên file khi volume còn trống.
       - ./api/migrations/001_continuous_training.sql:/docker-entrypoint-initdb.d/001_continuous_training.sql:ro
       - ./gateway/migrations/002_public_v1.sql:/docker-entrypoint-initdb.d/002_public_v1.sql:ro
+      - ./intel/migrations/001_threat_intel.sql:/docker-entrypoint-initdb.d/003_threat_intel.sql:ro
+      - ./intel/migrations/002_prefix_v2.sql:/docker-entrypoint-initdb.d/004_intel_prefix_v2.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U chan -d chan"]
       interval: 5s
@@ -34,57 +26,78 @@ services:
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--save", "", "--appendonly", "no"]
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  gateway:
-    build:
-      context: .
-      dockerfile: gateway/Dockerfile
-    environment:
-      CHAN_DATABASE_URL: postgresql://chan:chan@postgres:5432/chan
-      CHAN_REDIS_URL: redis://redis:6379/0
-      CHAN_RULES_DIR: /app/rules
-      CHAN_L3_PROVIDER: local
-      CHAN_OCR_PROVIDER: stub
-      CHAN_CORS_ORIGINS: http://localhost:3000
-      CHAN_MODEL_ARTIFACT_ROOT: /var/lib/chan/model-registry
-    ports:
-      - "8000:8000"
-    volumes:
-      # Model registry dùng chung với training-api: worker ghi artifact,
-      # gateway đọc và verify SHA-256 trước khi nạp.
-      - model-registry:/var/lib/chan/model-registry
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    ports: ["6379:6379"]
 
   training-api:
     build:
-      context: .
-      dockerfile: api/Dockerfile
+      <<: *repo-build
+      dockerfile: codebase/api/Dockerfile
     environment:
       CHAN_DATABASE_URL: postgresql://chan:chan@postgres:5432/chan
       CHAN_TRAINING_API_KEYS: feed-ingest=local-dev-ingest-secret-value,ml-reviewer=local-dev-reviewer-secret
       CHAN_MODEL_ARTIFACT_ROOT: /var/lib/chan/model-registry
       CHAN_BASE_DATASET_PATH: /var/lib/chan/datasets/chan-synthetic.jsonl.gz
       CHAN_GOLDEN_DATASET_PATH: /var/lib/chan/datasets/frozen-golden.jsonl.gz
-    # Không map ra host: control plane phải ở mạng nội bộ.
-    expose:
-      - "8001"
+    expose: ["8001"]
     volumes:
       - model-registry:/var/lib/chan/model-registry
-      - ./ml/data/generated:/var/lib/chan/datasets
+      - ./ml/data/generated:/var/lib/chan/datasets:ro
     depends_on:
       postgres:
         condition: service_healthy
+
+  intel:
+    build:
+      <<: *repo-build
+      dockerfile: codebase/intel/Dockerfile
+    environment:
+      CHAN_DATABASE_URL: postgresql://chan:chan@postgres:5432/chan
+      CHAN_INTEL_API_KEYS: report-ingest=local-dev-intel-reporter-key
+      CHAN_INTEL_USER_AGENT: chan-local/ops@example.org
+      CHAN_LOOKUP_PREFIX_LENGTH: "5"
+    expose: ["8002"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  detection:
+    build:
+      <<: *repo-build
+      dockerfile: codebase/detection/Dockerfile
+    environment:
+      CHAN_TRAINING_API_URL: http://training-api:8001
+      CHAN_TRAINING_API_KEY: local-dev-ingest-secret-value
+      CHAN_INTEL_API_URL: http://intel:8002
+      CHAN_DETECTION_API_KEY: local-dev-detection-secret
+      CHAN_MODEL_POLL_SECONDS: "60"
+    expose: ["8003"]
+    volumes:
+      - model-registry:/var/lib/chan/model-registry:ro
+    depends_on:
+      - training-api
+      - intel
+
+  gateway:
+    build:
+      <<: *repo-build
+      dockerfile: codebase/gateway/Dockerfile
+    environment:
+      CHAN_DATABASE_URL: postgresql://chan:chan@postgres:5432/chan
+      CHAN_REDIS_URL: redis://redis:6379/0
+      CHAN_RULES_DIR: /app/rules
+      CHAN_OCR_PROVIDER: stub
+      CHAN_CORS_ORIGINS: http://localhost:3000
+      CHAN_DETECTION_API_URL: http://detection:8003
+      CHAN_DETECTION_API_KEY: local-dev-detection-secret
+      CHAN_INTEL_API_URL: http://intel:8002
+      CHAN_INTEL_API_KEY: local-dev-intel-reporter-key
+      CHAN_TRAINING_API_URL: http://training-api:8001
+      CHAN_TRAINING_API_KEY: local-dev-ingest-secret-value
+    ports: ["8000:8000"]
+    depends_on:
+      - detection
+      - redis
+      - postgres
 
 volumes:
   postgres-data:

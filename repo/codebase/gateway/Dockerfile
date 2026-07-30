@@ -20,9 +20,7 @@ RUN pip install /app/ml /app/gateway
 
 ENV CHAN_RULES_DIR=/app/rules
 
-RUN useradd --uid 10001 --create-home --shell /usr/sbin/nologin chan \
- && mkdir -p /var/lib/chan/model-registry \
- && chown -R chan:chan /var/lib/chan
+RUN useradd --uid 10001 --create-home --shell /usr/sbin/nologin chan
 
 USER chan
 

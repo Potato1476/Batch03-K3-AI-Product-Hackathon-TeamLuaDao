@@ -8,18 +8,18 @@ and retrain endpoints one routing mistake away from the internet.
 from __future__ import annotations
 
 import secrets
-import threading
 import time
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import FastAPI, Request, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .config import AppConfig, get_config
-from .deps import get_model_registry, get_repository
+from .deps import get_detection_client
+from .service_clients import DetectionClient
 from .logging_safe import configure_logging, log_error, log_event
 from .routers import analyze, devices, feedback, lookup, ocr, report, rules
 
@@ -35,8 +35,8 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        if poll_model:
-            _start_model_poller(config)
+        # Kept as a lifespan hook for future client cleanup. Model lifecycle is
+        # owned by Detection, never by the public gateway.
         yield
 
     app = FastAPI(
@@ -111,15 +111,15 @@ def create_app(
         return {"status": "ok"}
 
     @app.get("/readyz", tags=["ops"])
-    def readyz() -> JSONResponse:
-        """Ready means a model is loaded: /v1/analyze cannot work without one."""
-        registry = get_model_registry()
-        ready = registry.loaded
+    async def readyz(
+        detection: DetectionClient = Depends(get_detection_client),
+    ) -> JSONResponse:
+        """Ready means the delegated Detection service is reachable."""
+        ready = await detection.healthy()
         return JSONResponse(
             status_code=status.HTTP_200_OK if ready else status.HTTP_503_SERVICE_UNAVAILABLE,
             content={
-                "status": "ready" if ready else "no_active_model",
-                "model_version": registry.version,
+                "status": "ready" if ready else "detection_unavailable",
             },
         )
 
@@ -127,31 +127,6 @@ def create_app(
         app.include_router(module.router)
 
     return app
-
-
-def _start_model_poller(config: AppConfig) -> None:
-    """Poll model_versions and hot-swap the active artifact (§ api/README step 6).
-
-    A daemon thread rather than a task queue: the work is one query plus an
-    occasional load, and a failed poll must never affect request handling.
-    """
-    if not config.database_url:
-        log_event("model_poller_disabled", error_code="no_database_url")
-        return
-    registry = get_model_registry()
-
-    def poll() -> None:
-        while True:
-            try:
-                repository = get_repository(config)
-                if registry.refresh(repository):
-                    log_event("model_swapped", model_version=registry.version)
-            except Exception as error:  # noqa: BLE001
-                log_error("model_refresh_failed", type(error).__name__)
-            time.sleep(max(5, config.model_poll_seconds))
-
-    threading.Thread(target=poll, name="chan-model-poller", daemon=True).start()
-
 
 app = create_app()
 
@@ -162,7 +137,7 @@ def run() -> None:
     uvicorn.run(
         "chan_api.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=8001,
         # Access logging is handled by the safe logger; uvicorn's own access log
         # would print the query string, which carries lookup prefixes (I4).
         access_log=False,

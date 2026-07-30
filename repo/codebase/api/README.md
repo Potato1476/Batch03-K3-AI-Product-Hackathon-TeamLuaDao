@@ -181,10 +181,10 @@ Recommended production setup:
 4. Create a Cloud Run Job using the same image and command
    `chan-training-worker --enqueue`.
 5. Trigger it daily with Cloud Scheduler using service identity.
-6. Let `/v1/analyze` poll `model_versions` for the active version, verify the
-   artifact SHA-256, load it in the background, and atomically swap the in-memory
-   model. `ActiveModelProvider` in `src/chan_training_api/active_model.py`
-   implements this loader. Keep the previous active version for rollback.
+6. Let the Detection service poll
+   `/internal/v1/training/models/active`, verify the artifact SHA-256, and
+   atomically swap its in-memory model. Keep the previous validated version
+   serving if the registry is temporarily unavailable.
 
 ## Internal endpoints
 
