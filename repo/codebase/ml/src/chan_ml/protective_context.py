@@ -9,6 +9,7 @@ import numpy as np
 
 from .constants import SIGNAL_CODES
 from .normalize import normalize_for_model
+from .guidance import is_victim_recovery_request
 
 
 _SAFETY_PATTERNS = (
@@ -29,6 +30,24 @@ _ACTION_TARGET_PATTERN = re.compile(
     r"(?:<account>|<otp>|apk|tai khoan|quyen|phan mem|ung dung|ma qr|qr)"
 )
 _NEGATED_ACTION_PREFIX = re.compile(r"(?:khong|ko)(?:\s+\w+){0,8}\s*$")
+_BENIGN_CONTEXT_PATTERNS = (
+    re.compile(r"\bchuc .{0,24}(?:ngay|buoi).{0,20}tot (?:lanh|lang|dep|vui)\b"),
+    re.compile(
+        r"\b(?:so du|bien dong so du)\b.{0,100}"
+        r"(?:\bref\b|\bluong\b|\bnoi dung\b)"
+    ),
+)
+_LOW_INFORMATION_ALLOWED = {
+    "alo",
+    "account",
+    "anh",
+    "bac",
+    "chi",
+    "em",
+    "hello",
+    "oke",
+    "ok",
+}
 
 
 def _ascii_normalized(text: str) -> str:
@@ -51,6 +70,12 @@ def _has_positive_request(text: str) -> bool:
     return False
 
 
+def _is_low_information(text: str) -> bool:
+    without_placeholders = re.sub(r"<[^>]+>", " account ", text)
+    words = re.findall(r"\b[a-z]+\b", without_placeholders)
+    return bool(words) and len(words) <= 6 and set(words) <= _LOW_INFORMATION_ALLOWED
+
+
 def apply_protective_context(
     text: str,
     signal_probabilities: np.ndarray,
@@ -66,6 +91,20 @@ def apply_protective_context(
     has_safety_instruction = any(
         pattern.search(normalized) for pattern in _SAFETY_PATTERNS
     )
+    if is_victim_recovery_request(text):
+        adjusted = np.asarray(signal_probabilities, dtype=float).copy()
+        adjusted *= 0.02
+        return adjusted, min(float(scam_probability) * 0.05, 0.05)
+    benign_context = any(
+        pattern.search(normalized) for pattern in _BENIGN_CONTEXT_PATTERNS
+    )
+    if (
+        (benign_context or _is_low_information(normalized))
+        and not _has_positive_request(normalized)
+    ):
+        adjusted = np.asarray(signal_probabilities, dtype=float).copy()
+        adjusted *= 0.02
+        return adjusted, min(float(scam_probability) * 0.05, 0.05)
     if not has_safety_instruction or _has_positive_request(normalized):
         return signal_probabilities, scam_probability
 

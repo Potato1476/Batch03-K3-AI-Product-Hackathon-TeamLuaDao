@@ -12,6 +12,11 @@ import unicodedata
 
 _INVISIBLE = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060\ufeff]")
 _WHITESPACE = re.compile(r"\s+")
+_SEPARATED_RUN = re.compile(
+    r"(?<![^\W_])(?:[^\W_][.\-_*\/|])+[^\W_](?![^\W_])",
+    flags=re.UNICODE,
+)
+_SEPARATOR = re.compile(r"[.\-_*\/|]")
 
 
 def normalize_for_model(text: str) -> str:
@@ -19,5 +24,9 @@ def normalize_for_model(text: str) -> str:
         raise TypeError("text must be a string")
     value = unicodedata.normalize("NFKC", text)
     value = _INVISIBLE.sub("", value)
+    value = _SEPARATED_RUN.sub(
+        lambda match: _SEPARATOR.sub("", match.group(0)),
+        value,
+    )
     value = _WHITESPACE.sub(" ", value).strip().lower()
     return value

@@ -1,5 +1,5 @@
 {
-  "bundle_version": "rb-2026-07-30.1",
+  "bundle_version": "rb-2026-07-30.2",
   "schema_version": 1,
   "generated_for": "L0 normalize + L1 deterministic rules, on-device",
   "notice": "NGUỒN DUY NHẤT cho tầng luật. Bản TypeScript (Web) và bản Kotlin (Android) đọc cùng file này. Không hardcode regex/blacklist trong apps/*.",
@@ -52,7 +52,8 @@
       "patterns": [
         "(?i)\\b(?:m[ãa]\\s*(?:otp|pin|x[áa]c\\s*(?:thực|thuc|minh|nhận|nhan))?|otp|pin)\\s*(?:l[àa]|is|:|=|-)?\\s*\\d(?:[\\s.\\-]?\\d){3,7}",
         "(?i)\\d(?:[\\s.\\-]?\\d){3,7}\\s*(?:l[àa]\\s*)?(?:m[ãa]\\s*(?:otp|x[áa]c\\s*(?:thực|thuc|minh))|otp)",
-        "(?i)(?:đọc|doc|gửi|gui|nhập|nhap|cung\\s*cấp|cung\\s*cap)\\s+(?:cho\\s+\\w+\\s+)?m[ãa]\\s*(?:otp|x[áa]c\\s*thực|x[áa]c\\s*thuc|vua\\s*gửi|vua\\s*gui)"
+        "(?i)(?:đọc|doc|gửi|gui|nhập|nhap|cung\\s*cấp|cung\\s*cap)\\s+(?:cho\\s+\\w+\\s+)?m[ãa]\\s*(?:otp|x[áa]c\\s*thực|x[áa]c\\s*thuc|vua\\s*gửi|vua\\s*gui)",
+        "(?i)\\b(?:m[ãa]\\s*)?(?:otp|pin|m[ãa]\\s*x[áa]c\\s*(?:thực|thuc|minh))\\b[^\\n]{0,80}\\b(?:l[àa]|is|:|=|-)\\s*\\d(?:[\\s.\\-]?\\d){3,7}"
       ]
     },
 
@@ -63,8 +64,16 @@
         "patterns": [
           "(?i)\\b(?:bit\\.ly|goo\\.gl|tinyurl\\.com|t\\.co|is\\.gd|cutt\\.ly|shorturl\\.at|rb\\.gy|rebrand\\.ly|s\\.id)\\b"
         ],
-        "boost_signal": "cai_app_ngoai",
+        "boost_signal": null,
         "boost": 0.15
+      },
+      "generic_url": {
+        "patterns": [
+          "(?i)\\b(?:https?://|www\\.)[^\\s<>\"']+|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:com|net|org|vn|info|xyz|top|icu|cc|co|io|me|shop|online|site|link|app)(?:/[^\\s<>\"']*)?"
+        ],
+        "boost_signal": null,
+        "boost": 0.12,
+        "comment": "URL làm tin nhắn được gửi lên Lookup/L3; chỉ blocklist mới được quyền kết luận URL độc hại."
       },
       "apk_link": {
         "patterns": [
@@ -93,6 +102,13 @@
         "boost_signal": "mao_danh_tham_quyen",
         "boost": 0.20
       },
+      "suspicious_account_link": {
+        "patterns": [
+          "(?i)(?=.*\\b(?:tai khoan|ngan hang|vietcombank|vcb|bidv|agribank|techcombank|vpbank|mbbank)\\b)(?=.*\\b(?:khoa|mo lai|dang nhap|xac minh|cap nhat)\\b)(?=.*(?:https?://|www\\.|\\b[a-z0-9-]+\\.(?:com|net|org|vn|xyz|top|app)\\b))"
+        ],
+        "boost_signal": "mao_danh_tham_quyen",
+        "boost": 0.20
+      },
       "secrecy_request": {
         "patterns": [
           "(?i)(?:kh[ơo]ng|đừng|dung)\\s+(?:n[óo]i|noi|kể|ke|tiết\\s*lộ|tiet\\s*lo|b[áa]o|bao)\\s+(?:với|voi|cho)?\\s*(?:ai|bất\\s*k[ỳy]|gia\\s*đ[ìi]nh|người\\s*th[âa]n|vợ|chồng|con)",
@@ -106,8 +122,9 @@
         "patterns": [
           "(?i)\\btrong\\s+\\d+\\s*(?:ph[úu]t|giờ|gio|tiếng|ng[àa]y)\\b",
           "(?i)\\btrước\\s+\\d{1,2}\\s*(?:h|giờ|gio)\\b",
+          "(?i)\\bsau\\s+\\d{1,3}\\s*(?:h|giờ|gio|tiếng|tieng)\\b",
           "(?i)(?:ngay\\s*lập\\s*tức|ngay\\s*lap\\s*tuc|gấp|gap|khẩn|khan)\\b",
-          "(?i)(?:sẽ|se)\\s+(?:bị|bi)\\s+(?:kh[óo]a|khoa|phong\\s*tỏa|phạt|phat|khởi\\s*tố)"
+          "(?i)(?:sẽ|se)\\s+(?:(?:bị|bi)\\s+)?(?:kh[óo]a|khoa|cắt|cat|phong\\s*tỏa|phạt|phat|khởi\\s*tố)(?:\\s+(?:sim|tài\\s*khoản|tai\\s*khoan))?"
         ],
         "boost_signal": "ap_luc_thoi_gian",
         "boost": 0.15
@@ -115,6 +132,7 @@
       "channel_switch": {
         "patterns": [
           "(?i)(?:kết\\s*bạn|ket\\s*ban|li[êe]n\\s*hệ|lien\\s*he|nhắn|inbox|chat)\\s+(?:qua|tr[êe]n|với\\s*t[ơo]i\\s*qua)?\\s*(?:zalo|telegram|viber|whatsapp|messenger)\\b",
+          "(?i)(?:nhập|nhap|vào|vao)\\s+(?:hộp\\s*thư|hop\\s*thu|nhóm|nhom).{0,20}\\b(?:zalo|telegram|viber|whatsapp|messenger)\\b",
           "(?i)(?:tải|tai|d[ùu]ng|dung)\\s+telegram\\b"
         ],
         "boost_signal": "chuyen_kenh",
@@ -125,7 +143,10 @@
           "(?i)(?:tr[úu]ng|trung)\\s*(?:thưởng|thuong|giải|giai)\\b",
           "(?i)(?:qu[àa]|qua)\\s*tặng\\s*(?:miễn\\s*ph[íi]|mien\\s*phi)",
           "(?i)(?:việc|viec|lương|luong)\\s+(?:cao|nhẹ|nhe)\\s+(?:kh[ơo]ng\\s*cần|khong\\s*can)\\s+(?:kinh\\s*nghiệm|bằng\\s*cấp)",
-          "(?i)(?:ho[àa]n|hoan)\\s*(?:tiền|tien)\\s*(?:\\d+\\s*%|cao)"
+          "(?i)(?:ho[àa]n|hoan)\\s*(?:tiền|tien)\\s*(?:\\d+\\s*%|cao)",
+          "(?i)(?:kiếm|kiem|thu\\s*nhập|thu\\s*nhap|lương|luong).{0,20}\\d+(?:k|tr|triệu|trieu)?\\s*/\\s*(?:ngày|ngay|tháng|thang)",
+          "(?i)cam\\s*kết\\s+(?:lãi|lai|lợi\\s*nhuận|loi\\s*nhuan).{0,12}\\d+\\s*%",
+          "(?i)(?:nhận|nhan)\\s+(?:quà|qua).{0,16}\\d+\\s*(?:tr|triệu|trieu)"
         ],
         "boost_signal": "loi_ich_bat_thuong",
         "boost": 0.12
@@ -137,6 +158,30 @@
         "boost_signal": "tk_ca_nhan",
         "boost": 0.20,
         "comment": "Chỉ khớp khi đồng thời có ngữ cảnh giao hàng, yêu cầu tiền và cách giao/nhận bất thường."
+      },
+      "identity_change_request": {
+        "patterns": [
+          "(?i)(?=.*\\b(?:điện thoại|dien thoai|máy|may)\\b.{0,20}\\b(?:hỏng|hong|mất|mat)\\b)(?=.*\\b(?:số này|so nay|số mới|so moi|mượn số|muon so)\\b)"
+        ],
+        "boost_signal": null,
+        "boost": 0.15
+      },
+      "victim_recovery_request": {
+        "patterns": [
+          "(?i)\\b(?:(?:tôi|toi|em|cháu|chau).{0,24}(?:vừa|vua|đã|da)\\s*bị\\s*lừa|lam\\s*sao\\s+(?:de\\s+)?(?:doi|lay)\\s+lai\\s+tien)\\b"
+        ],
+        "boost_signal": null,
+        "boost": 0.12
+      },
+      "ambiguous_notice": {
+        "patterns": [
+          "(?i)\\b(?:tài khoản|tai khoan).{0,32}(?:bất thường|bat thuong|cố đăng nhập|co dang nhap)",
+          "(?i)\\b(?:đơn hàng|don hang|gói hàng|goi hang|bưu phẩm|buu pham).{0,32}(?:sự cố|su co|chưa thể giao|chua the giao)",
+          "(?i)\\b(?:khoản thanh toán|khoan thanh toan|khoản tiền|khoan tien).{0,28}(?:xác nhận|xac nhan|chờ nhận|cho nhan)",
+          "(?i)\\b(?:hồ sơ|ho so|xác minh danh tính|xac minh danh tinh|cập nhật thông tin|cap nhat thong tin|cơ quan chức năng|co quan chuc nang|vi phạm quy định|vi pham quy dinh)\\b"
+        ],
+        "boost_signal": null,
+        "boost": 0.12
       },
       "truncation_marker": {
         "patterns": ["\\u2026$", "\\.\\.\\.$", "(?i)\\[\\s*\\d+\\s*tin\\s*nhắn\\s*\\]"],

@@ -22,6 +22,7 @@ const bundle = {
     collapse_whitespace: true,
     strip_invisible: [],
     strip_diacritics_for_matching: true,
+    separator_characters: [".", "-", "_", "*", "/", "|", " "],
     teencode: {},
   },
   l1: {
@@ -31,7 +32,10 @@ const bundle = {
       always_call_when_local_signal: ["apk_link"],
     },
     otp_block: {
-      patterns: ["(?i)(?:doc|gui)\\s+ma\\s+otp"],
+      patterns: [
+        "(?i)(?:doc|gui)\\s+ma\\s+otp",
+        "(?i)\\b(?:ma\\s*)?otp\\b[^\\n]{0,80}\\b(?:la|:|=|-)\\s*\\d(?:[\\s.\\-]?\\d){3,7}",
+      ],
     },
     local_signals: {
       authority_claim: {
@@ -86,6 +90,43 @@ describe("on-device L0/L1 gate", () => {
   it("keeps a benign below-gate message on the device", async () => {
     const result = await analyzeMessage("Hẹn gặp bác tại cửa hàng ngày mai.");
     expect(result.risk).toBe("unknown");
+    expect(result.engine_version).toBe("l1-local");
+    expect(result.questions).toHaveLength(1);
+    expect(analyzeOnServerMock).not.toHaveBeenCalled();
+  });
+
+  it("normalizes diacritics in rules after stripping input diacritics", async () => {
+    const accentedBundle = structuredClone(bundle);
+    accentedBundle.l1.local_signals.authority_claim.patterns = [
+      "(?i)cán\\s+bộ",
+    ];
+    fetchRuleBundleMock.mockResolvedValue(accentedBundle);
+    analyzeOnServerMock.mockResolvedValue({
+      analysis_id: "an_accent",
+      risk: "medium",
+    });
+    await analyzeMessage("Tôi là cán bộ, cần trao đổi hồ sơ.");
+    expect(analyzeOnServerMock).toHaveBeenCalled();
+  });
+
+  it("joins dot-obfuscated words before applying rules", async () => {
+    analyzeOnServerMock.mockResolvedValue({
+      analysis_id: "an_obfuscated",
+      risk: "high",
+    });
+    await analyzeMessage("Tôi là c.a.n b.o thuế, cần làm việc.");
+    expect(analyzeOnServerMock).toHaveBeenCalledWith({
+      text: "Tôi là c.a.n b.o thuế, cần làm việc.",
+      localSignals: ["authority_claim"],
+      truncated: false,
+    });
+  });
+
+  it("blocks an OTP notice when context separates the label and code", async () => {
+    const result = await analyzeMessage(
+      "Mã OTP chuyển khoản của bạn là 839201. Không chia sẻ mã này.",
+    );
+    expect(result.risk).toBe("high");
     expect(result.engine_version).toBe("l1-local");
     expect(analyzeOnServerMock).not.toHaveBeenCalled();
   });

@@ -23,11 +23,12 @@ def test_otp_never_survives_redaction() -> None:
         "OTP: 12 34 56 gui cho toi",
         "Ma xac thuc 4821 vua gui, doc cho anh",
         "ma otp la 55-66-77",
+        "Ma OTP chuyen khoan 2,000,000 VND cua ban la 658004",
     ):
         result = redact_l2(text)
         assert result.otp_found is True, text
         assert "<OTP>" in result.text
-        for digits in ("938271", "1234", "4821", "556677"):
+        for digits in ("938271", "1234", "4821", "556677", "658004"):
             assert digits not in result.text.replace(" ", "")
 
 

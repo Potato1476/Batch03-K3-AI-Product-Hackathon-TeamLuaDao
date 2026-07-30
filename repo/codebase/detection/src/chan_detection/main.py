@@ -127,7 +127,14 @@ def create_app() -> FastAPI:
                 "engine_version": runtime.model_version,
             }
         else:
-            prediction = runtime.predict(redaction.text)
+            prediction = (
+                runtime.predict(
+                    redaction.text,
+                    signal_boosts=payload.local_boosts,
+                )
+                if payload.local_boosts
+                else runtime.predict(redaction.text)
+            )
         if blocklist_match:
             prediction = {
                 **prediction,

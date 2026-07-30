@@ -27,6 +27,7 @@ class AnalyzeRequest(BaseModel):
     input_mode: InputMode
     app_package: str | None = Field(default=None, max_length=255)
     local_signals: list[str] = Field(default_factory=list, max_length=32)
+    local_boosts: dict[str, float] = Field(default_factory=dict)
     truncated: bool = False
     locale: Literal["vi-VN"] = "vi-VN"
     rule_bundle_version: str | None = Field(default=None, max_length=64)
@@ -43,6 +44,19 @@ class AnalyzeRequest(BaseModel):
     def validate_local_signals(cls, value: list[str]) -> list[str]:
         if any(not item or len(item) > 64 for item in value):
             raise ValueError("invalid_local_signal")
+        return value
+
+    @field_validator("local_boosts")
+    @classmethod
+    def validate_local_boosts(cls, value: dict[str, float]) -> dict[str, float]:
+        from chan_ml.constants import SIGNAL_CODES
+
+        if set(value) - set(SIGNAL_CODES):
+            raise ValueError("invalid_local_boost_code")
+        if any(amount < 0.0 or amount > 0.45 for amount in value.values()):
+            raise ValueError("invalid_local_boost_value")
+        if sum(value.values()) > 0.45 + 1e-9:
+            raise ValueError("local_boost_total_exceeded")
         return value
 
 

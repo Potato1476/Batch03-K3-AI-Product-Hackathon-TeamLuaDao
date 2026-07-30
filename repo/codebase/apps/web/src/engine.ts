@@ -23,11 +23,35 @@ function compilePattern(source: string): RegExp | null {
     flags = "iu";
     pattern = pattern.slice(4);
   }
+  pattern = stripDiacritics(pattern);
   try {
     return new RegExp(pattern, flags);
   } catch {
     return null;
   }
+}
+
+function stripDiacritics(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[đĐ]/g, (character) => (character === "Đ" ? "D" : "d"));
+}
+
+function escapeCharacterClass(value: string): string {
+  return value.replace(/[\\\]\-^]/g, "\\$&");
+}
+
+function joinSeparatedRuns(text: string, separators: string[]): string {
+  const compact = separators.filter((character) => character !== " ");
+  if (!compact.length) return text;
+  const characters = compact.map(escapeCharacterClass).join("");
+  const runs = new RegExp(
+    `(?<![\\p{L}\\p{N}])(?:[\\p{L}\\p{N}][${characters}])+[\\p{L}\\p{N}](?![\\p{L}\\p{N}])`,
+    "gu",
+  );
+  const separatorPattern = new RegExp(`[${characters}]`, "gu");
+  return text.replace(runs, (run) => run.replace(separatorPattern, ""));
 }
 
 function matchingText(text: string, bundle: RuleBundle): string {
@@ -39,11 +63,12 @@ function matchingText(text: string, bundle: RuleBundle): string {
   if (bundle.l0.collapse_whitespace) {
     normalized = normalized.replace(/\s+/g, " ").trim();
   }
+  normalized = joinSeparatedRuns(
+    normalized,
+    bundle.l0.separator_characters ?? [],
+  );
   if (bundle.l0.strip_diacritics_for_matching) {
-    normalized = normalized
-      .normalize("NFD")
-      .replace(/\p{M}/gu, "")
-      .replace(/đ/g, "d");
+    normalized = stripDiacritics(normalized);
   }
   const words = normalized.split(" ");
   normalized = words
@@ -78,8 +103,10 @@ function localUnknown(bundle: RuleBundle): AnalyzeResponse {
     risk: "unknown",
     score: 0,
     signals: [],
-    explanation: "Chưa phát hiện dấu hiệu.",
-    questions: [],
+    explanation: "Chưa đủ thông tin để kết luận là an toàn hay lừa đảo.",
+    questions: [
+      "Tin nhắn đến từ đâu và có yêu cầu bấm link, chuyển tiền hoặc cung cấp mã xác nhận không?",
+    ],
     verified_hotline: null,
     actions: [],
     engine_version: "l1-local",

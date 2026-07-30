@@ -14,9 +14,16 @@ from chan_detection.security import require_gateway
 class FakeRuntime:
     model_version = "test-model"
     last_text: str | None = None
+    last_boosts: dict[str, float] | None = None
 
-    def predict(self, redacted_text: str) -> dict[str, object]:
+    def predict(
+        self,
+        redacted_text: str,
+        *,
+        signal_boosts: dict[str, float] | None = None,
+    ) -> dict[str, object]:
         self.last_text = redacted_text
+        self.last_boosts = signal_boosts
         return {
             "risk": "high",
             "score": 0.91,
@@ -82,6 +89,21 @@ def test_raw_identifier_is_redacted_without_echo() -> None:
     assert response.status_code == 200
     assert raw not in response.text
     assert runtime.last_text == "Nhân viên yêu cầu chuyển vào <ACCOUNT> ngay."
+
+
+def test_bounded_local_boosts_reach_the_model() -> None:
+    client, runtime = _client()
+    response = client.post(
+        "/internal/v1/analyze",
+        json={
+            "text": "Hãy tải ứng dụng này để cập nhật hồ sơ.",
+            "source": "web",
+            "input_mode": "manual",
+            "local_boosts": {"cai_app_ngoai": 0.30},
+        },
+    )
+    assert response.status_code == 200
+    assert runtime.last_boosts == {"cai_app_ngoai": 0.30}
 
 
 def test_unknown_is_not_presented_as_safe() -> None:

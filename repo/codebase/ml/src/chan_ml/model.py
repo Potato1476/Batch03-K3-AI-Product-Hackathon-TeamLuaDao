@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import re
-from typing import Iterable, Sequence
+from typing import Iterable, Mapping, Sequence
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -18,6 +18,7 @@ from .constants import (
     SIGNAL_CODES,
     SIGNAL_DECISION_THRESHOLD,
 )
+from .guidance import guidance_for_unknown
 from .normalize import normalize_for_model
 from .policy import aggregate_risk
 from .protective_context import apply_protective_context
@@ -67,7 +68,10 @@ class ModelConfig:
     probability_temperature: float = 0.35
     scam_prior_weight: float = 0.405
     scam_word_features: int = 60_000
+    scam_char_features: int = 60_000
     scam_regularization_c: float = 1.0
+    medium_scam_threshold: float = 0.55
+    high_scam_threshold: float = 0.90
 
 
 class PhishingSignalModel:
@@ -120,13 +124,31 @@ class PhishingSignalModel:
             random_state=self.config.random_state,
             solver="liblinear",
         )
-        self.scam_vectorizer = TfidfVectorizer(
-            preprocessor=normalize_for_model,
-            analyzer="word",
-            ngram_range=(1, 3),
-            min_df=self.config.min_df,
-            max_features=self.config.scam_word_features,
-            sublinear_tf=True,
+        self.scam_vectorizer = FeatureUnion(
+            [
+                (
+                    "word",
+                    TfidfVectorizer(
+                        preprocessor=normalize_for_model,
+                        analyzer="word",
+                        ngram_range=(1, 3),
+                        min_df=self.config.min_df,
+                        max_features=self.config.scam_word_features,
+                        sublinear_tf=True,
+                    ),
+                ),
+                (
+                    "char",
+                    TfidfVectorizer(
+                        preprocessor=normalize_for_model,
+                        analyzer="char_wb",
+                        ngram_range=(3, 5),
+                        min_df=self.config.min_df,
+                        max_features=self.config.scam_char_features,
+                        sublinear_tf=True,
+                    ),
+                ),
+            ]
         )
         self.metadata: dict[str, object] = {
             "engine_version": ENGINE_VERSION,
@@ -178,6 +200,72 @@ class PhishingSignalModel:
         self.metadata["training_examples"] = len(texts)
         self._is_fitted = True
         return self
+
+    def calibrate_policy(
+        self,
+        texts: Sequence[str],
+        risks: Sequence[str],
+        is_phishing: Sequence[bool],
+    ) -> dict[str, float]:
+        """Select intent thresholds on validation data under safety gates."""
+
+        if not texts or len(texts) != len(risks) or len(texts) != len(is_phishing):
+            raise ValueError("calibration inputs must be non-empty and aligned")
+        probabilities, scam_probabilities = self.predict_components(texts)
+        truth = np.asarray(is_phishing, dtype=bool)
+        legitimate = ~truth
+        best: tuple[float, float, float, float, float] | None = None
+        for medium in np.arange(0.30, 0.81, 0.025):
+            for high in np.arange(max(0.70, medium + 0.10), 0.981, 0.025):
+                predicted = [
+                    aggregate_risk(
+                        {
+                            code: float(probabilities[row, column])
+                            for column, code in enumerate(SIGNAL_CODES)
+                        },
+                        scam_probability=float(scam_probabilities[row]),
+                        scam_beta=self.config.scam_prior_weight,
+                        medium_scam_threshold=float(medium),
+                        high_scam_threshold=float(high),
+                    ).risk
+                    for row in range(len(texts))
+                ]
+                flagged = np.asarray(
+                    [risk in {"medium", "high"} for risk in predicted], dtype=bool
+                )
+                recall = float((flagged & truth).sum() / max(1, int(truth.sum())))
+                false_positive = float(
+                    (flagged & legitimate).sum() / max(1, int(legitimate.sum()))
+                )
+                accuracy = float(
+                    np.mean(np.asarray(predicted) == np.asarray(risks))
+                )
+                passes = float(recall >= 0.90 and false_positive < 0.15)
+                candidate = (
+                    passes,
+                    accuracy,
+                    recall - false_positive,
+                    -float(medium),
+                    -float(high),
+                )
+                if best is None or candidate > best:
+                    best = candidate
+                    selected_medium = float(medium)
+                    selected_high = float(high)
+        self.config = replace(
+            self.config,
+            medium_scam_threshold=selected_medium,
+            high_scam_threshold=selected_high,
+        )
+        self.metadata["policy_calibration"] = {
+            "medium_scam_threshold": selected_medium,
+            "high_scam_threshold": selected_high,
+            "validation_records": len(texts),
+        }
+        return {
+            "medium_scam_threshold": selected_medium,
+            "high_scam_threshold": selected_high,
+        }
 
     def predict_probabilities(self, texts: Sequence[str]) -> np.ndarray:
         probabilities, _ = self.predict_components(texts)
@@ -236,6 +324,7 @@ class PhishingSignalModel:
         similarity_scores: Sequence[float] | None = None,
         similarity_beta: float = 0.0,
         blocklist_matches: Sequence[bool] | None = None,
+        signal_boosts: Sequence[Mapping[str, float]] | None = None,
     ) -> list[dict[str, object]]:
         self._check_fitted()
         probabilities, scam_probabilities = self.predict_components(texts)
@@ -247,10 +336,27 @@ class PhishingSignalModel:
             blocklist_matches = [False] * len(texts)
         if len(blocklist_matches) != len(texts):
             raise ValueError("blocklist_matches must match texts")
+        if signal_boosts is None:
+            signal_boosts = [{} for _ in texts]
+        if len(signal_boosts) != len(texts):
+            raise ValueError("signal_boosts must match texts")
+        adjusted = probabilities.copy()
+        for row, boosts in enumerate(signal_boosts):
+            unknown = set(boosts) - set(SIGNAL_CODES)
+            if unknown:
+                raise ValueError(f"unknown signal boosts: {sorted(unknown)}")
+            for code, boost in boosts.items():
+                value = float(boost)
+                if not 0.0 <= value <= 0.45:
+                    raise ValueError("signal boosts must be between 0 and 0.45")
+                column = SIGNAL_CODES.index(code)
+                adjusted[row, column] = min(
+                    1.0, float(adjusted[row, column]) + value
+                )
         return [
             self._format_prediction(
                 text,
-                probabilities[index],
+                adjusted[index],
                 scam_probability=float(scam_probabilities[index]),
                 similarity_max=float(similarity_scores[index]),
                 similarity_beta=similarity_beta,
@@ -266,6 +372,7 @@ class PhishingSignalModel:
         similarity_max: float = 0.0,
         similarity_beta: float = 0.0,
         blocklist_match: bool = False,
+        signal_boosts: Mapping[str, float] | None = None,
     ) -> dict[str, object]:
         """Score one text. ``blocklist_match`` is the §6 hard override for a
         recipient account already reported to the Lookup Service."""
@@ -274,6 +381,7 @@ class PhishingSignalModel:
             similarity_scores=[similarity_max],
             similarity_beta=similarity_beta,
             blocklist_matches=[blocklist_match],
+            signal_boosts=[signal_boosts or {}],
         )[0]
 
     def _format_prediction(
@@ -296,6 +404,12 @@ class PhishingSignalModel:
             similarity_max=similarity_max,
             similarity_beta=similarity_beta,
             blocklist_match=blocklist_match,
+            medium_scam_threshold=getattr(
+                self.config, "medium_scam_threshold", 0.55
+            ),
+            high_scam_threshold=getattr(
+                self.config, "high_scam_threshold", 0.90
+            ),
         )
         selected = [
             {
@@ -314,7 +428,7 @@ class PhishingSignalModel:
             reverse=True,
         )
         if policy.risk == "unknown":
-            explanation = "Chưa phát hiện dấu hiệu."
+            explanation, questions = guidance_for_unknown(text)
             selected = []
         else:
             explanation_items = (
@@ -324,12 +438,12 @@ class PhishingSignalModel:
             )
             sentences = [_EXPLANATIONS[str(item["code"])] for item in explanation_items]
             explanation = " ".join(sentences) or "Cần kiểm tra thêm trước khi làm theo."
-        question_items = (
-            selected[:1]
-            if selected and selected[0]["code"] == "yeu_cau_otp"
-            else selected[:2]
-        )
-        questions = [_QUESTIONS[str(item["code"])] for item in question_items]
+            question_items = (
+                selected[:1]
+                if selected and selected[0]["code"] == "yeu_cau_otp"
+                else selected[:2]
+            )
+            questions = [_QUESTIONS[str(item["code"])] for item in question_items]
         return {
             "risk": policy.risk,
             "score": policy.score,

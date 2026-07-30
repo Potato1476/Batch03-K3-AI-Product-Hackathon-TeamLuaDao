@@ -65,6 +65,13 @@ _OTP_CONTEXTUAL = re.compile(
     r"(?i)(?<!\d)(\d(?:[\s.\-]?\d){3,7})\s*(?:l[àa]\s*)?"
     r"(?:m[ãa]\s*(?:otp|x[áa]c\s*(?:thực|thuc|minh))|otp)"
 )
+# Bank/app notices often put transaction context between "OTP" and the code:
+# "Mã OTP chuyển khoản ... là 658004". It is still I1-sensitive.
+_OTP_NEARBY = re.compile(
+    r"(?i)\b(?:m[ãa]\s*)?(?:otp|pin|m[ãa]\s*x[áa]c\s*(?:thực|thuc|minh))\b"
+    r"[^\n]{0,80}?\b(?:l[àa]|is|:|=|-)\s*"
+    r"(\d(?:[\s.\-]?\d){3,7})(?!\d)"
+)
 
 # Vietnamese bank accounts run 8-19 digits; card numbers reach 19.
 _ACCOUNT = re.compile(r"(?<!\d)(\d(?:[\s.\-]?\d){7,18})(?!\d)")
@@ -206,7 +213,8 @@ def redact_l2(text: str) -> RedactionResult:
 
     working, labelled = _OTP_LABELLED.subn(_take_otp, working)
     working, contextual = _OTP_CONTEXTUAL.subn(_take_otp, working)
-    if labelled or contextual:
+    working, nearby = _OTP_NEARBY.subn(_take_otp, working)
+    if labelled or contextual or nearby:
         otp_found = True
 
     # 4. Money before accounts: "20 triệu" must not be read as an account.

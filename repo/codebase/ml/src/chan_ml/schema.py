@@ -52,6 +52,7 @@ class DatasetRecord:
             "synthetic",
             "explicit_consent",
             "licensed_threat_intel",
+            "project_provided",
         }:
             raise ValueError(f"invalid rights_basis: {self.rights_basis}")
         if self.synthetic and self.rights_basis != "synthetic":

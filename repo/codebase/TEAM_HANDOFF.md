@@ -9,6 +9,7 @@
 | Contract request/response | `detection/src/chan_detection/schemas.py` | Sinh type hoặc map sang TypeScript/Kotlin |
 | Model đã train | `ml/artifacts/chan-signal-model.joblib` | Chỉ Detection API Python nạp |
 | Dataset 250.000 dòng | `ml/data/generated/chan-synthetic.jsonl.gz` | ML/backend dùng để tái lập và đánh giá |
+| Adapter data nhóm | `ml/src/chan_ml/team_dataset.py` | ML chạy để redaction/deduplicate/split `CHAN-Dataset` trước train |
 | Version + checksum | `ml/ARTIFACTS.json` | CI/deployment xác minh trước khi chạy |
 | Metric | `eval/chan-ml-synthetic-v1.0.json` | Hiển thị đúng giới hạn synthetic |
 
@@ -46,6 +47,10 @@ Backend/DevOps:
 Daily trainer ghi candidate vào model registry và chỉ promote khi qua golden
 set. Detection API phải được chuyển sang artifact + checksum mới theo cơ chế
 atomic rollout. Web/Android không đổi contract và không cần cập nhật app.
+
+Lệnh chuẩn bị dữ liệu, train có bounded replay, chạy team test và chạy đủ file
+Excel golden set nằm trong `ml/README.md`. Raw `CHAN-Dataset` không được đưa
+vào Web/Android hoặc commit lên Git; hai client chỉ dùng Rule Bundle và API.
 
 Baseline hiện tại chỉ đạt gate trên synthetic regression. Trước production,
 đội phải bổ sung frozen golden set gồm dữ liệu thật đã được phép sử dụng, gán

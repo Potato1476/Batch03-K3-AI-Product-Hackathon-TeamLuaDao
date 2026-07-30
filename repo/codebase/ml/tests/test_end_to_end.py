@@ -19,6 +19,18 @@ def test_small_end_to_end_training_run():
         [record.text for record in train],
         [record.signals for record in train],
     )
+    calibration_records = test[: min(400, len(test))]
+    calibration = model.calibrate_policy(
+        [record.text for record in calibration_records],
+        [record.risk for record in calibration_records],
+        [record.is_phishing for record in calibration_records],
+    )
+    assert 0.30 <= calibration["medium_scam_threshold"] <= 0.80
+    assert (
+        calibration["medium_scam_threshold"]
+        < calibration["high_scam_threshold"]
+        <= 1.0
+    )
     metrics = evaluate_records(model, test)
     # This is a tiny smoke fit; architecture gates are measured on the full run.
     assert metrics["phishing_recall"] >= 0.75

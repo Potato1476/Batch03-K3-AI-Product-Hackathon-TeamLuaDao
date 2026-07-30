@@ -6,7 +6,7 @@ import hashlib
 from pathlib import Path
 from threading import RLock
 import time
-from typing import cast, TypedDict
+from typing import cast, Mapping, TypedDict
 
 import httpx
 import joblib
@@ -62,9 +62,17 @@ class ModelRuntime:
             raise TypeError("unsupported_model_artifact")
         return cls(candidate, model_version=model_version)
 
-    def predict(self, redacted_text: str) -> ModelPrediction:
+    def predict(
+        self,
+        redacted_text: str,
+        *,
+        signal_boosts: Mapping[str, float] | None = None,
+    ) -> ModelPrediction:
         with self._lock:
-            return cast(ModelPrediction, self._model.predict(redacted_text))
+            return cast(
+                ModelPrediction,
+                self._model.predict(redacted_text, signal_boosts=signal_boosts),
+            )
 
 
 class RuntimeProvider:

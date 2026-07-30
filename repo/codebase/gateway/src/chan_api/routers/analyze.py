@@ -78,6 +78,7 @@ async def analyze(
 
     body = payload.model_dump()
     body["rule_bundle_version"] = bundle.version
+    body["local_boosts"] = bundle.boosts_for(tuple(payload.local_signals))
     try:
         result = await detection.analyze(body)
     except ServiceResponseError as error:

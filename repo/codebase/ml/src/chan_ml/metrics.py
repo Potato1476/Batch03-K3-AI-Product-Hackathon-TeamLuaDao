@@ -46,6 +46,12 @@ def evaluate_records(
             },
             scam_probability=float(scam_probabilities[row_index]),
             scam_beta=model.config.scam_prior_weight,
+            medium_scam_threshold=getattr(
+                model.config, "medium_scam_threshold", 0.55
+            ),
+            high_scam_threshold=getattr(
+                model.config, "high_scam_threshold", 0.90
+            ),
         ).risk
         for row_index in range(len(records))
     ]

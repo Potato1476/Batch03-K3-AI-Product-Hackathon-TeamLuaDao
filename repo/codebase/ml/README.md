@@ -44,6 +44,77 @@ printf '%s' 'Công an yêu cầu giữ bí mật và chuyển <AMOUNT:trieu> và
 For a fast smoke run, generate 5,000 records and train with
 `--word-features 8000 --char-features 12000`.
 
+## Train with `CHAN-Dataset`
+
+Do not train directly from the JSON files in `CHAN-Dataset`. The source
+duplicates messages across conversations/messages/signals/entities, uses 27
+labels while the product contract has eight, and its published benchmark
+overlaps training conversations. The adapter reads conversation sources only,
+redacts identifiers, accepts a signal only when the text contains supporting
+evidence, removes post-redaction duplicates, and assigns a stable text-hash
+split.
+
+The current audit of the project folder is:
+
+- 89,837 source messages;
+- 1,807 unique records after L2 redaction;
+- 88,030 duplicate messages merged;
+- 1,470 train, 169 validation, 168 test;
+- zero exact normalized-text overlap between those three splits.
+
+Because the cleaned team train split is small and has very few positive OTP,
+secrecy and channel-switch samples, use bounded replay from the existing
+curated corpus. The primary dataset is repeated eight times and replay is
+capped at 15,000 examples, producing 26,760 effective train rows while the
+validation and test results still come only from the team dataset.
+
+Run these commands in the foreground from `repo/`:
+
+```bash
+cd /Users/nguyenbao/Batch03-K3-AI-Product-Hackathon-TeamLuaDao/repo
+
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -e 'codebase/ml[dev,workbook]'
+
+TEAM_DATA=codebase/ml/data/generated/chan-team-clean-v1.jsonl.gz
+RUN_ID=team-candidate-20260730
+CANDIDATE_DIR=codebase/ml/artifacts/candidates/$RUN_ID
+
+.venv/bin/chan-prepare-team-data \
+  --input CHAN-Dataset \
+  --output "$TEAM_DATA" \
+  --seed 20260730
+
+.venv/bin/python -m json.tool "$TEAM_DATA.manifest.json"
+
+time .venv/bin/chan-train \
+  --dataset "$TEAM_DATA" \
+  --replay-dataset codebase/ml/data/generated/chan-synthetic.jsonl.gz \
+  --replay-limit 15000 \
+  --primary-weight 8 \
+  --output "$CANDIDATE_DIR/chan-signal-model.joblib" \
+  --metrics-output "$CANDIDATE_DIR/validation-metrics.json"
+
+.venv/bin/chan-evaluate \
+  --model "$CANDIDATE_DIR/chan-signal-model.joblib" \
+  --dataset "$TEAM_DATA" \
+  --split test \
+  --output "$CANDIDATE_DIR/test-metrics.json"
+
+.venv/bin/chan-evaluate-workbook \
+  --model "$CANDIDATE_DIR/chan-signal-model.joblib" \
+  --workbook '/Users/nguyenbao/Downloads/CHẮN_System_TestCases_v1.2.xlsx' \
+  --rules codebase/rules/bundle.json \
+  --output "eval/$RUN_ID-golden-results.json"
+```
+
+`chan-train` now refuses to run when phishing/legitimate coverage is missing
+or any of the eight signals has no positive training example. It calibrates
+the medium/high scam-intent thresholds using only the team validation split.
+The Excel evaluator prints the real result as `x/20` and saves every case,
+including failures. Do not replace the active artifact until both
+`test-metrics.json` and the frozen Excel result have been reviewed.
+
 ## API integration
 
 Load the artifact once at FastAPI startup. The request text must pass through
@@ -77,8 +148,10 @@ scenarios.
 - `MODEL_CARD.md`: algorithm, intended role, evaluation, and limitations.
 - `SCENARIO_COVERAGE.md`: versioned 36-family coverage and advisory basis.
 - `src/chan_ml/synthetic.py`: scalable deterministic generator.
+- `src/chan_ml/team_dataset.py`: audited adapter for project-provided data.
 - `src/chan_ml/model.py`: word/character TF-IDF plus multi-label logistic
   regression.
+- `src/chan_ml/evaluate_workbook.py`: full frozen-golden-set result writer.
 - `src/chan_ml/policy.py`: exact L4 risk thresholds and overrides.
 - `src/chan_ml/metrics.py`: architecture acceptance metrics.
 - `tests/`: policy, leakage, privacy, hard-negative, and end-to-end tests.

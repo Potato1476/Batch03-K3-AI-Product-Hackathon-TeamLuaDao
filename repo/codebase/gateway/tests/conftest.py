@@ -127,6 +127,7 @@ class FakeDetectionClient:
         self.intel = intel
         self.available = True
         self.sequence = 0
+        self.last_body = None
 
     async def healthy(self) -> bool:
         return self.available
@@ -134,6 +135,7 @@ class FakeDetectionClient:
     async def analyze(self, body):
         if not self.available:
             raise ServiceUnavailableError("detection_service_unavailable")
+        self.last_body = body
         self.sequence += 1
         text = body["text"]
         from chan_ml.redact import redact_l2

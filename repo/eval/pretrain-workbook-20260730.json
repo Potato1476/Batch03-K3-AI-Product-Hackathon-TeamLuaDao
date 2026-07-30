@@ -1,0 +1,33 @@
+{
+  "run_name": "pretrain-workbook-20260730",
+  "evaluated_at": "2026-07-30T10:22:45.337067+00:00",
+  "model": "chan-signal-model.joblib",
+  "artifact_engine_version": "ml-0.3.1",
+  "rule_bundle_version": "rb-2026-07-30.2",
+  "note": "Đây là artifact cũ chạy qua pipeline đã sửa, trước khi người dùng train candidate ml-0.4.0.",
+  "pass_count": 16,
+  "total_count": 20,
+  "result": "16/20",
+  "cases": [
+    {"id":"G01","actual_risk":"high","actual_score":0.85791,"actual_signals":["ap_luc_thoi_gian","mao_danh_tham_quyen","yeu_cau_bi_mat"],"passed":true,"failures":[]},
+    {"id":"G02","actual_risk":"medium","actual_score":0.371602,"actual_signals":[],"passed":false,"failures":["risk=medium not in ['high']","missing_signals=['mao_danh_tham_quyen']"]},
+    {"id":"G03","actual_risk":"high","actual_score":1.0,"actual_signals":["ap_luc_thoi_gian","chuyen_kenh","loi_ich_bat_thuong","tk_ca_nhan","yeu_cau_bi_mat"],"passed":true,"failures":[]},
+    {"id":"G04","actual_risk":"high","actual_score":1.0,"actual_signals":["yeu_cau_otp"],"passed":true,"failures":[]},
+    {"id":"G05","actual_risk":"unknown","actual_score":0.18384,"actual_signals":[],"passed":false,"failures":["risk=unknown not in ['high']","missing_signals=['mao_danh_tham_quyen']"]},
+    {"id":"G06","actual_risk":"medium","actual_score":0.513211,"actual_signals":["mao_danh_tham_quyen"],"passed":false,"failures":["risk=medium not in ['high']","missing_signals=['ap_luc_thoi_gian']"]},
+    {"id":"G07","actual_risk":"medium","actual_score":0.439887,"actual_signals":["loi_ich_bat_thuong"],"passed":false,"failures":["risk=medium not in ['high']"]},
+    {"id":"G08","actual_risk":"high","actual_score":0.7,"actual_signals":["cai_app_ngoai"],"passed":true,"failures":[]},
+    {"id":"G09","actual_risk":"unknown","actual_score":0.0,"actual_signals":[],"passed":true,"failures":[]},
+    {"id":"G10","actual_risk":"unknown","actual_score":0.0,"actual_signals":[],"passed":true,"failures":[]},
+    {"id":"G11","actual_risk":"medium","actual_score":0.35,"actual_signals":[],"passed":true,"failures":[]},
+    {"id":"G12","actual_risk":"medium","actual_score":0.616688,"actual_signals":["ap_luc_thoi_gian","chuyen_kenh","loi_ich_bat_thuong"],"passed":true,"failures":[]},
+    {"id":"G13","actual_risk":"unknown","actual_score":0.023719,"actual_signals":[],"passed":true,"failures":[]},
+    {"id":"G14","actual_risk":"medium","actual_score":0.35,"actual_signals":[],"passed":true,"failures":[]},
+    {"id":"G15","actual_risk":"unknown","actual_score":0.0,"actual_signals":[],"passed":true,"failures":[]},
+    {"id":"G16","actual_risk":"unknown","actual_score":0.059909,"actual_signals":[],"passed":true,"failures":[]},
+    {"id":"G17","actual_risk":"high","actual_score":0.7,"actual_signals":["ap_luc_thoi_gian","mao_danh_tham_quyen"],"passed":true,"failures":[]},
+    {"id":"G18","actual_risk":"high","actual_score":0.7,"actual_signals":["ap_luc_thoi_gian","chuyen_kenh","loi_ich_bat_thuong","tk_ca_nhan"],"passed":true,"failures":[]},
+    {"id":"G19","actual_risk":"high","actual_score":0.7,"actual_signals":["ap_luc_thoi_gian","tk_ca_nhan"],"passed":true,"failures":[]},
+    {"id":"G20","actual_risk":"high","actual_score":1.0,"actual_signals":["yeu_cau_otp"],"passed":true,"failures":[]}
+  ]
+}

@@ -28,6 +28,7 @@ export type RuleBundle = {
     collapse_whitespace: boolean;
     strip_invisible: string[];
     strip_diacritics_for_matching: boolean;
+    separator_characters: string[];
     teencode: Record<string, string>;
   };
   l1: {

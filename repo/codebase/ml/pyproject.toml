@@ -15,11 +15,14 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<9"]
+workbook = ["openpyxl>=3.1,<4"]
 
 [project.scripts]
 chan-generate = "chan_ml.synthetic:main"
+chan-prepare-team-data = "chan_ml.team_dataset:main"
 chan-train = "chan_ml.train:main"
 chan-evaluate = "chan_ml.evaluate:main"
+chan-evaluate-workbook = "chan_ml.evaluate_workbook:main"
 chan-predict = "chan_ml.predict:main"
 
 [tool.setuptools.packages.find]

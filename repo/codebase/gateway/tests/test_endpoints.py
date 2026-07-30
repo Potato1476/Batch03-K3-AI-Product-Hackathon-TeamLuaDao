@@ -176,11 +176,14 @@ def test_unknown_local_signal_is_rejected(client, auth) -> None:
     assert response.json()["detail"] == "unknown_local_signal"
 
 
-def test_known_local_signal_is_accepted_and_bounded(client, auth) -> None:
+def test_known_local_signal_is_accepted_and_bounded(
+    client, auth, detection
+) -> None:
     """apk_link raises cai_app_ngoai but cannot by itself decide the outcome."""
     boosted = _analyze(client, auth, LEGITIMATE_TEXT, local_signals=["apk_link"]).json()
     assert boosted["risk"] in {"high", "medium", "unknown"}
     assert boosted["score"] <= 1.0
+    assert detection.last_body["local_boosts"] == {"cai_app_ngoai": 0.30}
 
 
 def test_validation_error_never_echoes_the_submitted_text(client, auth) -> None:
