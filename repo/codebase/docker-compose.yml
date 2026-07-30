@@ -1,0 +1,91 @@
+# Môi trường local theo §8.3: api + postgres + redis, LLM ở chế độ mô phỏng
+# (CHAN_L3_PROVIDER=local) để không tốn phí.
+#
+# Chạy từ trong repo/codebase:
+#   docker compose up -d postgres redis
+#   docker compose up --build gateway
+#
+# Hai service ứng dụng tách biệt có chủ ý: gateway (8000) là mặt công khai,
+# training-api (8001) là control plane nội bộ và không được expose ra ngoài.
+
+name: chan
+
+services:
+  postgres:
+    # pgvector đã cài sẵn — §12 chốt PostgreSQL + pgvector.
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: chan
+      POSTGRES_PASSWORD: chan
+      POSTGRES_DB: chan
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Migration tự chạy theo thứ tự tên file khi volume còn trống.
+      - ./api/migrations/001_continuous_training.sql:/docker-entrypoint-initdb.d/001_continuous_training.sql:ro
+      - ./gateway/migrations/002_public_v1.sql:/docker-entrypoint-initdb.d/002_public_v1.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chan -d chan"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    environment:
+      CHAN_DATABASE_URL: postgresql://chan:chan@postgres:5432/chan
+      CHAN_REDIS_URL: redis://redis:6379/0
+      CHAN_RULES_DIR: /app/rules
+      CHAN_L3_PROVIDER: local
+      CHAN_OCR_PROVIDER: stub
+      CHAN_CORS_ORIGINS: http://localhost:3000
+      CHAN_MODEL_ARTIFACT_ROOT: /var/lib/chan/model-registry
+    ports:
+      - "8000:8000"
+    volumes:
+      # Model registry dùng chung với training-api: worker ghi artifact,
+      # gateway đọc và verify SHA-256 trước khi nạp.
+      - model-registry:/var/lib/chan/model-registry
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  training-api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      CHAN_DATABASE_URL: postgresql://chan:chan@postgres:5432/chan
+      CHAN_TRAINING_API_KEYS: feed-ingest=local-dev-ingest-secret-value,ml-reviewer=local-dev-reviewer-secret
+      CHAN_MODEL_ARTIFACT_ROOT: /var/lib/chan/model-registry
+      CHAN_BASE_DATASET_PATH: /var/lib/chan/datasets/chan-synthetic.jsonl.gz
+      CHAN_GOLDEN_DATASET_PATH: /var/lib/chan/datasets/frozen-golden.jsonl.gz
+    # Không map ra host: control plane phải ở mạng nội bộ.
+    expose:
+      - "8001"
+    volumes:
+      - model-registry:/var/lib/chan/model-registry
+      - ./ml/data/generated:/var/lib/chan/datasets
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  model-registry:

@@ -1,0 +1,170 @@
+{
+  "bundle_version": "rb-2026-07-30",
+  "schema_version": 1,
+  "generated_for": "L0 normalize + L1 deterministic rules, on-device",
+  "notice": "NGUỒN DUY NHẤT cho tầng luật. Bản TypeScript (Web) và bản Kotlin (Android) đọc cùng file này. Không hardcode regex/blacklist trong apps/*.",
+
+  "l0": {
+    "unicode_form": "NFKC",
+    "lowercase": true,
+    "collapse_whitespace": true,
+    "strip_invisible": [
+      "​", "‌", "‍", "‎", "‏",
+      "‪", "‫", "‬", "‭", "‮",
+      "⁠", "﻿"
+    ],
+    "strip_diacritics_for_matching": true,
+    "teencode": {
+      "k": "khong",
+      "ko": "khong",
+      "kg": "khong",
+      "kh": "khong",
+      "j": "gi",
+      "z": "d",
+      "dc": "duoc",
+      "đc": "duoc",
+      "vs": "voi",
+      "ck": "chuyen khoan",
+      "tk": "tai khoan",
+      "stk": "so tai khoan",
+      "sdt": "so dien thoai",
+      "cmnd": "chung minh nhan dan",
+      "cccd": "can cuoc cong dan",
+      "nh": "ngan hang",
+      "ny": "ngay",
+      "bme": "bo me",
+      "ace": "anh chi em"
+    },
+    "separator_characters": [".", "-", "_", "*", "/", "|", " "]
+  },
+
+  "l1": {
+    "gate": {
+      "min_score_to_call_server": 0.12,
+      "min_length_to_call_server": 12,
+      "always_call_when_local_signal": ["apk_link", "blocklist_hit"],
+      "comment": "Cửa lọc ~5% (I3). Dưới ngưỡng: trả unknown tại chỗ, không byte nào rời thiết bị."
+    },
+
+    "otp_block": {
+      "action": "block_on_device",
+      "comment": "I1 — thấy OTP là DỪNG tại chỗ, cảnh báo, không gửi gì lên server.",
+      "patterns": [
+        "(?i)\\b(?:m[ãa]\\s*(?:otp|pin|x[áa]c\\s*(?:thực|thuc|minh|nhận|nhan))?|otp|pin)\\s*(?:l[àa]|is|:|=|-)?\\s*\\d(?:[\\s.\\-]?\\d){3,7}",
+        "(?i)\\d(?:[\\s.\\-]?\\d){3,7}\\s*(?:l[àa]\\s*)?(?:m[ãa]\\s*(?:otp|x[áa]c\\s*(?:thực|thuc|minh))|otp)",
+        "(?i)(?:đọc|doc|gửi|gui|nhập|nhap|cung\\s*cấp|cung\\s*cap)\\s+(?:cho\\s+\\w+\\s+)?m[ãa]\\s*(?:otp|x[áa]c\\s*thực|x[áa]c\\s*thuc|vua\\s*gửi|vua\\s*gui)"
+      ]
+    },
+
+    "local_signals_note": "Từ vựng RIÊNG của L1, KHÔNG phải 8 signal code của L3. Server dùng để cộng thêm confidence có trần. Mỗi entry trong local_signals là một object rule — không chèn giá trị vô hướng vào map này.",
+
+    "local_signals": {
+      "url_shortened": {
+        "patterns": [
+          "(?i)\\b(?:bit\\.ly|goo\\.gl|tinyurl\\.com|t\\.co|is\\.gd|cutt\\.ly|shorturl\\.at|rb\\.gy|rebrand\\.ly|s\\.id)\\b"
+        ],
+        "boost_signal": "cai_app_ngoai",
+        "boost": 0.15
+      },
+      "apk_link": {
+        "patterns": [
+          "(?i)\\.apk\\b",
+          "(?i)(?:tải|tai|c[àa]i|cai)\\s+(?:ứng\\s*dụng|ung\\s*dung|app|phần\\s*mềm|phan\\s*mem)\\s+(?:từ|tu|theo)\\s+(?:link|li[êe]n\\s*kết|đường\\s*dẫn)",
+          "(?i)(?:bật|bat|cấp|cap)\\s+quyền\\s+(?:trợ\\s*năng|tro\\s*nang|accessibility)"
+        ],
+        "boost_signal": "cai_app_ngoai",
+        "boost": 0.30
+      },
+      "otp_pattern": {
+        "patterns": ["__see_otp_block__"],
+        "boost_signal": "yeu_cau_otp",
+        "boost": 1.0
+      },
+      "blocklist_hit": {
+        "patterns": [],
+        "comment": "Đặt bởi client sau khi đối chiếu cụm hash từ /v1/lookup/*, không bằng regex.",
+        "boost_signal": null,
+        "boost": 0.0
+      },
+      "authority_claim": {
+        "patterns": [
+          "(?i)\\b(?:c[ơo]ng\\s*an|c[áa]n\\s*bộ|can\\s*bo|viện\\s*kiểm\\s*s[áa]t|to[àa]\\s*[áa]n|cục\\s*thuế|cuc\\s*thue|chi\\s*cục\\s*thuế|điện\\s*lực|dien\\s*luc|bộ\\s*c[ơo]ng\\s*an|cảnh\\s*s[áa]t|canh\\s*sat)\\b"
+        ],
+        "boost_signal": "mao_danh_tham_quyen",
+        "boost": 0.20
+      },
+      "secrecy_request": {
+        "patterns": [
+          "(?i)(?:kh[ơo]ng|đừng|dung)\\s+(?:n[óo]i|noi|kể|ke|tiết\\s*lộ|tiet\\s*lo|b[áa]o|bao)\\s+(?:với|voi|cho)?\\s*(?:ai|bất\\s*k[ỳy]|gia\\s*đ[ìi]nh|người\\s*th[âa]n|vợ|chồng|con)",
+          "(?i)giữ\\s*b[íi]\\s*mật",
+          "(?i)b[íi]\\s*mật\\s+(?:tuyệt\\s*đối|điều\\s*tra)"
+        ],
+        "boost_signal": "yeu_cau_bi_mat",
+        "boost": 0.25
+      },
+      "time_pressure": {
+        "patterns": [
+          "(?i)\\btrong\\s+\\d+\\s*(?:ph[úu]t|giờ|gio|tiếng|ng[àa]y)\\b",
+          "(?i)\\btrước\\s+\\d{1,2}\\s*(?:h|giờ|gio)\\b",
+          "(?i)(?:ngay\\s*lập\\s*tức|ngay\\s*lap\\s*tuc|gấp|gap|khẩn|khan)\\b",
+          "(?i)(?:sẽ|se)\\s+(?:bị|bi)\\s+(?:kh[óo]a|khoa|phong\\s*tỏa|phạt|phat|khởi\\s*tố)"
+        ],
+        "boost_signal": "ap_luc_thoi_gian",
+        "boost": 0.15
+      },
+      "channel_switch": {
+        "patterns": [
+          "(?i)(?:kết\\s*bạn|ket\\s*ban|li[êe]n\\s*hệ|lien\\s*he|nhắn|inbox|chat)\\s+(?:qua|tr[êe]n|với\\s*t[ơo]i\\s*qua)?\\s*(?:zalo|telegram|viber|whatsapp|messenger)\\b",
+          "(?i)(?:tải|tai|d[ùu]ng|dung)\\s+telegram\\b"
+        ],
+        "boost_signal": "chuyen_kenh",
+        "boost": 0.15
+      },
+      "unusual_reward": {
+        "patterns": [
+          "(?i)(?:tr[úu]ng|trung)\\s*(?:thưởng|thuong|giải|giai)\\b",
+          "(?i)(?:qu[àa]|qua)\\s*tặng\\s*(?:miễn\\s*ph[íi]|mien\\s*phi)",
+          "(?i)(?:việc|viec|lương|luong)\\s+(?:cao|nhẹ|nhe)\\s+(?:kh[ơo]ng\\s*cần|khong\\s*can)\\s+(?:kinh\\s*nghiệm|bằng\\s*cấp)",
+          "(?i)(?:ho[àa]n|hoan)\\s*(?:tiền|tien)\\s*(?:\\d+\\s*%|cao)"
+        ],
+        "boost_signal": "loi_ich_bat_thuong",
+        "boost": 0.12
+      },
+      "truncation_marker": {
+        "patterns": ["\\u2026$", "\\.\\.\\.$", "(?i)\\[\\s*\\d+\\s*tin\\s*nhắn\\s*\\]"],
+        "boost_signal": null,
+        "boost": 0.0,
+        "comment": "Không cộng điểm — chỉ set truncated=true trong request (§4.2 tài liệu)."
+      }
+    },
+
+    "identifier_extraction": {
+      "comment": "Client tách số/URL để hash và gọi /v1/lookup/*. Phải khớp chan_ml.redact.",
+      "account": "(?<!\\d)\\d(?:[\\s.\\-]?\\d){7,18}(?!\\d)",
+      "phone": "(?<!\\d)(?:\\+?84|0)(?:[\\s.\\-]?\\d){8,10}(?!\\d)",
+      "url": "(?i)\\b(?:https?://|www\\.)[^\\s<>\"']+|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:com|net|org|vn|info|xyz|top|icu|cc|co|io|me|shop|online|site|link|app)(?:/[^\\s<>\"']*)?"
+    }
+  },
+
+  "watchlist_packages": [
+    "com.zing.zalo",
+    "com.facebook.orca",
+    "com.facebook.katana",
+    "com.google.android.apps.messaging",
+    "com.samsung.android.messaging",
+    "com.android.mms",
+    "org.telegram.messenger",
+    "com.viber.voip",
+    "com.whatsapp"
+  ],
+
+  "risk_labels": {
+    "high": "Nhiều dấu hiệu lừa đảo",
+    "medium": "Cần kiểm tra thêm",
+    "unknown": "Chưa phát hiện dấu hiệu"
+  },
+
+  "forbidden_labels": ["safe", "ok", "clean", "an toàn", "an toan"],
+
+  "actions": ["report", "share_to_guardian", "lookup_account"]
+}
