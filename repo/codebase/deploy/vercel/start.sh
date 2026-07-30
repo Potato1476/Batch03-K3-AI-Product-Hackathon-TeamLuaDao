@@ -48,6 +48,31 @@ envsubst '${PORT}' \
   < /app/deploy/vercel/nginx.conf.template \
   > /tmp/nginx.conf
 
+# Bind the lightweight API wait-proxy before Nginx can receive traffic. Keep it
+# in a restart loop; the container runtime terminates all child processes
+# together when the invocation ends.
+(
+  while true; do
+    python /app/deploy/vercel/wait_proxy.py
+    echo "wait proxy exited; restarting" >&2
+    sleep 1
+  done
+) &
+
+python - <<'PY'
+import socket
+import time
+
+for _ in range(50):
+    try:
+        with socket.create_connection(("127.0.0.1", 7999), timeout=0.1):
+            break
+    except OSError:
+        time.sleep(0.1)
+else:
+    raise SystemExit("wait_proxy_failed_to_bind")
+PY
+
 exec /usr/bin/supervisord \
   --nodaemon \
   --configuration /app/deploy/vercel/supervisord.conf
