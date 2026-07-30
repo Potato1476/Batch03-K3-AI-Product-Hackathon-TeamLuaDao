@@ -24,6 +24,11 @@ export CHAN_TRAINING_API_KEYS="detection=${CHAN_TRAINING_API_KEY}"
 : "${PORT:=80}"
 export PORT
 
+if [ -z "${CHAN_DATABASE_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
+  CHAN_DATABASE_URL="${DATABASE_URL}"
+  export CHAN_DATABASE_URL
+fi
+
 if [ -z "${CHAN_DATABASE_URL:-}" ]; then
   echo "CHAN_DATABASE_URL is required. Connect a managed PostgreSQL database in Vercel." >&2
   exit 1

@@ -23,11 +23,9 @@ npx vercel link
 ```
 
 Trong Vercel Marketplace, kết nối một PostgreSQL managed (Neon, Supabase hoặc
-Aurora). Sau đó map connection string của integration thành biến production:
-
-```text
-CHAN_DATABASE_URL=<PostgreSQL pooled connection string, SSL enabled>
-```
+Aurora). Container tự dùng `DATABASE_URL` do integration cấp. Nếu nhà cung cấp
+dùng tên khác, cấu hình `CHAN_DATABASE_URL` bằng pooled connection string có
+SSL.
 
 Không commit connection string. Container tự chạy các migration idempotent
 trước khi nhận traffic.
