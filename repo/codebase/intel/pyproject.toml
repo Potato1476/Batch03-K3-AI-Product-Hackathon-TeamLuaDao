@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chan-intel"
+version = "0.1.0"
+description = "Privacy-preserving threat-intelligence and lookup service for CHAN"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
+  "psycopg[binary]>=3.2,<4",
+  "uvicorn>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+  "mypy>=1.14,<2",
+]
+
+[project.scripts]
+chan-intel-api = "chan_intel.main:run"
+chan-intel-sync = "chan_intel.sync:main"
+chan-intel-import = "chan_intel.import_snapshot:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chan-detection-api"
+version = "0.1.0"
+description = "Public inference boundary for the CHAN phishing detection model"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "chan-ml==0.1.0",
+  "fastapi>=0.115,<1",
+  "joblib==1.5.3",
+  "numpy==2.5.1",
+  "scikit-learn==1.9.0",
+  "uvicorn>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=8,<9",
+]
+
+[project.scripts]
+chan-detection-api = "chan_detection.main:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

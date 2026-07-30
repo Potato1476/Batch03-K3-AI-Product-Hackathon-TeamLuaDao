@@ -11,12 +11,19 @@ The baseline is a CPU-friendly multi-label linear classifier:
    typos, and inserted characters.
 4. Eight independent class-balanced logistic regressions estimate confidence
    for the eight architecture signals.
-5. Whole-message and individual-sentence predictions are max-pooled so one
+5. A separate whole-message word 1–3 gram logistic regression estimates scam
+   intent. It preserves negation context that sentence max-pooling can lose.
+6. Clear protective instructions such as "do not share OTP" suppress lexical
+   shortcuts unless the message later contains a positive request for money,
+   credentials, an APK, or device permissions.
+7. Whole-message and individual-sentence signal predictions are max-pooled so one
    suspicious clause is not diluted by unrelated notification text.
-6. A temperature selected on validation sharpens conservative independent
+8. A temperature selected on validation sharpens conservative independent
    probabilities before the immutable L4 policy computes risk.
 
-The model never learns or emits a `safe` label. It returns only `high`,
+The L4 score combines signal confidence, a bounded validation-selected scam
+prior (`0.405`), optional consented-scenario similarity, and blocklist
+overrides. The model never learns or emits a `safe` label. It returns only `high`,
 `medium`, or `unknown`. OTP and blocklist handling remain hard overrides.
 
 ## Intended role
@@ -48,8 +55,11 @@ The evaluation command measures:
 - per-signal precision, recall, and F1;
 - exact risk accuracy and risk confusion;
 - recall on truncated notifications.
+- per-scenario phishing recall and legitimate false-positive rate.
 
-Architecture gates are recall ≥ 0.90 and false-positive rate < 0.15. A pass on
+Architecture gates are recall ≥ 0.90 and false-positive rate < 0.15. Synthetic
+evaluation additionally requires every phishing family to reach recall ≥ 0.80
+and every legitimate family to remain below 0.15 false positives. A pass on
 synthetic data is a pipeline check only. Release requires the frozen,
 human-labeled golden set and p95 end-to-end latency measurement.
 

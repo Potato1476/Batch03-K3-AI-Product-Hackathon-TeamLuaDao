@@ -29,6 +29,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--c", type=float, default=4.0)
     parser.add_argument("--max-iter", type=int, default=500)
     parser.add_argument("--probability-temperature", type=float, default=0.35)
+    parser.add_argument("--scam-prior-weight", type=float, default=0.405)
+    parser.add_argument("--scam-word-features", type=int, default=60_000)
+    parser.add_argument("--scam-c", type=float, default=1.0)
     parser.add_argument("--limit", type=int)
     return parser
 
@@ -51,11 +54,15 @@ def main() -> None:
         regularization_c=args.c,
         max_iter=args.max_iter,
         probability_temperature=args.probability_temperature,
+        scam_prior_weight=args.scam_prior_weight,
+        scam_word_features=args.scam_word_features,
+        scam_regularization_c=args.scam_c,
     )
     model = PhishingSignalModel(config)
     model.fit(
         [record.text for record in train_records],
         [record.signals for record in train_records],
+        is_phishing=[record.is_phishing for record in train_records],
         metadata={
             "trained_at": datetime.now(UTC).isoformat(),
             "dataset": args.dataset.name,
@@ -75,6 +82,9 @@ def main() -> None:
         "min_df": config.min_df,
         "regularization_c": config.regularization_c,
         "probability_temperature": config.probability_temperature,
+        "scam_prior_weight": config.scam_prior_weight,
+        "scam_word_features": config.scam_word_features,
+        "scam_regularization_c": config.scam_regularization_c,
     }
     metrics["dataset_generator_version"] = dataset_manifest.get("generator_version")
     metrics["dataset_content_sha256"] = dataset_manifest.get(

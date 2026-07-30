@@ -7,6 +7,12 @@ The versioned synthetic run summary is available at
 It records dataset provenance, model configuration, recall, false-positive
 rate, truncated-notification performance, latency, and limitations.
 
+The expanded 36-family hybrid run is recorded in
+[`chan-ml-synthetic-v1.0.json`](chan-ml-synthetic-v1.0.json). Its final test is
+explicitly a regression set: the first opening exposed negation failures and
+was used for error analysis. It must not be presented as an untouched external
+benchmark.
+
 The full local outputs are generated under:
 
 - `../codebase/ml/data/generated/chan-synthetic.jsonl.gz`
@@ -24,7 +30,8 @@ external benchmark. Release still requires a frozen, human-labeled set with at
 least 100 permitted real scam messages and 30 legitimate but suspicious
 messages.
 
-The truncated-notification test slice remains below 90% recall. Preserve
+The v0.5 truncated-notification slice was below 90% recall. The v1.0 synthetic
+regression is above that threshold, but clients must still preserve
 `truncated=true`, lower user confidence, and ask for the complete message as
 specified by the architecture.
 

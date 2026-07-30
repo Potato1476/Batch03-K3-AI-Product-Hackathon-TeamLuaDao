@@ -1,9 +1,9 @@
 # CHẮN ML pipeline
 
 This directory provides a reproducible large-dataset generator, an
-interpretable Vietnamese phishing-signal model, evaluation gates, and safe
-inference. It follows the architecture's eight-signal taxonomy and three risk
-values.
+interpretable Vietnamese hybrid scam/signal model, scenario-level evaluation
+gates, and safe inference. It follows the architecture's eight-signal taxonomy
+and three risk values.
 
 ## Quick start
 
@@ -15,9 +15,9 @@ python3.12 -m venv .venv
 .venv/bin/python -m pip install -e 'codebase/ml[dev]'
 .venv/bin/python -m pip install -e 'codebase/api[dev]'
 
-# Generate 100,000 deterministic, compressed examples.
+# Generate 250,000 deterministic, compressed examples.
 .venv/bin/chan-generate \
-  --size 100000 \
+  --size 250000 \
   --seed 20260730 \
   --output codebase/ml/data/generated/chan-synthetic.jsonl.gz
 
@@ -75,6 +75,7 @@ scenarios.
 
 - `DATASET_CARD.md`: schema, composition, privacy, and limitations.
 - `MODEL_CARD.md`: algorithm, intended role, evaluation, and limitations.
+- `SCENARIO_COVERAGE.md`: versioned 36-family coverage and advisory basis.
 - `src/chan_ml/synthetic.py`: scalable deterministic generator.
 - `src/chan_ml/model.py`: word/character TF-IDF plus multi-label logistic
   regression.
@@ -82,9 +83,11 @@ scenarios.
 - `src/chan_ml/metrics.py`: architecture acceptance metrics.
 - `tests/`: policy, leakage, privacy, hard-negative, and end-to-end tests.
 
-Generated data and artifacts stay outside Git by default. Commit metrics and a
-small reviewed golden set under the repository's `eval/` directory when the
-team is ready; do not commit private messages.
+The reproducible `chan-synthetic-baseline-20260730` dataset, trained artifact,
+and metrics are versioned for team integration. Their paths and SHA-256
+digests are in [`ARTIFACTS.json`](ARTIFACTS.json). Future large/live datasets
+belong in controlled object storage or the reviewed scenario database; do not
+commit private messages.
 
 ## Continuous updates
 
@@ -98,3 +101,6 @@ scenarios from PostgreSQL. A candidate is evaluated against a separate frozen
 golden set and becomes active only if absolute safety gates and regression
 gates pass. Web and Android clients continue calling `/v1/analyze`; they never
 download the training database or call the internal training API.
+
+The runnable shared endpoint and Web/Android examples are in
+[`../detection/README.md`](../detection/README.md).

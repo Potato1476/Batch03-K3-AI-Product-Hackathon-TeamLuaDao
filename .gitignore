@@ -8,5 +8,12 @@ __pycache__/
 .mypy_cache/
 *.py[cod]
 *.egg-info/
-repo/codebase/ml/artifacts/
-repo/codebase/ml/data/generated/
+build/
+dist/
+repo/codebase/ml/artifacts/*
+!repo/codebase/ml/artifacts/chan-signal-model.joblib
+!repo/codebase/ml/artifacts/validation-metrics.json
+!repo/codebase/ml/artifacts/test-metrics.json
+repo/codebase/ml/data/generated/*
+!repo/codebase/ml/data/generated/chan-synthetic.jsonl.gz
+!repo/codebase/ml/data/generated/chan-synthetic.jsonl.gz.manifest.json

@@ -1,0 +1,47 @@
+{
+  "release": "chan-synthetic-baseline-20260730",
+  "engine_version": "ml-0.3.0",
+  "generator_version": "synthetic-1.0.0",
+  "scenario_catalog_version": "vn-scam-catalog-2026.07",
+  "training_source_commit": "40c4eb2b43e12688451f418e548dcd54c9cacf9a",
+  "production_ready": false,
+  "artifact_runtime": {
+    "python": "3.12",
+    "joblib": "1.5.3",
+    "numpy": "2.5.1",
+    "scikit_learn": "1.9.0"
+  },
+  "files": [
+    {
+      "path": "codebase/ml/artifacts/chan-signal-model.joblib",
+      "purpose": "Python backend inference artifact",
+      "size_bytes": 912624,
+      "sha256": "44a885db58d96d3b9dcd378504f9b329643fbfbd05518c8b146542fbd07e8445"
+    },
+    {
+      "path": "codebase/ml/data/generated/chan-synthetic.jsonl.gz",
+      "purpose": "250000-record compressed synthetic train-validation-test corpus",
+      "size_bytes": 13136604,
+      "sha256": "69d00d5979b1c03dcedf01818ebd4eccc72ddf77c5c38b07a38e7c9fb95111da"
+    },
+    {
+      "path": "codebase/ml/data/generated/chan-synthetic.jsonl.gz.manifest.json",
+      "purpose": "Dataset generation and split manifest",
+      "size_bytes": 2908,
+      "sha256": "ee2dbf2c13785a783dfead749fa83bd3cc55ae219eb59ef1b30789b0f57b45f8"
+    },
+    {
+      "path": "codebase/ml/artifacts/validation-metrics.json",
+      "purpose": "Synthetic validation metrics",
+      "size_bytes": 11332,
+      "sha256": "60fa09d2d8e957191e468525128851e2eb272bae48d6c25bd08f6fe1e5b057ee"
+    },
+    {
+      "path": "codebase/ml/artifacts/test-metrics.json",
+      "purpose": "Synthetic test regression metrics",
+      "size_bytes": 11331,
+      "sha256": "e11f668cf780c24f9d981d6788c6d54c0961b0fdc8188e7859dd83ab990dd879"
+    }
+  ],
+  "warning": "Synthetic metrics validate the pipeline only. Production promotion still requires a frozen, permitted, human-labelled Vietnamese golden set."
+}

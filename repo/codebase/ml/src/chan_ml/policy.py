@@ -23,6 +23,8 @@ class PolicyResult:
 def aggregate_risk(
     signals: Mapping[str, float],
     *,
+    scam_probability: float = 0.0,
+    scam_beta: float = 0.0,
     similarity_max: float = 0.0,
     similarity_beta: float = 0.0,
     blocklist_match: bool = False,
@@ -34,14 +36,18 @@ def aggregate_risk(
         raise ValueError(f"unknown signal codes: {sorted(unknown)}")
     if not 0.0 <= similarity_max <= 1.0:
         raise ValueError("similarity_max must be between 0 and 1")
+    if not 0.0 <= scam_probability <= 1.0:
+        raise ValueError("scam_probability must be between 0 and 1")
+    if scam_beta < 0:
+        raise ValueError("scam_beta cannot be negative")
     if similarity_beta < 0:
         raise ValueError("similarity_beta cannot be negative")
 
     clipped = {
-        code: min(1.0, max(0.0, float(signals.get(code, 0.0))))
-        for code in SIGNAL_CODES
+        code: min(1.0, max(0.0, float(signals.get(code, 0.0)))) for code in SIGNAL_CODES
     }
     score = sum(SIGNAL_WEIGHTS[code] * clipped[code] for code in SIGNAL_CODES)
+    score += scam_beta * scam_probability
     score += similarity_beta * similarity_max
     score = min(1.0, max(0.0, score))
 
@@ -51,10 +57,7 @@ def aggregate_risk(
         or score >= HIGH_THRESHOLD
     ):
         risk = "high"
-    elif (
-        score >= MEDIUM_THRESHOLD
-        or clipped["yeu_cau_bi_mat"] >= decision_threshold
-    ):
+    elif score >= MEDIUM_THRESHOLD or clipped["yeu_cau_bi_mat"] >= decision_threshold:
         risk = "medium"
     else:
         risk = "unknown"

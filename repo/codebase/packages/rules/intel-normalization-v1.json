@@ -1,0 +1,35 @@
+{
+  "version": "intel-normalization-v1",
+  "algorithm": "SHA-256(UTF-8('chan:' + kind + ':v1:' + normalized))",
+  "prefix_length": 2,
+  "vectors": [
+    {
+      "kind": "account",
+      "input": " 0012-345.678 ",
+      "normalized": "0012345678",
+      "sha256": "90b51f02a2d6d15371f995ade2d5e9886cfe57306c0af31e6ff726fc08aad2ea",
+      "prefix": "90"
+    },
+    {
+      "kind": "phone",
+      "input": "090 123 4567",
+      "normalized": "84901234567",
+      "sha256": "28e50e599fe468498bc0b7dbb7f100aa2d55317ec4f544eed745f6e6da4cfdad",
+      "prefix": "28"
+    },
+    {
+      "kind": "phone",
+      "input": "+84 (90) 123-4567",
+      "normalized": "84901234567",
+      "sha256": "28e50e599fe468498bc0b7dbb7f100aa2d55317ec4f544eed745f6e6da4cfdad",
+      "prefix": "28"
+    },
+    {
+      "kind": "url",
+      "input": "HTTPS://User:secret@BÜCHER.example:443/path?a=1#private",
+      "normalized": "https://xn--bcher-kva.example/path?a=1",
+      "sha256": "610e75b97a87276a4b5bdc60f1cb47b9345f59fe4d0269d8dcd16f72b1288461",
+      "prefix": "61"
+    }
+  ]
+}

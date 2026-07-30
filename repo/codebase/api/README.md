@@ -162,6 +162,9 @@ A candidate is promoted only when:
 - legitimate false-positive rate is below 15%;
 - recall has not regressed by more than two percentage points;
 - false positives have not regressed by more than two percentage points.
+- enough scenario families are represented in the frozen golden set;
+- no represented phishing family has recall below 75%;
+- no represented legitimate family has false-positive rate at or above 15%.
 
 All gates are configurable through environment variables, but production
 values should not be weakened to force a promotion.

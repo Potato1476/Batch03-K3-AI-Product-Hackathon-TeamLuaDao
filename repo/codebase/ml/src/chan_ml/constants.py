@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-ENGINE_VERSION = "ml-0.2.0"
-GENERATOR_VERSION = "synthetic-0.5.0"
+ENGINE_VERSION = "ml-0.3.0"
+GENERATOR_VERSION = "synthetic-1.0.0"
 
 SIGNAL_CODES: tuple[str, ...] = (
     "mao_danh_tham_quyen",

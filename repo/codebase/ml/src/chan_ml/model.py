@@ -12,6 +12,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.pipeline import FeatureUnion
 
+from .context_boosts import apply_context_boosts
 from .constants import (
     ENGINE_VERSION,
     SIGNAL_CODES,
@@ -19,6 +20,7 @@ from .constants import (
 )
 from .normalize import normalize_for_model
 from .policy import aggregate_risk
+from .protective_context import apply_protective_context
 
 _EXPLANATIONS = {
     "mao_danh_tham_quyen": "Tin nhắn tự nhận là cơ quan hoặc tổ chức có thẩm quyền.",
@@ -63,6 +65,9 @@ class ModelConfig:
     max_iter: int = 500
     random_state: int = 20260730
     probability_temperature: float = 0.35
+    scam_prior_weight: float = 0.405
+    scam_word_features: int = 60_000
+    scam_regularization_c: float = 1.0
 
 
 class PhishingSignalModel:
@@ -108,6 +113,21 @@ class PhishingSignalModel:
             # joblib's macOS process backend and is predictable in containers.
             n_jobs=1,
         )
+        self.scam_classifier = LogisticRegression(
+            C=self.config.scam_regularization_c,
+            class_weight="balanced",
+            max_iter=self.config.max_iter,
+            random_state=self.config.random_state,
+            solver="liblinear",
+        )
+        self.scam_vectorizer = TfidfVectorizer(
+            preprocessor=normalize_for_model,
+            analyzer="word",
+            ngram_range=(1, 3),
+            min_df=self.config.min_df,
+            max_features=self.config.scam_word_features,
+            sublinear_tf=True,
+        )
         self.metadata: dict[str, object] = {
             "engine_version": ENGINE_VERSION,
             "signal_codes": list(SIGNAL_CODES),
@@ -120,6 +140,7 @@ class PhishingSignalModel:
         texts: Sequence[str],
         labels: Sequence[dict[str, float]],
         *,
+        is_phishing: Sequence[bool] | None = None,
         metadata: dict[str, object] | None = None,
     ) -> "PhishingSignalModel":
         if len(texts) != len(labels) or not texts:
@@ -136,9 +157,21 @@ class PhishingSignalModel:
         )
         for index, code in enumerate(SIGNAL_CODES):
             if len(np.unique(y[:, index])) < 2:
-                raise ValueError(f"training data needs positive and negative examples for {code}")
+                raise ValueError(
+                    f"training data needs positive and negative examples for {code}"
+                )
+        if is_phishing is None:
+            scam_y = np.asarray([bool(item) for item in labels], dtype=np.int8)
+        else:
+            if len(is_phishing) != len(texts):
+                raise ValueError("is_phishing must match texts")
+            scam_y = np.asarray(is_phishing, dtype=np.int8)
+        if len(np.unique(scam_y)) < 2:
+            raise ValueError("training data needs phishing and legitimate examples")
         matrix = self.vectorizer.fit_transform(texts)
         self.classifier.fit(matrix, y)
+        scam_matrix = self.scam_vectorizer.fit_transform(texts)
+        self.scam_classifier.fit(scam_matrix, scam_y)
         self._feature_names = self.vectorizer.get_feature_names_out()
         if metadata:
             self.metadata.update(metadata)
@@ -147,6 +180,14 @@ class PhishingSignalModel:
         return self
 
     def predict_probabilities(self, texts: Sequence[str]) -> np.ndarray:
+        probabilities, _ = self.predict_components(texts)
+        return probabilities
+
+    def predict_scam_probabilities(self, texts: Sequence[str]) -> np.ndarray:
+        _, scam_probabilities = self.predict_components(texts)
+        return scam_probabilities
+
+    def predict_components(self, texts: Sequence[str]) -> tuple[np.ndarray, np.ndarray]:
         self._check_fitted()
         segments: list[str] = []
         owners: list[int] = []
@@ -165,12 +206,28 @@ class PhishingSignalModel:
         segment_probabilities = np.asarray(self.classifier.predict_proba(matrix))
         raw = np.zeros((len(texts), len(SIGNAL_CODES)), dtype=float)
         np.maximum.at(raw, np.asarray(owners), segment_probabilities)
+        scam_matrix = self.scam_vectorizer.transform(texts)
+        raw_scam = np.asarray(self.scam_classifier.predict_proba(scam_matrix))[:, 1]
         # L4 weights expect confident semantic signal strengths. Independent
         # logistic models are conservative when a held-out phrase is present,
         # so sharpen probabilities with a validation-selected temperature.
         clipped = np.clip(raw, 1e-6, 1.0 - 1e-6)
         logits = np.log(clipped / (1.0 - clipped))
-        return 1.0 / (1.0 + np.exp(-logits / self.config.probability_temperature))
+        probabilities = 1.0 / (
+            1.0 + np.exp(-logits / self.config.probability_temperature)
+        )
+        for index, text in enumerate(texts):
+            probabilities[index], raw_scam[index] = apply_context_boosts(
+                text,
+                probabilities[index],
+                float(raw_scam[index]),
+            )
+            probabilities[index], raw_scam[index] = apply_protective_context(
+                text,
+                probabilities[index],
+                float(raw_scam[index]),
+            )
+        return probabilities, raw_scam
 
     def predict_many(
         self,
@@ -181,7 +238,7 @@ class PhishingSignalModel:
         blocklist_matches: Sequence[bool] | None = None,
     ) -> list[dict[str, object]]:
         self._check_fitted()
-        probabilities = self.predict_probabilities(texts)
+        probabilities, scam_probabilities = self.predict_components(texts)
         if similarity_scores is None:
             similarity_scores = [0.0] * len(texts)
         if len(similarity_scores) != len(texts):
@@ -194,6 +251,7 @@ class PhishingSignalModel:
             self._format_prediction(
                 text,
                 probabilities[index],
+                scam_probability=float(scam_probabilities[index]),
                 similarity_max=float(similarity_scores[index]),
                 similarity_beta=similarity_beta,
                 blocklist_match=bool(blocklist_matches[index]),
@@ -223,16 +281,18 @@ class PhishingSignalModel:
         text: str,
         probabilities: np.ndarray,
         *,
+        scam_probability: float,
         similarity_max: float,
         similarity_beta: float,
         blocklist_match: bool = False,
     ) -> dict[str, object]:
         confidence_map = {
-            code: float(probabilities[index])
-            for index, code in enumerate(SIGNAL_CODES)
+            code: float(probabilities[index]) for index, code in enumerate(SIGNAL_CODES)
         }
         policy = aggregate_risk(
             confidence_map,
+            scam_probability=scam_probability,
+            scam_beta=self.config.scam_prior_weight,
             similarity_max=similarity_max,
             similarity_beta=similarity_beta,
             blocklist_match=blocklist_match,
@@ -262,9 +322,7 @@ class PhishingSignalModel:
                 if selected and selected[0]["code"] == "yeu_cau_otp"
                 else selected[:3]
             )
-            sentences = [
-                _EXPLANATIONS[str(item["code"])] for item in explanation_items
-            ]
+            sentences = [_EXPLANATIONS[str(item["code"])] for item in explanation_items]
             explanation = " ".join(sentences) or "Cần kiểm tra thêm trước khi làm theo."
         question_items = (
             selected[:1]
@@ -275,6 +333,7 @@ class PhishingSignalModel:
         return {
             "risk": policy.risk,
             "score": policy.score,
+            "scam_confidence": round(scam_probability, 4),
             "signals": selected,
             "explanation": explanation,
             "questions": questions,
@@ -293,9 +352,7 @@ class PhishingSignalModel:
             [estimator.coef_[0] for estimator in self.classifier.estimators_]
         )
         coefficients = coefficients_by_signal[signal_index]
-        other_coefficients = np.delete(
-            coefficients_by_signal, signal_index, axis=0
-        )
+        other_coefficients = np.delete(coefficients_by_signal, signal_index, axis=0)
         candidates: list[tuple[float, str]] = []
         for feature_index in matrix.indices:
             name = str(names[feature_index])
@@ -304,8 +361,7 @@ class PhishingSignalModel:
             feature = name.removeprefix("word__")
             contribution = float(coefficients[feature_index] * matrix[0, feature_index])
             competing = float(
-                np.max(other_coefficients[:, feature_index])
-                * matrix[0, feature_index]
+                np.max(other_coefficients[:, feature_index]) * matrix[0, feature_index]
             )
             specificity = contribution - competing
             if contribution > 0:
