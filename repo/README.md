@@ -15,6 +15,10 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
   component và layout. Đọc trước khi viết dòng UI đầu tiên.
 - [`codebase/ml/`](codebase/ml/README.md): generator dữ liệu, model 8 tín hiệu,
   L4 policy và evaluation.
+- [`codebase/detection/`](codebase/detection/README.md): `/v1/analyze` dùng
+  chung cho Web, Android và Zalo OA.
+- [`codebase/TEAM_HANDOFF.md`](codebase/TEAM_HANDOFF.md): hướng dẫn tích hợp,
+  vị trí dataset/model và trách nhiệm từng đội.
 - [`codebase/api/`](codebase/api/README.md): PostgreSQL ingestion, quarantine,
   review, daily retraining, model registry và hot reload.
 - [`codebase/intel/`](codebase/intel/README.md): PhishTank/PhishVN ingestion,

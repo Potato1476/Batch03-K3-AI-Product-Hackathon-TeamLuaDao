@@ -83,9 +83,11 @@ scenarios.
 - `src/chan_ml/metrics.py`: architecture acceptance metrics.
 - `tests/`: policy, leakage, privacy, hard-negative, and end-to-end tests.
 
-Generated data and artifacts stay outside Git by default. Commit metrics and a
-small reviewed golden set under the repository's `eval/` directory when the
-team is ready; do not commit private messages.
+The reproducible `chan-synthetic-baseline-20260730` dataset, trained artifact,
+and metrics are versioned for team integration. Their paths and SHA-256
+digests are in [`ARTIFACTS.json`](ARTIFACTS.json). Future large/live datasets
+belong in controlled object storage or the reviewed scenario database; do not
+commit private messages.
 
 ## Continuous updates
 
@@ -99,3 +101,6 @@ scenarios from PostgreSQL. A candidate is evaluated against a separate frozen
 golden set and becomes active only if absolute safety gates and regression
 gates pass. Web and Android clients continue calling `/v1/analyze`; they never
 download the training database or call the internal training API.
+
+The runnable shared endpoint and Web/Android examples are in
+[`../detection/README.md`](../detection/README.md).

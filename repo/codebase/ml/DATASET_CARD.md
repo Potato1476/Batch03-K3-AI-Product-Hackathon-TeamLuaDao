@@ -7,8 +7,9 @@ eight behavioral signals in `CHAN-ARCHITECTURE.md`. It is not a generic spam
 dataset. Every record is designed for the L2 → L3 boundary, after personal
 information has been replaced with placeholders.
 
-The documented v1 run creates 250,000 records and the generator can create millions
-without committing a large generated file to Git.
+The documented v1 run creates 250,000 records. That compressed, deterministic
+baseline is versioned for the team; the generator can create larger corpora
+without committing every subsequent run to Git.
 
 ## Schema
 
@@ -55,7 +56,8 @@ uncompressed canonical JSONL.
 - Accounts, phone numbers, amounts, names, and OTP values use L2 placeholders.
 - Non-synthetic rows declare either `explicit_consent` or
   `licensed_threat_intel`; explicit-consent rows require `consented=true`.
-- Generated datasets and model artifacts are ignored by Git.
+- The committed baseline is synthetic and contains no real person data.
+- Future private, licensed, or user-derived datasets are not committed to Git.
 
 Do not convert production messages into a training corpus automatically. A
 user-derived message may enter the long-lived scenario store only after L2
