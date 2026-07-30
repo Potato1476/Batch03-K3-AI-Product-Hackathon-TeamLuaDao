@@ -58,8 +58,10 @@ Gateway trong cùng Compose network.
 
 ## Phạm vi tích hợp
 
-Luồng nhập text, kết quả phân tích và lookup đã dùng API thật. OCR, guardian,
-voice input và các công tắc mô phỏng lỗi vẫn là prototype.
+Luồng nhập text, OCR ảnh, voice input xử lý cục bộ, kết quả phân tích và lookup
+đã dùng implementation thật. Guardian và các công tắc mô phỏng lỗi vẫn là
+prototype. OCR dùng Gateway `/v1/ocr`; voice chỉ được bật khi trình duyệt bảo
+đảm `processLocally`, không tự rơi về cloud speech.
 
 Icon dự án do nhóm cung cấp nằm tại [`public/image.png`](public/image.png) và
 được dùng cho favicon cùng PWA manifest. Logo ngang

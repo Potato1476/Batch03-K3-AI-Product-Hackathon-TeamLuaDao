@@ -2,13 +2,34 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "./App";
 
-const { analyzeMessageMock, lookupIndicatorMock } = vi.hoisted(() => ({
+const {
+  analyzeMessageMock,
+  extractTextFromImageMock,
+  lookupIndicatorMock,
+  startLocalSpeechRecognitionMock,
+} = vi.hoisted(() => ({
   analyzeMessageMock: vi.fn(),
+  extractTextFromImageMock: vi.fn(),
   lookupIndicatorMock: vi.fn(),
+  startLocalSpeechRecognitionMock: vi.fn(),
 }));
 
 vi.mock("./engine", () => ({ analyzeMessage: analyzeMessageMock }));
-vi.mock("./api", () => ({ lookupIndicator: lookupIndicatorMock }));
+vi.mock("./api", async (importOriginal) => {
+  const original = await importOriginal<typeof import("./api")>();
+  return {
+    ...original,
+    extractTextFromImage: extractTextFromImageMock,
+    lookupIndicator: lookupIndicatorMock,
+  };
+});
+vi.mock("./speech", async (importOriginal) => {
+  const original = await importOriginal<typeof import("./speech")>();
+  return {
+    ...original,
+    startLocalSpeechRecognition: startLocalSpeechRecognitionMock,
+  };
+});
 
 const highResult = {
   analysis_id: "an_test",
@@ -31,7 +52,9 @@ const highResult = {
 describe("CHAN web flow", () => {
   beforeEach(() => {
     analyzeMessageMock.mockReset();
+    extractTextFromImageMock.mockReset();
     lookupIndicatorMock.mockReset();
+    startLocalSpeechRecognitionMock.mockReset();
     analyzeMessageMock.mockImplementation(
       () =>
         new Promise((resolve) => {
@@ -46,6 +69,17 @@ describe("CHAN web flow", () => {
       noMatchMessage: "Chưa có báo cáo về số điện thoại này.",
       bundleVersion: "rb-test",
     });
+    extractTextFromImageMock.mockResolvedValue({
+      text: "Công an yêu cầu chuyển tiền ngay.",
+      provider: "tesseract",
+      next_step: "POST /v1/analyze",
+    });
+    startLocalSpeechRecognitionMock.mockImplementation(
+      async ({ onTranscript }) => {
+        onTranscript("Không nói với ai và chuyển tiền ngay.", true);
+        return { stop: vi.fn(), abort: vi.fn() };
+      },
+    );
   });
 
   it("keeps analysis disabled until the user enters a message", async () => {
@@ -73,6 +107,41 @@ describe("CHAN web flow", () => {
     expect(screen.getByText("Đừng chuyển tiền. Đừng đọc mã OTP.")).toBeInTheDocument();
     expect(screen.getByText("Trúng 4/8 dấu hiệu thao túng")).toBeInTheDocument();
     expect(analyzeMessageMock).toHaveBeenCalledWith("Đọc mã OTP cho tôi.");
+  });
+
+  it("extracts text from an uploaded screenshot", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    await user.click(screen.getByRole("button", { name: "Gửi ảnh chụp" }));
+    const image = new File(["png"], "message.png", { type: "image/png" });
+    await user.upload(screen.getByLabelText("Ảnh chụp tin nhắn"), image);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Nội dung tin nhắn")).toHaveValue(
+        "Công an yêu cầu chuyển tiền ngay.",
+      ),
+    );
+    expect(extractTextFromImageMock).toHaveBeenCalledWith(image);
+    expect(screen.getByText(/Đã đọc ảnh bằng tesseract/i)).toBeInTheDocument();
+  });
+
+  it("fills the message using local speech recognition", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    await user.click(
+      screen.getByRole("button", { name: "Đọc nội dung bằng giọng nói" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Nội dung tin nhắn")).toHaveValue(
+        "Không nói với ai và chuyển tiền ngay.",
+      ),
+    );
+    expect(startLocalSpeechRecognitionMock).toHaveBeenCalledOnce();
   });
 
   it("explains the privacy-preserving lookup before searching", async () => {

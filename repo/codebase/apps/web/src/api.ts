@@ -65,6 +65,12 @@ export type LookupResult = {
   bundleVersion: string;
 };
 
+export type OcrResponse = {
+  text: string;
+  provider: string;
+  next_step: "POST /v1/analyze";
+};
+
 type DeviceTokenResponse = {
   token: string;
 };
@@ -173,6 +179,29 @@ export async function analyzeOnServer(input: {
   });
   if (!response.ok) throw await errorFrom(response);
   return (await response.json()) as AnalyzeResponse;
+}
+
+const OCR_MAX_BYTES = 6 * 1024 * 1024;
+const OCR_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+export async function extractTextFromImage(image: File): Promise<OcrResponse> {
+  if (!OCR_IMAGE_TYPES.has(image.type)) {
+    throw new ChanApiError(415, "unsupported_image_type");
+  }
+  if (image.size === 0) throw new ChanApiError(422, "empty_image");
+  if (image.size > OCR_MAX_BYTES) {
+    throw new ChanApiError(413, "image_too_large");
+  }
+  const form = new FormData();
+  form.set("image", image, image.name);
+  const response = await authenticatedFetch("/v1/ocr", {
+    method: "POST",
+    body: form,
+  });
+  if (!response.ok) throw await errorFrom(response);
+  const payload = (await response.json()) as OcrResponse;
+  if (!payload.text.trim()) throw new ChanApiError(502, "ocr_no_text_detected");
+  return payload;
 }
 
 function normalizePhone(value: string): string {

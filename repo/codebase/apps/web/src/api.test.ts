@@ -1,5 +1,7 @@
 import {
   analyzeOnServer,
+  ChanApiError,
+  extractTextFromImage,
   indicatorHash,
   resetApiStateForTests,
 } from "./api";
@@ -86,5 +88,42 @@ describe("Gateway API client", () => {
     expect(await indicatorHash("phone", "090 123 4567")).toBe(
       "28e50e599fe468498bc0b7dbb7f100aa2d55317ec4f544eed745f6e6da4cfdad",
     );
+  });
+
+  it("uploads an image with device authentication", async () => {
+    window.localStorage.setItem("chan.device-token.v1", "device-token");
+    const request = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          text: "Chuyển tiền ngay.",
+          provider: "tesseract",
+          next_step: "POST /v1/analyze",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    vi.stubGlobal("fetch", request);
+    const image = new File(["png"], "message.png", { type: "image/png" });
+
+    const result = await extractTextFromImage(image);
+
+    expect(result.text).toBe("Chuyển tiền ngay.");
+    expect(request.mock.calls[0][0]).toBe("/api/v1/ocr");
+    const init = request.mock.calls[0][1];
+    expect(init.body).toBeInstanceOf(FormData);
+    expect(new Headers(init.headers).get("Authorization")).toBe(
+      "Bearer device-token",
+    );
+  });
+
+  it("rejects an unsupported image before making a request", async () => {
+    const request = vi.fn();
+    vi.stubGlobal("fetch", request);
+    const image = new File(["text"], "message.txt", { type: "text/plain" });
+
+    await expect(extractTextFromImage(image)).rejects.toEqual(
+      new ChanApiError(415, "unsupported_image_type"),
+    );
+    expect(request).not.toHaveBeenCalled();
   });
 });

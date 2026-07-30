@@ -103,8 +103,9 @@ Biến môi trường cần thiết: xem
 | OpenPhish connector | THẬT nhưng khóa mặc định | chỉ bật sau khi có quyền bằng văn bản |
 | LLM L3 / pgvector similarity | MOCK / chưa nối | giữ đúng giới hạn hackathon trong architecture |
 | Gateway `/v1/analyze` | THẬT | public edge gọi Detection nội bộ |
+| Gateway `/v1/ocr` | THẬT | Tesseract `vie+eng` tự host, ảnh chỉ đi qua bộ nhớ |
 | Detection `/internal/v1/analyze` | THẬT | L2, Intel lookup và model inference |
-| Web PWA | THẬT | L0/L1 on-device, device token, `/v1/analyze` và hash-only lookup đã nối Gateway |
+| Web PWA | THẬT | L0/L1, OCR ảnh, local-only voice, `/v1/analyze` và hash-only lookup đã nối Gateway |
 | Android client | Chưa có trong nhánh này | sẽ gọi chung `/v1/analyze` |
 
 ## Lời gọi AI thật ở quyết định trung tâm

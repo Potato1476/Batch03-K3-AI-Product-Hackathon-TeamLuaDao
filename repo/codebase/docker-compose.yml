@@ -88,7 +88,9 @@ services:
       CHAN_DATABASE_URL: postgresql://chan:chan@postgres:5432/chan
       CHAN_REDIS_URL: redis://redis:6379/0
       CHAN_RULES_DIR: /app/rules
-      CHAN_OCR_PROVIDER: stub
+      CHAN_OCR_PROVIDER: tesseract
+      CHAN_OCR_LANGUAGE: vie+eng
+      CHAN_OCR_TIMEOUT_SECONDS: "20"
       CHAN_CORS_ORIGINS: http://localhost:3000,http://localhost:5173
       CHAN_DETECTION_API_URL: http://detection:8003
       CHAN_DETECTION_API_KEY: local-dev-detection-secret

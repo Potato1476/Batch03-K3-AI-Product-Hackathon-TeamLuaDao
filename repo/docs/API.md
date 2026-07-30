@@ -504,22 +504,23 @@ Text chưa ẩn danh bị từ chối và **không bị echo lại**:
 `multipart/form-data`, field `image`. Chấp nhận `image/png`, `image/jpeg`,
 `image/webp`, tối đa 6 MB.
 
-**Response 200**: `{ "text": "...", "provider": "paddle", "next_step": "POST /v1/analyze" }`
+**Response 200**: `{ "text": "...", "provider": "tesseract", "next_step": "POST /v1/analyze" }`
 
 Trả text rồi **dừng**. Client tự gọi `/v1/analyze` — server không tự nối chuỗi,
 để ảnh và phân tích không nằm trong cùng một request.
 
-Provider mặc định là `stub` và **báo lỗi thật thà** thay vì trả text rỗng (text
-rỗng sẽ khiến client hiển thị "Chưa phát hiện dấu hiệu" cho một ảnh chưa từng
-được đọc):
+Docker Compose dùng Tesseract `vie+eng` tự host và truyền ảnh qua stdin, không
+ghi file tạm. Cấu hình source mặc định vẫn là `stub` và **báo lỗi thật thà**
+thay vì trả text rỗng (text rỗng sẽ khiến client hiển thị "Chưa phát hiện dấu
+hiệu" cho một ảnh chưa từng được đọc):
 
 | Status | `detail` |
 |---|---|
 | 413 | `image_too_large` |
 | 415 | `unsupported_image_type` |
 | 422 | `empty_image` |
-| 501 | `ocr_provider_not_configured` |
-| 502 | lỗi OCR engine |
+| 501 | `ocr_provider_not_configured`, `ocr_provider_not_installed` |
+| 502 | `ocr_timeout`, `ocr_engine_failed`, `ocr_no_text_detected` |
 
 ---
 
@@ -829,8 +830,10 @@ CHAN_ANALYZE_PER_DEVICE_PER_MINUTE=20
 CHAN_ANALYZE_PER_IP_PER_MINUTE=60
 CHAN_LOOKUP_PER_DEVICE_PER_MINUTE=120
 CHAN_REPORT_PER_DEVICE_PER_DAY=30
-CHAN_OCR_PROVIDER=stub                          # stub | paddle
+CHAN_OCR_PROVIDER=tesseract                     # stub | tesseract | paddle
 CHAN_OCR_MAX_BYTES=6291456
+CHAN_OCR_LANGUAGE=vie+eng
+CHAN_OCR_TIMEOUT_SECONDS=20
 CHAN_ANALYSES_RETENTION_DAYS=90
 CHAN_ACCESS_LOG_RETENTION_DAYS=30
 ```

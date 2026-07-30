@@ -11,6 +11,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        tesseract-ocr \
+        tesseract-ocr-eng \
+        tesseract-ocr-vie \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY codebase/ml /app/ml
 COPY codebase/gateway /app/gateway
 # The Rule Bundle is data the service serves, so it ships inside the image and

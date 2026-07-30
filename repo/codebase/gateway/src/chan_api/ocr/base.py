@@ -1,8 +1,8 @@
 """The OCR seam.
 
-§12 chooses self-hosted PaddleOCR with Cloud Vision as a fallback. Both are heavy
-or paid, so the provider is pluggable and the default refuses honestly rather
-than pretending to work.
+The provider remains pluggable. Local Docker uses Tesseract because it supports
+Vietnamese on both ARM and x86 without a paid API; PaddleOCR remains available
+for deployments that provide its larger runtime.
 """
 
 from __future__ import annotations

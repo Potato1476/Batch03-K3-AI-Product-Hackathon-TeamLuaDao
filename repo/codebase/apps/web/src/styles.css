@@ -121,6 +121,12 @@ textarea { width: 100%; min-height: 170px; resize: vertical; border: 2px solid v
 textarea:focus, input:focus { outline: 3px solid var(--ink-200); border-color: var(--brand); }
 .upload-zone { width: 100%; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border: 2px dashed var(--ink-400); border-radius: 16px; color: var(--brand); background: var(--ink-50); font-size: 17px; }
 .upload-zone span { color: var(--ink-600); font-size: 16px; }
+.upload-zone.busy { cursor: progress; opacity: 0.72; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.voice-button { width: 100%; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 10px; border: 2px solid var(--brand); border-radius: 14px; color: var(--brand); background: var(--white); font-size: 17px; font-weight: 750; }
+.voice-button.listening { color: var(--on-color); border-color: var(--danger); background: var(--danger); animation: chanPulse 1.4s ease-in-out infinite; }
+.voice-button:disabled { cursor: progress; opacity: 0.65; }
+.input-status { margin: 10px 2px 0; color: var(--brand); font-size: 15px; font-weight: 700; line-height: 1.45; }
 .cta { width: 100%; min-height: 64px; border: 0; border-radius: 16px; color: var(--on-color); background: var(--brand); font-size: 21px; font-weight: 800; margin-top: 16px; }
 .cta.danger { background: var(--danger); }
 .cta:disabled { cursor: not-allowed; background: var(--ink-400); }

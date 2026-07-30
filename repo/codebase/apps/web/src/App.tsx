@@ -1,16 +1,33 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "./components/Icon";
 import {
+  ChanApiError,
+  extractTextFromImage,
   lookupIndicator,
   type AnalyzeResponse,
   type LookupKind,
   type LookupResult as LookupApiResult,
 } from "./api";
 import { analyzeMessage } from "./engine";
+import {
+  SpeechInputError,
+  startLocalSpeechRecognition,
+  type SpeechController,
+  type SpeechErrorCode,
+} from "./speech";
 
 type Screen = "home" | "input" | "loading" | "result" | "check" | "checkResult" | "checkClear" | "shield" | "settings";
 type SimulationKey = "mic" | "micMissing" | "ocr" | "offline";
-type ErrorKey = SimulationKey | "backend" | "lookupInvalid";
+type ErrorKey =
+  | SimulationKey
+  | "backend"
+  | "lookupInvalid"
+  | "imageTooLarge"
+  | "imageType"
+  | "ocrUnavailable"
+  | "speechLocal"
+  | "speechLanguage"
+  | "speechNoSpeech";
 type Simulations = Record<SimulationKey, boolean>;
 
 const sampleMessage =
@@ -202,6 +219,120 @@ function InputScreen({
   simulations: Simulations;
 }) {
   const [mode, setMode] = useState<"text" | "image">("text");
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrProvider, setOcrProvider] = useState("");
+  const [speechState, setSpeechState] = useState<
+    "idle" | "preparing" | "listening"
+  >("idle");
+  const imageInput = useRef<HTMLInputElement>(null);
+  const speechController = useRef<SpeechController | null>(null);
+  const speechBase = useRef("");
+
+  useEffect(
+    () => () => {
+      speechController.current?.abort();
+    },
+    [],
+  );
+
+  const mapSpeechError = (code: SpeechErrorCode): ErrorKey => {
+    if (code === "speech_permission_denied") return "mic";
+    if (code === "speech_not_supported") return "micMissing";
+    if (code === "speech_local_not_supported") return "speechLocal";
+    if (
+      code === "speech_language_unavailable" ||
+      code === "speech_language_downloading"
+    ) {
+      return "speechLanguage";
+    }
+    if (code === "speech_no_speech") return "speechNoSpeech";
+    return "mic";
+  };
+
+  const handleVoice = async () => {
+    if (speechState === "listening") {
+      speechController.current?.stop();
+      return;
+    }
+    if (simulations.micMissing) {
+      onError("micMissing");
+      return;
+    }
+    if (simulations.mic) {
+      onError("mic");
+      return;
+    }
+    onError(null);
+    speechBase.current = message.trim();
+    setSpeechState("preparing");
+    try {
+      speechController.current = await startLocalSpeechRecognition({
+        onTranscript: (transcript) => {
+          onMessage(
+            [speechBase.current, transcript].filter(Boolean).join(" ").trim(),
+          );
+        },
+        onError: (code) => {
+          speechController.current = null;
+          setSpeechState("idle");
+          onError(mapSpeechError(code));
+        },
+        onEnd: () => {
+          speechController.current = null;
+          setSpeechState("idle");
+        },
+      });
+      setSpeechState("listening");
+    } catch (speechError) {
+      speechController.current = null;
+      setSpeechState("idle");
+      onError(
+        speechError instanceof SpeechInputError
+          ? mapSpeechError(speechError.code)
+          : "mic",
+      );
+    }
+  };
+
+  const handleImage = async (file: File | undefined) => {
+    if (!file) return;
+    if (simulations.offline) {
+      onError("offline");
+      return;
+    }
+    if (simulations.ocr) {
+      onError("ocr");
+      return;
+    }
+    onError(null);
+    setOcrProvider("");
+    setOcrBusy(true);
+    try {
+      const result = await extractTextFromImage(file);
+      onMessage(result.text);
+      setOcrProvider(result.provider);
+      setMode("text");
+    } catch (ocrError) {
+      if (ocrError instanceof ChanApiError) {
+        if (ocrError.code === "image_too_large") onError("imageTooLarge");
+        else if (ocrError.code === "unsupported_image_type") onError("imageType");
+        else if (
+          ocrError.code === "ocr_provider_not_configured" ||
+          ocrError.code === "ocr_provider_not_installed"
+        ) {
+          onError("ocrUnavailable");
+        } else {
+          onError("ocr");
+        }
+      } else {
+        onError("ocr");
+      }
+    } finally {
+      setOcrBusy(false);
+      if (imageInput.current) imageInput.current.value = "";
+    }
+  };
+
   return (
     <section className="page">
       <BackButton onClick={onBack} />
@@ -209,18 +340,59 @@ function InputScreen({
       <p className="page-lead">CHAN sẽ chỉ ra những câu đang thúc ép hoặc thao túng bác.</p>
       {error && error !== "offline" && <ErrorBox error={error} onClose={() => onError(null)} onAction={() => onError(null)} />}
       <div className="mode-grid">
-        <button className={mode === "text" ? "mode active" : "mode"} onClick={() => {
-          setMode("text");
-          if (simulations.micMissing) onError("micMissing");
-          else if (simulations.mic) onError("mic");
-        }}><Icon name="mic" /> Đọc hoặc dán chữ</button>
+        <button className={mode === "text" ? "mode active" : "mode"} onClick={() => setMode("text")}><Icon name="mic" /> Nhập hoặc đọc chữ</button>
         <button className={mode === "image" ? "mode active" : "mode"} onClick={() => setMode("image")}><Icon name="camera" /> Gửi ảnh chụp</button>
       </div>
-      {mode === "image" && <button className="upload-zone" onClick={() => simulations.ocr && onError("ocr")}><Icon name="camera" size={40} /><strong>Chọn ảnh chụp tin nhắn</strong><span>Máy sẽ đọc chữ ngay trên thiết bị.</span></button>}
+      {mode === "image" && (
+        <>
+          <input
+            ref={imageInput}
+            className="visually-hidden"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            aria-label="Ảnh chụp tin nhắn"
+            onChange={(event) => void handleImage(event.target.files?.[0])}
+          />
+          <button
+            type="button"
+            className={`upload-zone${ocrBusy ? " busy" : ""}`}
+            disabled={ocrBusy}
+            onClick={() => imageInput.current?.click()}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => {
+              event.preventDefault();
+              void handleImage(event.dataTransfer.files[0]);
+            }}
+          >
+            <Icon name="camera" size={40} />
+            <strong>{ocrBusy ? "Đang đọc chữ trong ảnh…" : "Chọn ảnh chụp tin nhắn"}</strong>
+            <span>PNG, JPG hoặc WebP · tối đa 6 MB</span>
+          </button>
+        </>
+      )}
       <label className="field-label" htmlFor="message">Nội dung tin nhắn</label>
       <textarea id="message" value={message} onChange={(event) => onMessage(event.target.value)} placeholder="Bác dán tin nhắn vào đây…" />
+      <button
+        type="button"
+        className={`voice-button${speechState === "listening" ? " listening" : ""}`}
+        disabled={speechState === "preparing"}
+        aria-pressed={speechState === "listening"}
+        onClick={() => void handleVoice()}
+      >
+        <Icon name="mic" />
+        {speechState === "preparing"
+          ? "Đang chuẩn bị nhận giọng nói…"
+          : speechState === "listening"
+            ? "Đang nghe · bấm để dừng"
+            : "Đọc nội dung bằng giọng nói"}
+      </button>
+      {ocrProvider && (
+        <p className="input-status" role="status">
+          Đã đọc ảnh bằng {ocrProvider}. Bác xem lại chữ trước khi kiểm tra.
+        </p>
+      )}
       <button className="cta danger" disabled={!message.trim()} onClick={onAnalyze}>Kiểm tra ngay</button>
-      <InfoBox>CHAN không lưu nội dung bác nhập. Mã OTP sẽ không bao giờ rời khỏi máy.</InfoBox>
+      <InfoBox>Ảnh được OCR tự host và xoá ngay sau khi đọc. Giọng nói chỉ bật khi trình duyệt hỗ trợ xử lý cục bộ. Mã OTP không được gửi sang bước phân tích.</InfoBox>
     </section>
   );
 }
@@ -466,6 +638,12 @@ const errorCopy: Record<ErrorKey, { title: string; body: string; action: string 
   mic: { title: "Không dùng được micro", body: "Bác có thể mở quyền micro, hoặc dán chữ thay vì nói.", action: "Mở quyền micro" },
   micMissing: { title: "Không tìm thấy micro", body: "Bác vẫn có thể gửi ảnh chụp hoặc dán nội dung tin nhắn.", action: "Gửi ảnh thay" },
   ocr: { title: "Không đọc được chữ trong ảnh", body: "Bác thử chụp lại cho rõ, hoặc dán chữ vào ô bên dưới.", action: "Chụp lại" },
+  imageTooLarge: { title: "Ảnh lớn hơn 6 MB", body: "Bác hãy cắt bớt ảnh hoặc chọn ảnh có dung lượng nhỏ hơn.", action: "Chọn ảnh khác" },
+  imageType: { title: "Định dạng ảnh chưa hỗ trợ", body: "Bác hãy chọn ảnh PNG, JPG hoặc WebP.", action: "Chọn ảnh khác" },
+  ocrUnavailable: { title: "OCR chưa sẵn sàng", body: "Dịch vụ đọc ảnh chưa được cài trên máy chủ. Bác có thể dán chữ để kiểm tra.", action: "Dán chữ" },
+  speechLocal: { title: "Trình duyệt chưa hỗ trợ đọc riêng tư", body: "CHAN chỉ bật giọng nói khi âm thanh được xử lý ngay trên máy. Bác hãy dùng Chrome mới hoặc gửi ảnh.", action: "Gửi ảnh thay" },
+  speechLanguage: { title: "Chưa có gói giọng nói tiếng Việt", body: "Trình duyệt chưa tải xong dữ liệu tiếng Việt. Bác thử lại sau hoặc dán chữ.", action: "Thử lại" },
+  speechNoSpeech: { title: "Chưa nghe thấy nội dung", body: "Bác nói gần micro hơn rồi thử lại, hoặc dán chữ vào ô.", action: "Thử lại" },
   offline: { title: "Mất mạng", body: "CHAN vẫn quét được quy tắc trên máy, nhưng chưa tra được danh sách tài khoản.", action: "Thử lại" },
   backend: { title: "Chưa kết nối được hệ thống", body: "Máy chủ CHAN chưa sẵn sàng. Bác thử lại sau ít phút.", action: "Thử lại" },
   lookupInvalid: { title: "Thông tin chưa đúng định dạng", body: "Bác kiểm tra lại số tài khoản, số điện thoại hoặc đường link.", action: "Sửa lại" },

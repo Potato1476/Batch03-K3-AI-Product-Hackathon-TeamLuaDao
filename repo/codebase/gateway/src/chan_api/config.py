@@ -88,6 +88,8 @@ class AppConfig:
     # OCR
     ocr_provider: str = "stub"
     ocr_max_bytes: int = 6 * 1024 * 1024
+    ocr_language: str = "vie+eng"
+    ocr_timeout_seconds: float = 20.0
 
     # Feedback → private training-plane bridge
     training_api_url: str = ""
@@ -113,8 +115,10 @@ class AppConfig:
     @classmethod
     def from_environment(cls) -> "AppConfig":
         ocr_provider = os.environ.get("CHAN_OCR_PROVIDER", "stub").strip().lower()
-        if ocr_provider not in {"stub", "paddle"}:
-            raise ValueError("CHAN_OCR_PROVIDER must be stub or paddle")
+        if ocr_provider not in {"stub", "paddle", "tesseract"}:
+            raise ValueError(
+                "CHAN_OCR_PROVIDER must be stub, paddle, or tesseract"
+            )
 
         return cls(
             database_url=os.environ.get("CHAN_DATABASE_URL", ""),
@@ -136,6 +140,10 @@ class AppConfig:
             intel_api_key=os.environ.get("CHAN_INTEL_API_KEY", ""),
             ocr_provider=ocr_provider,
             ocr_max_bytes=_env_int("CHAN_OCR_MAX_BYTES", 6 * 1024 * 1024),
+            ocr_language=os.environ.get(
+                "CHAN_OCR_LANGUAGE", "vie+eng"
+            ).strip(),
+            ocr_timeout_seconds=_env_float("CHAN_OCR_TIMEOUT_SECONDS", 20.0),
             training_api_url=os.environ.get("CHAN_TRAINING_API_URL", ""),
             training_api_key=os.environ.get("CHAN_TRAINING_API_KEY", ""),
             analyses_retention_days=_env_int("CHAN_ANALYSES_RETENTION_DAYS", 90),

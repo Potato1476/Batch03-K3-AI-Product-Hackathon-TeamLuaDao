@@ -23,19 +23,28 @@ router = APIRouter(tags=["ocr"])
 _ALLOWED_TYPES = {"image/png", "image/jpeg", "image/webp"}
 
 _engine: OcrEngine | None = None
+_engine_provider = ""
 
 
-def _get_engine(config: AppConfig):  # noqa: ANN202
-    global _engine
-    if _engine is None:
+def _get_engine(config: AppConfig) -> OcrEngine:
+    global _engine, _engine_provider
+    if _engine is None or _engine_provider != config.ocr_provider:
         if config.ocr_provider == "paddle":
             from ..ocr.paddle import PaddleOcrEngine
 
             _engine = PaddleOcrEngine()
+        elif config.ocr_provider == "tesseract":
+            from ..ocr.tesseract import TesseractOcrEngine
+
+            _engine = TesseractOcrEngine(
+                language=config.ocr_language,
+                timeout_seconds=config.ocr_timeout_seconds,
+            )
         else:
             from ..ocr.stub import StubOcrEngine
 
             _engine = StubOcrEngine()
+        _engine_provider = config.ocr_provider
     return _engine
 
 

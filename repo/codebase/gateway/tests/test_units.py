@@ -46,6 +46,16 @@ def test_default_config_finds_the_bundle_in_a_checkout(monkeypatch) -> None:
     assert config.rules_dir.resolve() == RULES_DIR.resolve()
 
 
+def test_tesseract_is_a_supported_ocr_provider(monkeypatch) -> None:
+    from chan_api.config import AppConfig
+
+    monkeypatch.setenv("CHAN_OCR_PROVIDER", "tesseract")
+    monkeypatch.setenv("CHAN_OCR_LANGUAGE", "vie+eng")
+    config = AppConfig.from_environment()
+    assert config.ocr_provider == "tesseract"
+    assert config.ocr_language == "vie+eng"
+
+
 def test_bundle_maps_local_signals_onto_the_taxonomy(bundle) -> None:
     boosts = bundle.boosts_for(("apk_link",))
     assert set(boosts) <= set(SIGNAL_CODES)
