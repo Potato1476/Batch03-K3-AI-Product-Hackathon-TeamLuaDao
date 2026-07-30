@@ -29,7 +29,9 @@ SSL.
 
 Không commit connection string. Container mở web server ngay để đáp ứng giới
 hạn cold start của Vercel, đồng thời chạy các migration idempotent dưới
-`supervisord`; `/api/readyz` chỉ báo sẵn sàng khi backend và database dùng được.
+`supervisord`. Loopback wait-proxy giữ request `/api` trong lúc Gateway nối
+database, thay vì trả 502 ở cold start; `/api/readyz` chỉ báo sẵn sàng khi
+backend và database dùng được.
 
 Private training service nằm ở `training_api/` thay vì thư mục top-level
 `api/`, vì Vercel dành riêng `api/` để tự phát hiện Functions. Public path của

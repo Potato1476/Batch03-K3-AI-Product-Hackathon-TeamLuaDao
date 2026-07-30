@@ -2,21 +2,17 @@
 set -eu
 
 python - <<'PY'
+import socket
 import time
-import urllib.error
-import urllib.request
 
-for _ in range(50):
+for _ in range(20):
     try:
-        with urllib.request.urlopen(
-            "http://127.0.0.1:8000/healthz", timeout=0.5
-        ) as response:
-            if response.status == 200:
-                break
-    except (OSError, urllib.error.URLError):
-        time.sleep(0.1)
+        with socket.create_connection(("127.0.0.1", 7999), timeout=0.1):
+            break
+    except OSError:
+        time.sleep(0.05)
 else:
-    print("gateway was not ready after 5 seconds; starting nginx anyway")
+    print("wait proxy was not ready after 1 second; starting nginx anyway")
 PY
 
 exec /usr/sbin/nginx -c /tmp/nginx.conf -g "daemon off;"
