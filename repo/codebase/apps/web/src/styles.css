@@ -321,3 +321,5 @@ input { width: 100%; min-height: 64px; border: 2px solid var(--brand); border-ra
 .sender-toggle { flex: none; width: 52px; min-height: 48px; border-radius: 12px; border: 2px solid var(--ink-300); background: var(--white); color: var(--ink-600); font-size: 15px; font-weight: 800; }
 .thread-row.contact .sender-toggle { border-color: var(--danger); color: var(--danger); }
 .thread-row.user .sender-toggle { border-color: var(--brand); color: var(--brand); }
+.loading-elapsed { margin-top: 6px; color: var(--ink-500); font-size: 15px; font-variant-numeric: tabular-nums; }
+.cta[aria-busy="true"] { cursor: progress; opacity: 0.75; }

@@ -75,6 +75,9 @@ export function App() {
   const [contactName, setContactName] = useState("");
   const [threadAnalysis, setThreadAnalysis] = useState<AnalyzeThreadResponse | null>(null);
   const [lookupResult, setLookupResult] = useState<LookupApiResult | null>(null);
+  // One in-flight request at a time. Re-entry is what turns a slow server
+  // into a queue of duplicate work and a rate-limit error.
+  const [busy, setBusy] = useState(false);
   const [simulations, setSimulations] = useState<Simulations>({
     mic: false,
     micMissing: false,
@@ -94,11 +97,13 @@ export function App() {
     text: string,
     check: (text: string) => Promise<AnalyzeResponse>,
   ) => {
+    if (busy) return;
     if (simulations.offline) {
       setError("offline");
       return;
     }
     setError(null);
+    setBusy(true);
     go("loading");
     try {
       const result = await check(text);
@@ -108,6 +113,8 @@ export function App() {
     } catch {
       setError("backend");
       go("input");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -115,6 +122,7 @@ export function App() {
   const runDeepAnalysis = () => runCheck(analyzedMessage, deepAnalyzeMessage);
 
   const runThreadAnalysis = async () => {
+    if (busy) return;
     if (simulations.offline) {
       setError("offline");
       return;
@@ -125,6 +133,7 @@ export function App() {
       return;
     }
     setError(null);
+    setBusy(true);
     go("loading");
     try {
       const result = await analyzeThread(messages, contactName.trim());
@@ -133,15 +142,19 @@ export function App() {
     } catch {
       setError("backend");
       go("thread");
+    } finally {
+      setBusy(false);
     }
   };
 
   const runLookup = async () => {
+    if (busy) return;
     if (simulations.offline) {
       setError("offline");
       return;
     }
     setError(null);
+    setBusy(true);
     try {
       const result = await lookupIndicator(lookupKind, lookupValue);
       setLookupResult(result);
@@ -153,6 +166,8 @@ export function App() {
           ? "lookupInvalid"
           : "backend",
       );
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -182,6 +197,7 @@ export function App() {
               onMessage={setMessage}
               onBack={() => go("home")}
               onAnalyze={() => void runAnalysis()}
+              busy={busy}
               error={error}
               onError={setError}
               simulations={simulations}
@@ -220,6 +236,7 @@ export function App() {
               onValue={setLookupValue}
               onBack={() => go("home")}
               onLookup={() => void runLookup()}
+              busy={busy}
               error={error}
               onDismissError={() => setError(null)}
             />
@@ -308,6 +325,7 @@ function InputScreen({
   onMessage,
   onBack,
   onAnalyze,
+  busy,
   error,
   onError,
   simulations,
@@ -316,6 +334,7 @@ function InputScreen({
   onMessage: (value: string) => void;
   onBack: () => void;
   onAnalyze: () => void;
+  busy: boolean;
   error: ErrorKey | null;
   onError: (error: ErrorKey | null) => void;
   simulations: Simulations;
@@ -608,14 +627,38 @@ function InputScreen({
           Đã đọc ảnh bằng {ocrProvider}. Bác xem lại chữ trước khi kiểm tra.
         </p>
       )}
-      <button className="cta danger" disabled={!message.trim()} onClick={onAnalyze}>Kiểm tra ngay</button>
+      <button className="cta danger" disabled={busy || !message.trim()} onClick={onAnalyze} aria-busy={busy}>
+        {busy ? "Đang kiểm tra…" : "Kiểm tra ngay"}
+      </button>
       <InfoBox>Ảnh được OCR tự host và xoá ngay sau khi đọc. Giọng nói chỉ bật khi trình duyệt hỗ trợ xử lý cục bộ. Mã OTP không được gửi sang bước phân tích.</InfoBox>
     </section>
   );
 }
 
-function Loading() {
-  return <section className="loading-page" aria-live="polite"><span className="loading-dot">!</span><h1>Đang đọc tin nhắn…</h1><p>Máy đang tìm các câu thúc ép bác.</p></section>;
+/**
+ * A spinner that never changes reads as a frozen app, and a frozen app gets
+ * tapped again. The server can cold-start for tens of seconds, so the screen
+ * counts out loud and says what is happening once the wait stops being normal.
+ */
+function Loading({ label = "Đang đọc tin nhắn…" }: { label?: string }) {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const timer = window.setInterval(() => setSeconds((value) => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const slow = seconds >= 6;
+  return (
+    <section className="loading-page" aria-live="polite" aria-busy="true">
+      <span className="loading-dot">!</span>
+      <h1>{label}</h1>
+      <p>
+        {slow
+          ? "Máy chủ đang khởi động nên hơi lâu. Bác chờ thêm chút, đừng bấm lại."
+          : "Máy đang tìm các câu thúc ép bác."}
+      </p>
+      <p className="loading-elapsed">Đã chờ {seconds} giây</p>
+    </section>
+  );
 }
 
 const signalLabels: Record<string, string> = {
@@ -1052,6 +1095,7 @@ function Lookup({
   onValue,
   onBack,
   onLookup,
+  busy,
   error,
   onDismissError,
 }: {
@@ -1061,6 +1105,7 @@ function Lookup({
   onValue: (value: string) => void;
   onBack: () => void;
   onLookup: () => void;
+  busy: boolean;
   error: ErrorKey | null;
   onDismissError: () => void;
 }) {
@@ -1078,7 +1123,9 @@ function Lookup({
       </div>
       <label className="field-label" htmlFor="lookup">{labels[kind]} cần tra</label>
       <input id="lookup" value={value} onChange={(event) => onValue(event.target.value)} placeholder={kind === "account" ? "Nhập số tài khoản" : "Nhập thông tin"} />
-      <button className="cta" disabled={!value.trim()} onClick={onLookup}>Tra cứu báo cáo</button>
+      <button className="cta" disabled={busy || !value.trim()} onClick={onLookup} aria-busy={busy}>
+        {busy ? "Đang tra cứu…" : "Tra cứu báo cáo"}
+      </button>
       <InfoBox>Máy biến thông tin thành mã băm và chỉ gửi 5 ký tự đầu. Hệ thống không biết bác đang tra cứu gì.</InfoBox>
     </section>
   );

@@ -190,6 +190,61 @@ describe("CHAN web flow", () => {
     expect(screen.getByText("Bác xem giúp cháu.")).toBeInTheDocument();
   });
 
+  it("shows how long the wait has been instead of a frozen spinner", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    let release: (value: unknown) => void = () => {};
+    analyzeMessageMock.mockImplementation(
+      () => new Promise((resolve) => { release = resolve; }),
+    );
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tin nhắn đáng ngờ/i }));
+    await user.type(screen.getByLabelText("Nội dung tin nhắn"), "Chuyển tiền ngay.");
+    await user.click(screen.getByRole("button", { name: "Kiểm tra ngay" }));
+
+    expect(screen.getByText("Đang đọc tin nhắn…")).toBeInTheDocument();
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(screen.getByText(/Đã chờ 7 giây/)).toBeInTheDocument();
+    expect(screen.getByText(/Máy chủ đang khởi động/)).toBeInTheDocument();
+
+    release(highResult);
+    vi.useRealTimers();
+  });
+
+  it("refuses a second lookup while the first is still running", async () => {
+    let release: (value: unknown) => void = () => {};
+    lookupIndicatorMock.mockImplementation(
+      () => new Promise((resolve) => { release = resolve; }),
+    );
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tài khoản, số điện thoại/i }));
+    await user.click(screen.getByRole("button", { name: "Điện thoại" }));
+    await user.type(screen.getByLabelText("Điện thoại cần tra"), "0000000001");
+
+    const lookup = screen.getByRole("button", { name: "Tra cứu báo cáo" });
+    await user.click(lookup);
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Đang tra cứu…" })).toBeDisabled(),
+    );
+    expect(lookupIndicatorMock).toHaveBeenCalledTimes(1);
+
+    release({
+      kind: "phone",
+      displayValue: "0000000001",
+      matched: false,
+      match: null,
+      noMatchMessage: "Chưa có báo cáo về số điện thoại này.",
+      bundleVersion: "rb-test",
+    });
+    await waitFor(() =>
+      expect(screen.getByText(/KẾT QUẢ TRA CỨU/)).toBeInTheDocument(),
+    );
+  });
+
   it("extracts text from an uploaded screenshot", async () => {
     const user = userEvent.setup();
     render(<App />);
