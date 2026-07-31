@@ -1,0 +1,97 @@
+{
+  "conversation_id": "conv_neg_bank_001",
+  "category": "Bank",
+  "label": "legitimate",
+  "platform": "Tinder",
+  "language": "vi",
+  "total_messages": 8,
+  "stages_present": [
+    "greeting",
+    "main_discussion"
+  ],
+  "outcome": "legitimate_resolved",
+  "risk_score": 0.0,
+  "created_at": "2026-07-15T11:46:00Z",
+  "messages": [
+    {
+      "message_id": "msg_conv_neg_bank_001_001",
+      "sender": "customer",
+      "sender_name": "Khách hàng",
+      "text": "Cho em hỏi lãi suất tiết kiệm kỳ hạn 12 tháng bên mình hiện tại là bao nhiêu ạ?",
+      "timestamp": "2026-07-15T11:46:00Z",
+      "stage": "greeting",
+      "signals": [],
+      "risk": "none"
+    },
+    {
+      "message_id": "msg_conv_neg_bank_001_002",
+      "sender": "bank_staff",
+      "sender_name": "Tư vấn viên Bank",
+      "text": "Chào anh/chị, thẻ hết hạn sẽ được ngân hàng tự động phát hành lại miễn phí ạ.",
+      "timestamp": "2026-07-15T11:49:00Z",
+      "stage": "main_discussion",
+      "signals": [],
+      "risk": "none"
+    },
+    {
+      "message_id": "msg_conv_neg_bank_001_003",
+      "sender": "customer",
+      "sender_name": "Khách hàng",
+      "text": "Nếu gửi online trên app thì có được cộng thêm lãi suất không em?",
+      "timestamp": "2026-07-15T11:56:00Z",
+      "stage": "main_discussion",
+      "signals": [],
+      "risk": "none"
+    },
+    {
+      "message_id": "msg_conv_neg_bank_001_004",
+      "sender": "bank_staff",
+      "sender_name": "Tư vấn viên Bank",
+      "text": "Dạ gửi online được ưu đãi cộng thêm 0.3%/năm là 5.9%/năm ạ.",
+      "timestamp": "2026-07-15T12:01:00Z",
+      "stage": "main_discussion",
+      "signals": [],
+      "risk": "none"
+    },
+    {
+      "message_id": "msg_conv_neg_bank_001_005",
+      "sender": "customer",
+      "sender_name": "Khách hàng",
+      "text": "Gửi tiết kiệm online thì lúc cần rút trước hạn có được không?",
+      "timestamp": "2026-07-15T11:58:00Z",
+      "stage": "main_discussion",
+      "signals": [],
+      "risk": "none"
+    },
+    {
+      "message_id": "msg_conv_neg_bank_001_006",
+      "sender": "bank_staff",
+      "sender_name": "Tư vấn viên Bank",
+      "text": "Dạ rút trước hạn sẽ tính lãi suất không kỳ hạn ạ.",
+      "timestamp": "2026-07-15T12:11:00Z",
+      "stage": "main_discussion",
+      "signals": [],
+      "risk": "none"
+    },
+    {
+      "message_id": "msg_conv_neg_bank_001_007",
+      "sender": "customer",
+      "sender_name": "Khách hàng",
+      "text": "Cảm ơn em tư vấn rất chi tiết.",
+      "timestamp": "2026-07-15T12:04:00Z",
+      "stage": "main_discussion",
+      "signals": [],
+      "risk": "none"
+    },
+    {
+      "message_id": "msg_conv_neg_bank_001_008",
+      "sender": "bank_staff",
+      "sender_name": "Tư vấn viên Bank",
+      "text": "Dạ vâng, chúc anh/chị một ngày làm việc hiệu quả!",
+      "timestamp": "2026-07-15T12:21:00Z",
+      "stage": "main_discussion",
+      "signals": [],
+      "risk": "none"
+    }
+  ]
+}

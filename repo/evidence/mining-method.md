@@ -4,6 +4,10 @@
 > gán nhãn là gì, ai gán, script đâu. File này trả lời đúng bốn câu đó, và nói rõ
 > luôn những gì bộ số **không** chứng minh được.
 
+> **Dữ liệu thô không nằm trong repo** (481 MB / 15.840 file, đã gitignore).
+> Phần kiểm chứng được — tài liệu gán nhãn, metadata nguồn, và 3 hội thoại mẫu —
+> nằm ở [`dataset-card/`](dataset-card/).
+
 ## Đếm trên tập nào
 
 `repo/CHAN-Dataset/` — corpus hội thoại lừa đảo tiếng Việt do nhóm lắp ráp trong

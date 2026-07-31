@@ -1,0 +1,52 @@
+{
+  "dataset_name": "CHẮN",
+  "emotions": [
+    "Fear",
+    "Greed",
+    "Compassion",
+    "Romance",
+    "Lust",
+    "Curiosity",
+    "Authority",
+    "Social",
+    "Hybrid"
+  ],
+  "outcomes": [
+    "victim_transferred_money",
+    "victim_detected_and_blocked",
+    "victim_suspicious_refused",
+    "legitimate_resolved"
+  ],
+  "stages": [
+    "contact",
+    "building_trust",
+    "solicitation",
+    "demanding_money",
+    "conclusion"
+  ],
+  "risk_levels": [
+    "none",
+    "low",
+    "medium",
+    "high",
+    "critical"
+  ],
+  "platforms": [
+    "Zalo",
+    "Facebook",
+    "SMS",
+    "Telegram",
+    "Tinder",
+    "Phone",
+    "Viber"
+  ],
+  "seed_sources": [
+    "seed_phishvn",
+    "seed_sms_spam",
+    "seed_conscambench",
+    "seed_emscad",
+    "seed_scc",
+    "seed_chongluadao"
+  ],
+  "synthetic_source": "synthetic_llm"
+}

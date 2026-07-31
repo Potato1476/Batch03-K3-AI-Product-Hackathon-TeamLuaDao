@@ -1,0 +1,226 @@
+[
+  {
+    "emotion": "Fear",
+    "scenario": "Police",
+    "code": "#1",
+    "source": "seed_phishvn",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Fear",
+    "scenario": "Tax",
+    "code": "#3",
+    "source": "seed_phishvn",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Fear",
+    "scenario": "Electricity",
+    "code": "#4",
+    "source": "seed_chongluadao",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Fear",
+    "scenario": "Court",
+    "code": "#1",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Fear",
+    "scenario": "Bank",
+    "code": "#2",
+    "source": "seed_sms_spam",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Fear",
+    "scenario": "Customs",
+    "code": "#5",
+    "source": "seed_phishvn",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Greed",
+    "scenario": "Crypto",
+    "code": "#12",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Greed",
+    "scenario": "Forex",
+    "code": "#13",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Greed",
+    "scenario": "Stock",
+    "code": "#14",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Greed",
+    "scenario": "MLM",
+    "code": "#12",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Greed",
+    "scenario": "AI_Bot",
+    "code": "#12",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Greed",
+    "scenario": "Task",
+    "code": "#18",
+    "source": "seed_emscad",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Compassion",
+    "scenario": "Charity",
+    "code": "#19",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Compassion",
+    "scenario": "Sick_Urgent",
+    "code": "#20",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Romance",
+    "scenario": "Facebook",
+    "code": "#8",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Romance",
+    "scenario": "Tinder",
+    "code": "#10",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Romance",
+    "scenario": "Telegram",
+    "code": "#24",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Romance",
+    "scenario": "DatingApp",
+    "code": "#10",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Lust",
+    "scenario": "Sextortion",
+    "code": "#22",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Lust",
+    "scenario": "Sugar",
+    "code": "#11",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Curiosity",
+    "scenario": "Prize",
+    "code": "#16",
+    "source": "seed_sms_spam",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Curiosity",
+    "scenario": "Refund",
+    "code": "#15",
+    "source": "seed_sms_spam",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Curiosity",
+    "scenario": "Package_Foreign",
+    "code": "#21",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Authority",
+    "scenario": "Police",
+    "code": "#1",
+    "source": "seed_phishvn",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Authority",
+    "scenario": "Bank",
+    "code": "#2",
+    "source": "seed_sms_spam",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Social",
+    "scenario": "Hacked_FB",
+    "code": "#8",
+    "source": "seed_chongluadao",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Social",
+    "scenario": "Hacked_Zalo",
+    "code": "#9",
+    "source": "seed_chongluadao",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Social",
+    "scenario": "Relative_Borrow",
+    "code": "#7",
+    "source": "seed_conscambench",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Social",
+    "scenario": "School",
+    "code": "#6",
+    "source": "seed_chongluadao",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Hybrid",
+    "scenario": "Telegram_Redirect",
+    "code": "#24",
+    "source": "seed_scc",
+    "source_type": "seed"
+  },
+  {
+    "emotion": "Hybrid",
+    "scenario": "VideoCall",
+    "code": "#23",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  },
+  {
+    "emotion": "Hybrid",
+    "scenario": "Deepfake",
+    "code": "#25",
+    "source": "synthetic_llm",
+    "source_type": "synthetic"
+  }
+]

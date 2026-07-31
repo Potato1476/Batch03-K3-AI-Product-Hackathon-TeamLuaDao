@@ -1,6 +1,6 @@
-# Reflection — Hùng Anh
+# Reflection — Nguyễn Tuấn Anh
 
-**Vai trò:** Android Developer
+**Vai trò:** Chuẩn bị dataset · **Mã HV:** 2A2026001669
 
 > Rubric chấm riêng phần này: vai trò + phần mình làm + AI hỗ trợ thế nào + **một
 > bài học từ case fail của chính nhóm**. Viết bằng lời của bạn, khoảng 300-500
@@ -11,21 +11,19 @@
 
 ## Hồ sơ thực tế (tự động từ git — dùng làm dữ kiện, đừng chép lại)
 
-**Git ghi nhận:** 3 commit dưới tên `Lystiger` (dohunganh5002@gmail.com).
+**Git ghi nhận: 0 commit dưới tên bạn.**
 
-**Vùng file đã đụng:**
-```
-.gitignore
-repo/README.md
-repo/codebase/README.md
-repo/codebase/apps
-repo/design/README.md
-```
+Điều này không có nghĩa bạn không làm gì — nhiều việc thật (thiết kế, thử
+nghiệm, viết case, khảo sát, dựng slide) không đi qua git. Nhưng **rubric chấm
+trên artifact trong repo**, và luật vibe-coding hỏi bạn về "phần có tên mình".
 
-**Commit:**
-- `e68c04d5d` Doc: Design and codebase documents
-- `0e990114e` Add: FE demo
-- `bd69d5143` Add: Design layout for FE
+Trước CP5, làm một trong hai:
+1. commit phần việc của bạn vào repo dưới tên bạn (case kiểm thử, log validation,
+   nội dung slide, bản thiết kế…), hoặc
+2. sửa bảng phân công trong `README.md` cho khớp thực tế — đứng tên một phần bạn
+   giải thích được, thay vì một phần bạn không mở ra được.
+
+Đứng tên phần mình không giải thích được thì phần đó **0 điểm** (rubric §Reflection).
 
 
 ---
@@ -59,6 +57,8 @@ bạn dính trực tiếp, và viết bạn hiểu ra điều gì:)*
 - Golden set 20/20 nhưng probe độc lập chỉ 22/24 — bộ case đang đo lại thứ đã biết.
 
 TODO
+
+*(Nguyên liệu: bảy case fail thật có bằng chứng trong [`DECISION-LOG.md`](DECISION-LOG.md) — chọn một mục mình dính trực tiếp, đừng chép lại.)*
 
 ## 4. Nếu làm lại, mình làm khác chỗ nào
 

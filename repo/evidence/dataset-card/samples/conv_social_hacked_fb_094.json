@@ -1,0 +1,191 @@
+{
+  "conversation_id": "conv_social_hacked_fb_094",
+  "scenario": "Hacked_FB",
+  "sub_scenario": "hacked_fb_variant_4",
+  "code": "#8",
+  "emotion": "Social",
+  "source": "seed_chongluadao",
+  "source_type": "seed",
+  "platform": "Viber",
+  "language": "vi",
+  "total_messages": 15,
+  "stages_present": [
+    "contact",
+    "building_trust",
+    "solicitation",
+    "demanding_money",
+    "conclusion"
+  ],
+  "outcome": "victim_transferred_money",
+  "risk_score": 0.78,
+  "created_at": "2026-07-15T17:32:00Z",
+  "messages": [
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_001",
+      "sender": "scammer",
+      "sender_name": "Trợ lý Nguyễn Thanh Hà",
+      "text": "Hi bạn! Bạn có đang rảnh không, cho mình nhờ tí việc quan trọng này!",
+      "timestamp": "2026-07-15T17:32:00Z",
+      "stage": "contact",
+      "signals": [
+        "account_takeover_borrow"
+      ],
+      "risk": "medium"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_002",
+      "sender": "victim",
+      "sender_name": "Nạn nhân",
+      "text": "Alo bạn, mình đang nghe đây. Cần mình giúp gì nào?",
+      "timestamp": "2026-07-15T17:35:00Z",
+      "stage": "contact",
+      "signals": [],
+      "risk": "low"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_003",
+      "sender": "scammer",
+      "sender_name": "Trợ lý Nguyễn Thanh Hà",
+      "text": "Tài khoản ngân hàng của mình đang bị lỗi bảo trì đột xuất, mà mình cần chuyển tiền thanh toán tiền hàng gấp cho khách.",
+      "timestamp": "2026-07-15T17:34:00Z",
+      "stage": "building_trust",
+      "signals": [
+        "account_takeover_borrow"
+      ],
+      "risk": "high"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_004",
+      "sender": "victim",
+      "sender_name": "Nạn nhân",
+      "text": "Cần chuyển bao nhiêu vậy bạn? Tiền hàng có nhiều không?",
+      "timestamp": "2026-07-15T17:35:00Z",
+      "stage": "building_trust",
+      "signals": [],
+      "risk": "low"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_005",
+      "sender": "scammer",
+      "sender_name": "Trợ lý Nguyễn Thanh Hà",
+      "text": "Bạn chuyển giùm mình qua số tài khoản đối tác này, tối khoảng 8h xong việc mình chuyển lại liền.",
+      "timestamp": "2026-07-15T17:40:00Z",
+      "stage": "solicitation",
+      "signals": [
+        "account_takeover_borrow"
+      ],
+      "risk": "high"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_006",
+      "sender": "victim",
+      "sender_name": "Nạn nhân",
+      "text": "Đọc số tài khoản và ngân hàng đi mình chuyển giúp cho.",
+      "timestamp": "2026-07-15T17:37:00Z",
+      "stage": "solicitation",
+      "signals": [],
+      "risk": "low"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_007",
+      "sender": "scammer",
+      "sender_name": "Trợ lý Nguyễn Thanh Hà",
+      "text": "Bạn chuyển giúp mình 7,000,000 VNĐ qua STK đối tác này nhé: 8160180500 - Ngân hàng Vietcombank (Chủ TK: Le Thi Mai).",
+      "timestamp": "2026-07-15T17:44:00Z",
+      "stage": "demanding_money",
+      "signals": [
+        "account_takeover_borrow",
+        "advance_fee_request"
+      ],
+      "risk": "critical"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_008",
+      "sender": "scammer",
+      "sender_name": "Trợ lý Nguyễn Thanh Hà",
+      "text": "Cám ơn bạn tốt nhiều nha, xong việc mình gọi lại ngay!",
+      "timestamp": "2026-07-15T17:39:00Z",
+      "stage": "demanding_money",
+      "signals": [
+        "fake_receipt_screenshot"
+      ],
+      "risk": "critical"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_009",
+      "sender": "victim",
+      "sender_name": "Nạn nhân",
+      "text": "Tôi đã hoàn tất giao dịch chuyển 7,000,000 VNĐ rồi, cán bộ xem biên lai nhé.",
+      "timestamp": "2026-07-15T17:48:00Z",
+      "stage": "conclusion",
+      "signals": [],
+      "risk": "low"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_010",
+      "sender": "scammer",
+      "sender_name": "Trợ lý Nguyễn Thanh Hà",
+      "text": "Cơ quan kiểm toán đã nhận thông tin, anh/chị vui lòng chờ 15 phút để cập nhật hồ sơ.",
+      "timestamp": "2026-07-15T17:50:00Z",
+      "stage": "conclusion",
+      "signals": [
+        "urgent_threat"
+      ],
+      "risk": "medium"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_011",
+      "sender": "victim",
+      "sender_name": "Nạn nhân",
+      "text": "Tôi đã chuyển xong 7,000,000 VNĐ vào STK 8160180500 ngân hàng Vietcombank rồi, kiểm tra giúp tôi.",
+      "timestamp": "2026-07-15T18:12:00Z",
+      "stage": "conclusion",
+      "signals": [],
+      "risk": "low"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_012",
+      "sender": "scammer",
+      "sender_name": "Trợ lý Nguyễn Thanh Hà",
+      "text": "Cơ quan kiểm toán đã nhận thông tin, anh/chị vui lòng chờ 15 phút để cập nhật hồ sơ.",
+      "timestamp": "2026-07-15T17:54:00Z",
+      "stage": "conclusion",
+      "signals": [
+        "urgent_threat"
+      ],
+      "risk": "medium"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_013",
+      "sender": "victim",
+      "sender_name": "Nạn nhân",
+      "text": "Tôi đã hoàn tất giao dịch chuyển 7,000,000 VNĐ rồi, cán bộ xem biên lai nhé.",
+      "timestamp": "2026-07-15T18:08:00Z",
+      "stage": "conclusion",
+      "signals": [],
+      "risk": "low"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_014",
+      "sender": "scammer",
+      "sender_name": "Trợ lý Nguyễn Thanh Hà",
+      "text": "Hệ thống đang đối soát dữ liệu, anh/chị giữ máy và không được tắt thiết bị.",
+      "timestamp": "2026-07-15T18:11:00Z",
+      "stage": "conclusion",
+      "signals": [
+        "urgent_threat"
+      ],
+      "risk": "medium"
+    },
+    {
+      "message_id": "msg_conv_social_hacked_fb_094_015",
+      "sender": "victim",
+      "sender_name": "Nạn nhân",
+      "text": "Tôi đã chuyển xong 7,000,000 VNĐ vào STK 8160180500 ngân hàng Vietcombank rồi, kiểm tra giúp tôi.",
+      "timestamp": "2026-07-15T18:00:00Z",
+      "stage": "conclusion",
+      "signals": [],
+      "risk": "low"
+    }
+  ]
+}

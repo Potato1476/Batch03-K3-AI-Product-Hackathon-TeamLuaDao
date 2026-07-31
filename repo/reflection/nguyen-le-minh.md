@@ -1,6 +1,6 @@
 # Reflection — Nguyễn Lê Minh
 
-**Vai trò:** Web Developer
+**Vai trò:** BE Web · **Mã HV:** 2A202601573
 
 > Rubric chấm riêng phần này: vai trò + phần mình làm + AI hỗ trợ thế nào + **một
 > bài học từ case fail của chính nhóm**. Viết bằng lời của bạn, khoảng 300-500
@@ -75,6 +75,8 @@ bạn dính trực tiếp, và viết bạn hiểu ra điều gì:)*
 - Golden set 20/20 nhưng probe độc lập chỉ 22/24 — bộ case đang đo lại thứ đã biết.
 
 TODO
+
+*(Nguyên liệu: bảy case fail thật có bằng chứng trong [`DECISION-LOG.md`](DECISION-LOG.md) — chọn một mục mình dính trực tiếp, đừng chép lại.)*
 
 ## 4. Nếu làm lại, mình làm khác chỗ nào
 

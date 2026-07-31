@@ -1,0 +1,29 @@
+{
+  "seeds": [
+    {
+      "name": "seed_phishvn",
+      "description": "PhishVN Dataset - Mendeley Data"
+    },
+    {
+      "name": "seed_sms_spam",
+      "description": "Vietnamese SMS Spam - VNCERT & GitHub"
+    },
+    {
+      "name": "seed_conscambench",
+      "description": "ConScamBench-278"
+    },
+    {
+      "name": "seed_emscad",
+      "description": "Employment Scam Aegean Dataset (EMSCAD)"
+    },
+    {
+      "name": "seed_scc",
+      "description": "Scam Conversation Corpus - Zenodo"
+    },
+    {
+      "name": "seed_chongluadao",
+      "description": "ChongLuaDao.vn Anti-Scam Database"
+    }
+  ],
+  "synthetic": "synthetic_llm"
+}

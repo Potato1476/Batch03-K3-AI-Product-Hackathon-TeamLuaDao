@@ -1,0 +1,52 @@
+{
+  "Fear": [
+    "Police",
+    "Tax",
+    "Electricity",
+    "Court",
+    "Bank",
+    "Customs"
+  ],
+  "Greed": [
+    "Crypto",
+    "Forex",
+    "Stock",
+    "MLM",
+    "AI_Bot",
+    "Task"
+  ],
+  "Compassion": [
+    "Charity",
+    "Sick_Urgent"
+  ],
+  "Romance": [
+    "Facebook",
+    "Tinder",
+    "Telegram",
+    "DatingApp"
+  ],
+  "Lust": [
+    "Sextortion",
+    "Sugar"
+  ],
+  "Curiosity": [
+    "Prize",
+    "Refund",
+    "Package_Foreign"
+  ],
+  "Authority": [
+    "Police",
+    "Bank"
+  ],
+  "Social": [
+    "Hacked_FB",
+    "Hacked_Zalo",
+    "Relative_Borrow",
+    "School"
+  ],
+  "Hybrid": [
+    "Telegram_Redirect",
+    "VideoCall",
+    "Deepfake"
+  ]
+}

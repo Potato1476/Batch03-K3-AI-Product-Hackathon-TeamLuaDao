@@ -1,0 +1,191 @@
+[
+  {
+    "id": "authority_impersonation",
+    "name": "Giả danh cơ quan công quyền",
+    "severity": "critical",
+    "category": "Authority",
+    "description": "Giả làm công an, viện kiểm sát, tòa án"
+  },
+  {
+    "id": "bank_impersonation",
+    "name": "Giả danh ngân hàng",
+    "severity": "high",
+    "category": "Financial",
+    "description": "Giả cán bộ ngân hàng thông báo khóa tài khoản, vay nợ"
+  },
+  {
+    "id": "urgent_threat",
+    "name": "Đe dọa khẩn cấp",
+    "severity": "critical",
+    "category": "Psychological",
+    "description": "Đe dọa bắt giam, niêm phong tài sản nếu không nộp tiền"
+  },
+  {
+    "id": "high_profit_guarantee",
+    "name": "Cam kết lợi nhuận cao",
+    "severity": "high",
+    "category": "Greed",
+    "description": "Hứa hẹn lợi nhuận khủng 20-50% không rủi ro"
+  },
+  {
+    "id": "advance_fee_request",
+    "name": "Yêu cầu ứng phí trước",
+    "severity": "high",
+    "category": "Financial",
+    "description": "Yêu cầu đóng phí thủ tục, phí giải ngân trước"
+  },
+  {
+    "id": "otp_phishing",
+    "name": "Yêu cầu mã OTP / Mật khẩu",
+    "severity": "critical",
+    "category": "Technical",
+    "description": "Dụ dỗ cung cấp mã xác thực OTP hoặc password"
+  },
+  {
+    "id": "malicious_link",
+    "name": "Gửi liên kết giả mạo / độc hại",
+    "severity": "high",
+    "category": "Technical",
+    "description": "Gửi URL lạ, trang web giả mạo hoặc app APK"
+  },
+  {
+    "id": "relocation_to_telegram",
+    "name": "Yêu cầu chuyển sang Telegram",
+    "severity": "medium",
+    "category": "Social",
+    "description": "Yêu cầu thoát Zalo/FB chuyển qua Telegram bí mật"
+  },
+  {
+    "id": "fake_receipt_screenshot",
+    "name": "Ảnh biên lai giả",
+    "severity": "medium",
+    "category": "Visual",
+    "description": "Gửi ảnh xác nhận chuyển khoản Photoshop"
+  },
+  {
+    "id": "fake_job_task",
+    "name": "Nhiệm vụ online kiếm tiền",
+    "severity": "high",
+    "category": "Greed",
+    "description": "Xem video, thả tim TikTok, chuyển tiền nâng cấp VIP"
+  },
+  {
+    "id": "romance_trap",
+    "name": "Dụ dỗ tình cảm",
+    "severity": "medium",
+    "category": "Emotional",
+    "description": "Tạo mối quan hệ yêu đương ảo để vay tiền"
+  },
+  {
+    "id": "sextortion_blackmail",
+    "name": "Tống tiền bằng ảnh/clip nhạy cảm",
+    "severity": "critical",
+    "category": "Extortion",
+    "description": "Đe dọa tung ảnh/video nhạy cảm nếu không trả tiền"
+  },
+  {
+    "id": "sugar_baby_trap",
+    "name": "Bẫy bao nuôi Sugar",
+    "severity": "high",
+    "category": "Lust",
+    "description": "Hứa trợ cấp tiền lớn nhưng bắt nộp phí xác thực"
+  },
+  {
+    "id": "emergency_family_accident",
+    "name": "Báo tin cấp cứu tai nạn",
+    "severity": "critical",
+    "category": "Urgency",
+    "description": "Giả bác sĩ/công an báo con/người thân cấp cứu"
+  },
+  {
+    "id": "charity_fraud",
+    "name": "Kêu gọi từ thiện giả",
+    "severity": "medium",
+    "category": "Social",
+    "description": "Lợi dụng hoàn cảnh thương tâm để nhận tiền từ thiện cá nhân"
+  },
+  {
+    "id": "e_commerce_refund",
+    "name": "Hoàn tiền TMĐT",
+    "severity": "medium",
+    "category": "Commercial",
+    "description": "Thông báo đền bù hàng hỏng Shopee/Lazada đòi click link"
+  },
+  {
+    "id": "prize_claim_fee",
+    "name": "Trúng thưởng đòi phí nhận quà",
+    "severity": "high",
+    "category": "Greed",
+    "description": "Thông báo trúng xe/tiền tỷ đòi đóng thuế TNCN trước"
+  },
+  {
+    "id": "foreign_package_customs",
+    "name": "Hàng ngoại thông quan",
+    "severity": "high",
+    "category": "Logistics",
+    "description": "Gửi quà nước ngoài bị giữ ở hải quan cần tiền cước"
+  },
+  {
+    "id": "deepfake_video_call",
+    "name": "Cuộc gọi video Deepfake",
+    "severity": "high",
+    "category": "Technical",
+    "description": "Gọi video chập chờn 5s rồi cúp máy để giả mặt"
+  },
+  {
+    "id": "account_takeover_borrow",
+    "name": "Tài khoản bị hack mượn tiền",
+    "severity": "high",
+    "category": "Social",
+    "description": "Hack Zalo/FB nhắn mượn tiền gấp cho bạn bè"
+  },
+  {
+    "id": "fake_utility_bill",
+    "name": "Giả nợ tiền điện/nước",
+    "severity": "medium",
+    "category": "Utility",
+    "description": "Dọa cắt điện nước nếu không nộp tiền gấp"
+  },
+  {
+    "id": "tax_app_installation",
+    "name": "Yêu cầu cài app Thuế giả",
+    "severity": "critical",
+    "category": "Malware",
+    "description": "Dụ dỗ tải file APK Dịch vụ công để chiếm quyền phone"
+  },
+  {
+    "id": "fake_court_subpoena",
+    "name": "Lệnh triệu tập tòa án giả",
+    "severity": "critical",
+    "category": "Legal",
+    "description": "Gửi giấy triệu tập tòa án qua mạng"
+  },
+  {
+    "id": "crypto_copy_trade",
+    "name": "Dụ dỗ sàn Crypto rác",
+    "severity": "high",
+    "category": "Investment",
+    "description": "Mời gọi đầu tư coin rác, copy trade tài khoản"
+  },
+  {
+    "id": "pyramid_mlm_recruitment",
+    "name": "Chiêu dụ đa cấp VIP",
+    "severity": "medium",
+    "category": "Investment",
+    "description": "Lôi kéo đóng tiền làm hệ thống đa cấp"
+  },
+  {
+    "id": "school_accident_scam",
+    "name": "Học sinh cấp cứu",
+    "severity": "critical",
+    "category": "Urgency",
+    "description": "Báo phụ huynh con ngã trường học đang cấp cứu"
+  },
+  {
+    "id": "fake_qr_code",
+    "name": "Mã QR chuyển tiền độc hại",
+    "severity": "high",
+    "category": "Technical",
+    "description": "Gửi mã QR giả mạo để chiếm tài khoản bank"
+  }
+]
