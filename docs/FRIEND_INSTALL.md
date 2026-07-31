@@ -6,7 +6,7 @@ USB hoặc Android Studio.
 ## 1. Tải và cài ứng dụng
 
 1. Mở liên kết sau bằng Chrome trên điện thoại:
-   [Tải CHAN demo APK](https://github.com/lystiger/CHAN/releases/download/sprint03-demo/app-debug.apk).
+   [Tải CHAN demo APK](https://github.com/lystiger/CHAN/releases/latest/download/app-debug.apk).
 2. Nếu Chrome hỏi, chọn **Vẫn tải xuống**. Đây là bản demo do nhóm tự build nên
    không đến từ Play Store.
 3. Mở file `app-debug.apk` vừa tải.
@@ -18,7 +18,7 @@ USB hoặc Android Studio.
 Thông tin bản demo:
 
 - package: `com.chan.app`
-- phiên bản: `0.3.0-sprint03`
+- phiên bản: `0.3.1-sprint03`
 - Android tối thiểu: Android 7
 - backend: `https://chan-flame.vercel.app/api/`
 

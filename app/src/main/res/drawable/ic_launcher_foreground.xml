@@ -1,15 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive-icon foreground: the umbrella-and-check symbol from
+  docs/chan-logo-horizontal-corrected.svg. The wordmark is deliberately dropped —
+  "CHAN" is unreadable at launcher size and the launcher already prints the label.
+
+  The symbol occupies x[72,440] y[80,411] in the logo's 512-unit coordinate space.
+  The group transform maps that box to 64dp centred on (54,54), which keeps every
+  extreme point inside the 66dp adaptive-icon safe circle.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,26 L78,35 L78,56 C78,72 67,81 54,85 C41,81 30,72 30,56 L30,35 Z" />
-    <path
-        android:strokeColor="#26339E"
-        android:strokeWidth="6"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M43,55 L51,63 L66,47" />
+    <group
+        android:translateX="9.48"
+        android:translateY="11.3"
+        android:scaleX="0.17391"
+        android:scaleY="0.17391">
+        <path
+            android:fillColor="#3F46B5"
+            android:pathData="M72,252C96,174 164,122 256,112c-38,31 -66,78 -86,136 -31,-22 -66,-20 -98,4Z" />
+        <path
+            android:fillColor="#2F9CE5"
+            android:pathData="M170,248c20,-58 48,-105 86,-136 38,31 66,78 86,136 -26,-18 -54,-25 -86,-25s-60,7 -86,25Z" />
+        <path
+            android:fillColor="#9FC3EC"
+            android:pathData="M256,112c92,10 160,62 184,140 -32,-24 -67,-26 -98,-4 -20,-58 -48,-105 -86,-136Z" />
+        <path
+            android:fillColor="#3F46B5"
+            android:pathData="M249,112 L253,91c1,-7 5,-11 10,-11s9,4 10,11l4,21Z" />
+        <path
+            android:fillColor="#2563EB"
+            android:pathData="m145,331 l31,-29 50,54 146,-172 24,20 -167,207Z" />
+    </group>
 </vector>

@@ -47,7 +47,7 @@ class AndroidProtectionStatusNotifier(context: Context) : ProtectionStatusNotifi
         if (!manager.areNotificationsEnabled()) return false
 
         val notification = NotificationCompat.Builder(context, CHANNEL_PROTECTION_STATUS)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.status_notification_title))
             .setContentText(context.getString(R.string.status_notification_body))
             .setPriority(NotificationCompat.PRIORITY_LOW)

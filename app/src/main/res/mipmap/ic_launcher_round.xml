@@ -1,18 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Legacy (API 24-25) round launcher icon; see mipmap/ic_launcher.xml for why the
+  symbol is drawn larger here than in the adaptive foreground.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#26339E"
-        android:pathData="M54,54 m-54,0 a54,54 0 1,0 108,0 a54,54 0 1,0 -108,0 Z" />
-    <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,30 L74,37 L74,56 C74,70 65,77 54,81 C43,77 34,70 34,56 L34,37 Z" />
-    <path
-        android:strokeColor="#26339E"
-        android:strokeWidth="5"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M45,55 L52,62 L64,48" />
+        android:pathData="M54,54 m-54,0 a54,54 0 1,0 108,0 a54,54 0 1,0 -108,0 Z" />
+    <group
+        android:translateX="1.13"
+        android:translateY="3.3"
+        android:scaleX="0.20652"
+        android:scaleY="0.20652">
+        <path
+            android:fillColor="#3F46B5"
+            android:pathData="M72,252C96,174 164,122 256,112c-38,31 -66,78 -86,136 -31,-22 -66,-20 -98,4Z" />
+        <path
+            android:fillColor="#2F9CE5"
+            android:pathData="M170,248c20,-58 48,-105 86,-136 38,31 66,78 86,136 -26,-18 -54,-25 -86,-25s-60,7 -86,25Z" />
+        <path
+            android:fillColor="#9FC3EC"
+            android:pathData="M256,112c92,10 160,62 184,140 -32,-24 -67,-26 -98,-4 -20,-58 -48,-105 -86,-136Z" />
+        <path
+            android:fillColor="#3F46B5"
+            android:pathData="M249,112 L253,91c1,-7 5,-11 10,-11s9,4 10,11l4,21Z" />
+        <path
+            android:fillColor="#2563EB"
+            android:pathData="m145,331 l31,-29 50,54 146,-172 24,20 -167,207Z" />
+    </group>
 </vector>
