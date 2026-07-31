@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Notification small icon. Android masks small icons to a single colour and keeps
+  only the alpha channel, so this is the CHAN symbol drawn as one flat silhouette
+  rather than the multi-colour launcher artwork. The three umbrella panels overlap
+  into a solid dome; the check mark reads as a tick beside it.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFF">
+    <group
+        android:translateX="-3.305"
+        android:translateY="-2.677"
+        android:scaleX="0.059783"
+        android:scaleY="0.059783">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M72,252C96,174 164,122 256,112c-38,31 -66,78 -86,136 -31,-22 -66,-20 -98,4Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M170,248c20,-58 48,-105 86,-136 38,31 66,78 86,136 -26,-18 -54,-25 -86,-25s-60,7 -86,25Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M256,112c92,10 160,62 184,140 -32,-24 -67,-26 -98,-4 -20,-58 -48,-105 -86,-136Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M249,112 L253,91c1,-7 5,-11 10,-11s9,4 10,11l4,21Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="m145,331 l31,-29 50,54 146,-172 24,20 -167,207Z" />
+    </group>
+</vector>

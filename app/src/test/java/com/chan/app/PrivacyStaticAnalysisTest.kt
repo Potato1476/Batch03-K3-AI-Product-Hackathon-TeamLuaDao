@@ -329,23 +329,32 @@ class PrivacyStaticAnalysisTest {
             buildScript.contains("providers.gradleProperty(\"CHAN_API_BASE_URL\")"),
         )
 
-        val readme = File(projectDir.parentFile, "README.md").readText()
-        assertTrue("README must document the -P form", readme.contains("-PCHAN_API_BASE_URL="))
+        // The base-URL forms are documented in the developer guide; the root
+        // README is the Vietnamese product description.
+        val repoRoot = projectDir.parentFile
+        val developerGuide = File(repoRoot, "docs/DEVELOPMENT.md").readText()
         assertTrue(
-            "README must document the local.properties form the build implements",
-            readme.contains("CHAN_API_BASE_URL=http://"),
+            "The developer guide must document the -P form",
+            developerGuide.contains("-PCHAN_API_BASE_URL="),
+        )
+        assertTrue(
+            "The developer guide must document the local.properties form the build implements",
+            developerGuide.contains("CHAN_API_BASE_URL=http://"),
         )
         // No machine LAN address may be committed anywhere.
         val lanAddress = Regex("""\b(?:10\.(?!0\.2\.2)\d{1,3}|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b""")
         mainSources.forEach { file ->
             assertFalse("${file.name} must not contain a LAN address", lanAddress.containsMatchIn(file.readText()))
         }
-        readme.lineSequence().forEach { line ->
-            if (lanAddress.containsMatchIn(line)) {
-                assertTrue(
-                    "A LAN address in the README must be the documented example: $line",
-                    line.contains("192.168.1.42"),
-                )
+        val prose = listOf(File(repoRoot, "README.md"), File(repoRoot, "docs/DEVELOPMENT.md"))
+        prose.forEach { file ->
+            file.readText().lineSequence().forEach { line ->
+                if (lanAddress.containsMatchIn(line)) {
+                    assertTrue(
+                        "A LAN address in ${file.name} must be the documented example: $line",
+                        line.contains("192.168.1.42"),
+                    )
+                }
             }
         }
     }

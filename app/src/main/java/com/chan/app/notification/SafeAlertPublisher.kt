@@ -104,7 +104,7 @@ class AndroidSafeAlertPublisher(
         val event = rotator.next()
         val channelId = if (risk == Risk.HIGH) CHANNEL_HIGH_RISK else CHANNEL_CAUTION
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(copy.title)
             .setContentText(copy.body)
             .setPriority(if (risk == Risk.HIGH) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
