@@ -6,6 +6,16 @@ user đã khai từ CP1**, có **quote nguyên văn + tên/vai**.
 **Cách chạy:** [`session-script.md`](session-script.md) — 4 phút/người, đưa máy
 rồi im lặng. Gõ vào đây **ngay lúc nghe**, chép lại sau là mất nguyên văn.
 
+> ⚠️ **Nếu vòng validation đã chạy và mọi người đều khen:** vẫn phải điền tên,
+> vai và **quote nguyên văn** của từng người vào bên dưới — R6 chấm trên quote có
+> tên, không chấm trên kết luận tóm tắt.
+>
+> Và lưu ý: log toàn lời khen là log yếu. 4/8 điểm của R6 nằm ở **"≥1 thay đổi từ
+> feedback, hoặc giữ nguyên có lý do căn cứ"**. Nếu thật sự không ai chê, hãy ghi
+> vào bảng cuối file: giữ nguyên cái gì, **căn cứ vào quan sát nào** (họ bấm đúng
+> chỗ ngay lần đầu? đọc đúng ý cảnh báo?) — quan sát hành vi cứu được mục này,
+> lời khen chung chung thì không.
+
 ## Ba câu hỏi cố định hỏi mọi người
 
 1. **"Vừa rồi máy nói gì với bạn? Kể lại bằng lời của bạn."**
