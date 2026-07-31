@@ -1084,23 +1084,56 @@ function Lookup({
   );
 }
 
+/**
+ * Where a hit came from decides what the screen is allowed to claim. A row that
+ * arrived from a data feed has not been "reported by people", and saying so
+ * would put words in the mouths of users who never spoke.
+ */
+const lookupOrigin: Record<string, { title: string; unit: string; source: string }> = {
+  community_reviewed: {
+    title: "Đã có người báo cáo",
+    unit: "lượt báo cáo",
+    source: "Đây là báo cáo của người dùng khác, đã qua rà soát.",
+  },
+  verified: {
+    title: "Đã được xác minh là lừa đảo",
+    unit: "lượt ghi nhận",
+    source: "Thông tin này đã được xác minh, không chỉ do người dùng báo.",
+  },
+  partner_verified: {
+    title: "Đơn vị hợp tác đã xác nhận",
+    unit: "lượt ghi nhận",
+    source: "Thông tin do đơn vị hợp tác của CHAN xác nhận.",
+  },
+  feed_listed: {
+    title: "Có trong danh sách cảnh báo",
+    unit: "lượt ghi nhận",
+    source:
+      "Thông tin này nằm trong danh sách dữ liệu CHAN đang dùng — **không phải** báo cáo của người dùng.",
+  },
+};
+
 function LookupResult({ result, onBack }: { result: LookupApiResult; onBack: () => void }) {
   const reportCount = result.match?.report_cnt ?? 0;
   const lastSeen = result.match?.last_seen
     ? new Date(result.match.last_seen).toLocaleDateString("vi-VN")
     : "Chưa rõ";
+  const copy = lookupOrigin[result.match?.origin ?? ""] ?? lookupOrigin.feed_listed;
   return (
     <section>
       <div className="risk-hero warning-hero">
         <BackButton onClick={onBack} label="Tra cứu lại" />
         <span className="hero-pill">CẦN CẨN TRỌNG</span>
-        <h1>Đã có người báo cáo</h1>
+        <h1>{copy.title}</h1>
         <p>Hãy dừng lại và gọi người thân trước khi chuyển tiền.</p>
       </div>
       <div className="page result-body">
-        <div className="stats"><div><b>{reportCount}</b><span>lượt báo cáo</span></div><div><b>{lastSeen}</b><span>lần gần nhất</span></div></div>
+        <div className="stats"><div><b>{reportCount}</b><span>{copy.unit}</span></div><div><b>{lastSeen}</b><span>lần gần nhất</span></div></div>
         <div className="recommendation"><h2>Bác nên làm gì?</h2><p>Dừng giao dịch và gọi ngân hàng bằng số trên thẻ.</p><p>Hỏi người thân trước khi làm tiếp.</p></div>
-        <div className="disclaimer">Đây là báo cáo của người dùng, không phải kết luận chính thức. Không có báo cáo <strong>không có nghĩa là an toàn</strong>.</div>
+        <div className="disclaimer">
+          {copy.source.replace(/\*\*/g, "")} Đây không phải kết luận chính thức.
+          Không có báo cáo <strong>không có nghĩa là an toàn</strong>.
+        </div>
         <button className="secondary-button" onClick={onBack}>Tra cứu thông tin khác</button>
       </div>
     </section>

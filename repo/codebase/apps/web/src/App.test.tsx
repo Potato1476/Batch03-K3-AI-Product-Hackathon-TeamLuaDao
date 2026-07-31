@@ -374,6 +374,36 @@ describe("CHAN web flow", () => {
     expect(screen.getByText(/không có nghĩa là an toàn tuyệt đối/i)).toBeInTheDocument();
   });
 
+  it("does not call a feed listing a community report", async () => {
+    lookupIndicatorMock.mockResolvedValue({
+      kind: "phone",
+      displayValue: "0000000001",
+      matched: true,
+      match: {
+        hash: "b".repeat(64),
+        report_cnt: 3,
+        first_seen: "2026-07-10T00:00:00Z",
+        last_seen: "2026-07-29T00:00:00Z",
+        origin: "feed_listed",
+      },
+      noMatchMessage: "Chưa có báo cáo về số điện thoại này.",
+      bundleVersion: "rb-test",
+    });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Tài khoản, số điện thoại/i }));
+    await user.click(screen.getByRole("button", { name: "Điện thoại" }));
+    await user.type(screen.getByLabelText("Điện thoại cần tra"), "0000000001");
+    await user.click(screen.getByRole("button", { name: "Tra cứu báo cáo" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Có trong danh sách cảnh báo" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Đã có người báo cáo")).not.toBeInTheDocument();
+    expect(screen.getByText(/không phải.*báo cáo của người dùng/i)).toBeInTheDocument();
+  });
+
   it("shows a community report returned by the backend", async () => {
     lookupIndicatorMock.mockResolvedValue({
       kind: "phone",
@@ -384,7 +414,7 @@ describe("CHAN web flow", () => {
         report_cnt: 12,
         first_seen: "2026-07-20T00:00:00Z",
         last_seen: "2026-07-30T00:00:00Z",
-        origin: "community",
+        origin: "community_reviewed",
       },
       noMatchMessage: "Chưa có báo cáo về số điện thoại này.",
       bundleVersion: "rb-test",
@@ -399,6 +429,7 @@ describe("CHAN web flow", () => {
 
     expect(screen.getByRole("heading", { name: "Đã có người báo cáo" })).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText(/báo cáo của người dùng khác/i)).toBeInTheDocument();
     expect(lookupIndicatorMock).toHaveBeenCalledWith("phone", "0393066063");
   });
 });

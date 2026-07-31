@@ -25,6 +25,7 @@ dev = [
 chan-intel-api = "chan_intel.main:run"
 chan-intel-sync = "chan_intel.sync:main"
 chan-intel-import = "chan_intel.import_snapshot:main"
+chan-intel-seed-demo = "chan_intel.seed_demo:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
