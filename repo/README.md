@@ -44,7 +44,7 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
 | Phần | File / artifact | Người chịu trách nhiệm | Người hỗ trợ |
 |---|---|---|---|
 | Spec (tổng hợp, §3-§4-§6) | `spec.md` | Nguyễn Gia Bảo | Tuấn Anh |
-| Evidence & impact (§1-§2) | `spec.md` + log mining/khảo sát | **TODO — chưa ai làm, xem cảnh báo dưới** | |
+| Evidence & impact (§1-§2) | `spec.md` + [`evidence/`](evidence/) | Nguyễn Gia Bảo | Tuấn Anh |
 | Kiến trúc & bất biến bảo mật | `docs/CHAN-ARCHITECTURE.md` | Nguyễn Gia Bảo | |
 | Quyết định AI: model 8 dấu hiệu + L4 policy | `codebase/ml/`, `codebase/detection/` | Tuấn Anh | Nguyễn Gia Bảo |
 | Web PWA (luồng kiểm tra tin nhắn) | `codebase/apps/web/` | Nguyễn Lê Minh | Nguyễn Thị Lý |
@@ -57,7 +57,7 @@ khi người dùng chuyển tiền hoặc cung cấp thông tin.
 > **Bảng này là phân công, chưa phải xác nhận.** Luật vibe-coding: bị hỏi tại
 > CP5/CP6 mà không giải thích được phần có tên mình thì phần đó 0 điểm. Mỗi người
 > đọc lại dòng có tên mình, sửa nếu không đúng thực tế, và đảm bảo mở được file đó
-> ra giải thích. Ba dòng TODO chưa có người — cần chốt ngay.
+> ra giải thích. **Hai dòng TODO còn lại cần tên người trước CP5.**
 
 Mỗi thành viên nói ≥1 phần ở CP6; ai đứng tên phần nào phải giải thích được phần đó (vibe-coding rule, rubric §Reflection).
 
@@ -82,11 +82,14 @@ Xem [codebase/README.md](codebase/README.md).
 
 ## Tiến độ checkpoint
 
-| Mốc | Hạn | Artifact | Trạng thái |
+| Mốc | Hạn | Artifact trong repo | Có trong repo |
 |---|---|---|---|
-| CP1 · Canvas | | Canvas 7 dòng | ☐ |
-| CP2 · Bấm được | | flow chính + commit đầu | ☐ |
-| CP3 · AI thật + đo lượt 1 | | `eval/` golden set + kết quả lượt 1 | ☐ |
-| CP4 · Chốt spec | 23:59 N1 | `spec.md` (quality bar chốt) | ☐ |
-| CP5 · Validation + dry run | | `validation/` ≥5 mẩu + slide final | ☐ |
-| CP6 · Demo | | `demo-slides.pdf` | ☐ |
+| CP1 · Canvas | 10:00 N1 | `spec.md` §4 (lát cắt) + §8 | ✅ |
+| CP2 · Bấm được | 12:00 N1 | [`codebase/apps/web/`](codebase/apps/web/) + commit đầu | ✅ |
+| CP3 · AI thật + đo lượt 1 | 16:00 N1 | [`eval/golden-set.md`](eval/golden-set.md) 20 case + [`eval/results.md`](eval/results.md) lượt 1 + [`codebase/logs/`](codebase/logs/) trace thật | ✅ |
+| CP4 · Chốt spec | 23:59 N1 | [`spec.md`](spec.md) — quality bar chốt ở §7 | ✅ |
+| CP5 · Validation + dry run | 09:00 N2 | [`validation/`](validation/) — **kịch bản sẵn, chưa có mẩu nào** | ⬜ |
+| CP6 · Demo | 10:00 N2 | [`demo-slides.pdf`](demo-slides.pdf) + [`codebase/demo-backup/`](codebase/demo-backup/) | ✅ |
+
+> Cột cuối là **có artifact trong repo hay chưa**, không phải đã nộp đúng hạn hay
+> chưa — mỗi thành viên tự nộp link repo theo mốc của mình.

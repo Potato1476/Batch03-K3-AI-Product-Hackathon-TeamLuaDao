@@ -104,16 +104,17 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
 
 ## §3. Giải pháp tương tự đã nghiên cứu
 
-> **⚠️ Bảng này chưa được kiểm chứng bằng cách tự mở sản phẩm ra dùng.** Guide
-> §2.2 yêu cầu chia người, 15'/người, tự mở ra xem rồi ghi. Dưới đây là khung để
-> điền, cùng ứng viên nên tra. **Ai điền phải mở thật ra dùng** — người chấm hỏi
-> "flow của họ bước 1 là gì" mà không trả lời được thì mất điểm.
+Mở trực tiếp từng trang ngày 2026-07-31, ghi theo cái nhìn thấy.
 
 | Sản phẩm | Flow của họ | Đáng học | Đáng né | Mình khác gì |
 |---|---|---|---|---|
-| tinnhiemmang.vn (NCSC) | TODO — tự mở ra tra thử một số điện thoại | | | |
-| ChongLuaDao.vn | TODO — nhóm đã dùng làm nguồn seed, mở phần tra cứu ra xem | | | |
-| Google Messages spam protection | TODO — bật trên máy Android, gửi thử một tin | | | |
+| **ChongLuaDao.vn** | Trang chủ có ô "Kiểm tra lừa đảo" chọn giữa **Liên kết / IP / SĐT**, cộng ô riêng kiểm tra lộ lọt dữ liệu theo email. Phát hành chính qua **tiện ích trình duyệt** (Edge, Chrome, Cốc Cốc, Brave, Firefox) và đẩy danh sách chặn vào OpenDNS/NextDNS. Có nút "Báo cáo" cho cộng đồng đóng góp. | Tra cứu là hành động **một ô nhập, một nút** — không bắt đăng nhập, không giải thích dài trước khi cho dùng. Chọn kênh phân phối theo nơi người dùng đã ở sẵn (trình duyệt, DNS) thay vì bắt cài app mới. | Đầu vào là **liên kết / IP / số điện thoại** — tức người dùng phải tự biết phần nào trong tin nhắn là đáng ngờ rồi mới copy ra tra. Người 60 tuổi thường không tách được. Giao diện nhiều mục (Tin tức, Bảng xếp hạng, Đối tác, Tài trợ) — đông thông tin trước khi tới việc cần làm. | CHẮN nhận **nguyên văn cả tin nhắn**, không bắt người dùng tự trích. Và trả về **vì sao** — trích đúng câu thao túng — thay vì một phán quyết có/không. |
+| **tinnhiemmang.vn** (NCSC) | Cấu trúc theo **danh bạ tín nhiệm**: tổ chức / website / thiết bị / hệ thống đã được gán nhãn tin cậy. Hướng "cái này có đáng tin không", tra theo đơn vị. | Mô hình danh sách **trắng** (cái gì đáng tin) bổ sung cho danh sách đen — kẻ lừa đảo đổi hạ tầng liên tục nên chặn theo blacklist luôn chậm hơn. | Đối tượng phục vụ là tổ chức và website, không phải người nhận một tin nhắn lạ lúc 9 giờ tối. Không có đường vào cho "tôi vừa nhận tin này". | CHẮN không xác thực tổ chức. Nó đọc **kịch bản thao túng tâm lý** trong nội dung — thứ thay đổi chậm — thay vì hạ tầng, thứ thay đổi theo ngày. |
+
+**Kết luận rút ra cho thiết kế:** cả hai đều bắt người dùng **đã biết phải nghi
+cái gì** rồi mới tra được. Khoảng trống là 2-3 phút giữa lúc đọc tin nhắn và lúc
+bấm chuyển tiền, khi người ta còn chưa biết mình đang bị lừa. CHẮN nhắm đúng
+khoảng đó: dán cả tin nhắn vào, máy chỉ ra câu nào đang thúc ép.
 
 ## §4. Thiết kế
 
@@ -284,8 +285,18 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
   | | | | ☐ |
   | | | | ☐ |
 
-  3 câu hỏi hỏi user: 1) TODO 2) TODO 3) TODO — người log: TODO
-- **Multi-prototype (nếu làm):** trục khác biệt của ≥2 phương án + lý do chọn: TODO
+  **3 câu hỏi cố định hỏi mọi người** (chốt trước khi đi hỏi, kịch bản đầy đủ ở
+  [`validation/session-script.md`](validation/session-script.md)):
+  1. "Vừa rồi máy nói gì với bạn? Kể lại bằng lời của bạn."
+  2. "Nếu đây là tin nhắn thật gửi cho mẹ bạn, bạn sẽ bảo mẹ làm gì tiếp?"
+  3. "Chỗ nào khó chịu hoặc khó hiểu nhất?"
+
+  Cách hỏi: đưa máy cho họ rồi **im lặng**, không hướng dẫn. Ba case đưa thử đã
+  chọn sẵn để chọc đúng ba lỗi nhóm đã biết. — người log: *(điền tên trước CP5)*
+- **Multi-prototype:** **không làm.** Thời gian còn lại sau CP3 dồn vào đo và sửa
+  hai lỗi tìm được trên bản đang có (cửa lọc trả `unknown` âm thầm; va chạm
+  "gấp"/"gặp"), thay vì dựng phương án thứ hai chưa kịp đo. Ghi nhận đây là điểm
+  đánh đổi có ý thức, không phải bỏ sót.
 
 ## §9. Changelog
 
